@@ -17,11 +17,11 @@ gem "jbuilder", "~> 2.11" # Build JSON APIs with ease. Read more: https://github
 gem "noticed" # Notifications
 gem "paper_trail" # tracking changes
 gem "pg", ">= 0.18", "< 2.0" # Use postgresql as the database for Active Record
-gem "puma", "~> 5.2" # Use Puma as the app server
+gem "puma", "~> 5.3" # Use Puma as the app server
 gem "pundit" # for authorization management - based on user.role field
 gem "rack-attack" # for blocking & throttling abusive requests
 gem "skylight" # automated performance testing https://www.skylight.io/
-gem "webpacker", "~> 5.2" # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
+gem "webpacker", "~> 5.3" # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
 gem "image_processing", "~> 1.12" # Set of higher-level helper methods for image processing.
 gem "lograge" # log less so heroku papertrail quits rate limiting our logs
 
@@ -40,7 +40,7 @@ group :development, :test do
   gem "pry-byebug"
   gem "rspec-rails", "~> 5.0.1"
   gem "shoulda-matchers"
-  gem "standard", "~> 1.0.5" # linter https://github.com/testdouble/standard
+  gem "standard", "~> 1.1.1" # linter https://github.com/testdouble/standard
   gem "cypress-on-rails", "~> 1.10"
 end
 

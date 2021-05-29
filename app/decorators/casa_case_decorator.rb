@@ -44,7 +44,7 @@ class CasaCaseDecorator < Draper::Decorator
   end
 
   def weekly_case_contacts_not_created_by_volunteer_disclaimer(volunteer)
-    object.case_contacts.where(" ? <= occurred_at AND occurred_at <= ? AND creator_id != ?", 7.days.ago, Date.today, volunteer.id).any? ? "Some case contacts were not created by #{ volunteer.display_name } this week" : nil
+    object.case_contacts.where(" ? <= occurred_at AND occurred_at <= ? AND creator_id != ?", 7.days.ago, Date.today, volunteer.id).any? ? "Some case contacts were not created by #{volunteer.display_name} this week" : nil
   end
 
   def unsuccessful_contacts_this_week

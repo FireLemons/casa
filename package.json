@@ -7,12 +7,12 @@
     "test:e2e": "cypress open",
     "lint": "standard",
     "lint:fix": "standard --fix",
-		"toc": "markdown-toc -i README.md"
+    "toc": "markdown-toc -i README.md"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.3",
-    "@rails/actioncable": "^6.1.3",
-    "@rails/activestorage": "^6.1.3",
+    "@rails/actioncable": "^6.1.4",
+    "@rails/activestorage": "^6.1.4",
     "@rails/ujs": "^6.1.3",
     "@rails/webpacker": "5.4.0",
     "bindings": "^1.5.0",
@@ -20,17 +20,18 @@
     "bootstrap-datepicker": "^1.9.0",
     "bootstrap-select": "^1.13.18",
     "datatables.net-dt": "^1.10.25",
+    "faker": "^5.5.3",
     "jquery": "^3.6.0",
-    "node-sass": "^6.0.0",
+    "node-sass": "^6.0.1",
     "popper.js": "^1.16.1",
     "select2": "^4.0.13",
-    "sweetalert2": "^11.0.17",
+    "sweetalert2": "^11.0.18",
     "turbolinks": "^5.2.0"
   },
   "version": "0.1.0",
   "devDependencies": {
-    "cypress": "^7.5.0",
-    "jest": "^27.0.4",
+    "cypress": "^7.6.0",
+    "jest": "^27.0.5",
     "markdown-toc": "^1.2.0",
     "standard": "^16.0.3",
     "start-server-and-test": "^1.12.5",

@@ -81,17 +81,11 @@ The complete [role description of a CASA volunteer](https://pgcasa.org/volunteer
 #### Overview  
 The project requires Ruby, bundler, node.js, yarn, postgres, and Chrome.  
 
-#### Operating System and Docker Specific Instructions
-Mac
-Linux  
-Windows  
-[Docker](doc/DOCKER.md)
-
 **Ruby**
 
 1. Install a ruby version manager: [rvm](https://rvm.io/) or [rbenv](https://github.com/rbenv/rbenv)
 1. when you cd into the project directory, let your version manager install the ruby version in `.ruby-version`. Right now that's Ruby 3.0.1
-1. `gem install bundler`
+1. `gem install bundler`  
 
 **node.js**
 
@@ -112,13 +106,12 @@ Windows
 
 1. The Spec tests uses Chrome Browser and Chromedriver for some of the tests. A current version of chromedriver will be installed when `bundle install` is run. TO install Chrome, see [Chrome Install](https://support.google.com/chrome/answer/95346?hl=en&ref_topic=7439538).
 
-From MacOS:    
+From MacOS:  
 `brew install google-chrome`
-
-
-Another option is to install the Chromium browser for your operating system so the browser-based Ruby feature/integration tests can run. Installing `chromium-browser` is enough, even in WSL (Windows subsystem for Linux)
-
-### Running the app
+  
+Another option is to install the Chromium browser for your operating system so the browser-based Ruby feature/integration tests can run. Installing `chromium-browser` is enough, even in WSL (Windows subsystem for Linux)  
+  
+**Running the app**
 
 (*on a Mac or Linux machine*)
 
@@ -127,6 +120,18 @@ Another option is to install the Chromium browser for your operating system so t
 1. `bundle install` to install all the Ruby dependencies.
 1. `yarn install` to install all the Javascript dependencies.
 1. `bin/rails db:setup` requires running local postgres, with a role created for whatever user you're running rails as
+1. `bin/rails db:seed:replant` loads test data into the database (can be rerun to reset the test data)
+
+#### Operating System and Docker Specific Instructions
+Mac  
+Linux  
+Windows  
+[Docker](doc/DOCKER.md)
+
+### First steps
+**Running the development server**
+
+1. `bin/rails server` or `bin/rails s` to start the webserver locally
 
 **Running Tests**
 
@@ -134,11 +139,6 @@ Another option is to install the Chromium browser for your operating system so t
 1. `yarn test` to run the Javascript test suite
 
 Test coverage is run by simplecov on all builds and aggregated by CodeClimate
-
-**Running the development server**
-
-1. `bin/rails db:seed:replant` to delete all existing data and load sample data into the database
-1. `bin/rails server` run server
 
 **Cleaning up before you commit**
 

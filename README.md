@@ -133,10 +133,15 @@ Windows
 
 1. `bin/rails server` or `bin/rails s` to start the webserver locally
 
-**Running Tests**
+**Running Tests**  
+It's good to run the tests before you start coding to verify the integrity of your environment. If there are tests failing and you know the tests aren't related to the section of the project you're working on, it's ok to ignore the failures.  
 
-1. `bin/rails spec` to run the Ruby test suite
-1. `yarn test` to run the Javascript test suite
+ - `bin/rails spec` to run the Ruby test suite
+ - `yarn test` to run the Javascript test suite
+ - run cypress tests:  
+
+       bundle exec rails server -b 0.0.0.0 -p 4040  
+       npm run test:cypress --exit-code 0
 
 Test coverage is run by simplecov on all builds and aggregated by CodeClimate
 

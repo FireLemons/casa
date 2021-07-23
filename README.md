@@ -77,12 +77,15 @@ The complete [role description of a CASA volunteer](https://pgcasa.org/volunteer
 
 ## Developing! ✨🛠✨
 
-See [DOCKER.md](doc/DOCKER.md) for instructions on setting up your environment
-using Docker. For non-Docker installations, follow the instructions below.
+### Installation
+#### Overview  
+The project requires Ruby, bundler, node.js, yarn, postgres, and Chrome.  
 
-### Installing Tools
-
-You need Ruby, bundler, node.js, yarn, postgres, and Chrome.
+#### Operating System and Docker Specific Instructions
+Mac
+Linux  
+Windows  
+[Docker](doc/DOCKER.md)
 
 **Ruby**
 

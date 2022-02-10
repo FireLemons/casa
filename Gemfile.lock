@@ -364,18 +364,18 @@ GEM
       rspec-mocks (~> 3.10)
       rspec-support (~> 3.10)
     rspec-support (3.10.3)
-    rubocop (1.23.0)
+    rubocop (1.25.1)
       parallel (~> 1.10)
-      parser (>= 3.0.0.0)
+      parser (>= 3.1.0.0)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml
-      rubocop-ast (>= 1.12.0, < 2.0)
+      rubocop-ast (>= 1.15.1, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
     rubocop-ast (1.15.1)
       parser (>= 3.0.1.1)
-    rubocop-performance (1.12.0)
+    rubocop-performance (1.13.2)
       rubocop (>= 1.7.0, < 2.0)
       rubocop-ast (>= 0.4.0)
     ruby-progressbar (1.11.0)
@@ -415,9 +415,9 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
-    standard (1.5.0)
-      rubocop (= 1.23.0)
-      rubocop-performance (= 1.12.0)
+    standard (1.7.1)
+      rubocop (= 1.25.1)
+      rubocop-performance (= 1.13.2)
     strong_migrations (0.7.9)
       activerecord (>= 5)
     strscan (3.0.1)
@@ -515,7 +515,7 @@ DEPENDENCIES
   spring
   spring-commands-rspec
   spring-watcher-listen (~> 2.0.0)
-  standard (= 1.5.0)
+  standard (= 1.7.1)
   strong_migrations
   traceroute
   tzinfo-data

@@ -48,7 +48,7 @@ group :development, :test do
   gem "pry-byebug"
   gem "rspec-rails"
   gem "shoulda-matchers"
-  gem "standard", "1.5.0" # 1.6.0 errors on all factorybot create variables
+  gem "standard", "1.7.2" # 1.6.0 errors on all factorybot create variables
 end
 
 group :development do

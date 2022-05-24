@@ -8395,9 +8395,9 @@ svgo@^1.0.0:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
-sweetalert2@^11.3.5:
-  version "11.4.6"
-  resolved "https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.4.6.tgz"
+sweetalert2@^11.4.16:
+  version "11.4.16"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-11.4.16.tgz#a83e16534834e959e75d2a731ca88dee603335a8"
 
 symbol-tree@^3.2.4:
   version "3.2.4"

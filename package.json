@@ -28,7 +28,7 @@
     "popper.js": "^1.16.1",
     "sass": "^1.53.0",
     "select2": "^4.0.13",
-    "sweetalert2": "^11.3.5",
+    "sweetalert2": "^11.4.19",
     "turbolinks": "^5.2.0"
   },
   "version": "0.1.0",

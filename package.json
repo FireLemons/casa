@@ -23,7 +23,7 @@
     "bootstrap-select": "^1.13.18",
     "datatables.net-dt": "^1.13.2",
     "esbuild": "^0.17.8",
-    "faker": "^5.5.3",
+    "faker": "^6.6.6",
     "jquery": "^3.6.3",
     "lodash": "^4.17.21",
     "popper.js": "^1.16.1",

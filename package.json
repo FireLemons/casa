@@ -30,7 +30,7 @@
     "sass": "^1.58.2",
     "select2": "^4.0.13",
     "strftime": "^0.10.1",
-    "sweetalert2": "^11.3.5",
+    "sweetalert2": "^11.7.3",
     "turbolinks": "^5.2.0"
   },
   "version": "0.1.0",

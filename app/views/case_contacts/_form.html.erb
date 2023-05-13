@@ -10,13 +10,16 @@
     <div class="casa-case-scroll">
       <% casa_cases.each_with_index do |casa_case, index| %>
         <div class="form-check checkbox-style mb-10 ml-5">
+          <% if case_contact.new_record? %>
+            <i id="<%= "lock_case_contact_casa_case_id-#{index}" %>" class="fa-solid fa-lock-open casa_case_lock_icon mt-10" style="width: 18px;"></i>
+          <% end %>
           <%= check_box_tag "case_contact[casa_case_id][]",
                             casa_case.id,
                             @selected_cases.include?(casa_case),
                             id: "case_contact_casa_case_id_#{index}",
-                            class: ["form-check-input", "casa-case-id"],
+                            class: ["form-check-input float-none m-0", "casa-case-id"],
                             disabled: case_contact.persisted? %>
-          <label class="form-check-label" for="case_contact_casa_case_id_<%= index %>">
+          <label class="form-check-label" id="checkboxDisable-<%= index %>" for="case_contact_casa_case_id_<%= index %>">
             <%= casa_case.case_number %>
           </label>
         </div>

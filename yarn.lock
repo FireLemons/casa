@@ -5129,10 +5129,10 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-sweetalert2@^11.3.5:
-  version "11.4.33"
-  resolved "https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.4.33.tgz"
-  integrity sha512-gnXH7c7xFzs9BtmHBVH4Fl/cEKhOhf4gv6UuZpFqUoFWtwIKG5sjNkcDNYW+8v3wyFestLab5qI4i1H1MkN0Pg==
+sweetalert2@^11.7.6:
+  version "11.7.6"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-11.7.6.tgz#48473b6f47b3848370a2c50e90577870b1b651a3"
+  integrity sha512-EvM+YlyTcQIIxK1w44l/cscaWSC2F1pNJedkP/wHPdTWk67AZ1SOCm1BN6VEkccEIsZ9umb/GLPBx5dOgg8hoA==
 
 symbol-tree@^3.2.4:
   version "3.2.4"

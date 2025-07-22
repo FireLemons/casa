@@ -1,50 +1,131 @@
-def seed_additional_expense(case_contact: nil, case_contact_id: nil)
-  if case_contact.nil? && case_contact_id.nil?
-    raise ArgumentError.new("case_contact: or case_contact_id: is required")
-  elsif !case_contact.nil? && !case_contact_id.nil?
-    raise ArgumentError.new("cannot use case_contact: and case_contact_id:")
+class RecordCreator
+  NONSEEDED_RECORD_TABLES = {
+    "ApiCredential" => true,
+    "SentEmail" => true,
+    "SmsNotificationEvent" => true
+  }
+
+  def initialize
+    Rails.application.eager_load!
+    @pre_seeding_record_count = getRecordCounts
   end
 
-  other_expense_amount = rand(1..40) + rand.round(2)
-  other_expenses_describe = Faker::Commerce.product_name
+  def getSeededRecordCounts
+    seeded_record_count_diff = diffSeededRecordCounts(getCreatedRecordCounts)
 
-  if !case_contact.nil?
-    AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact:)
-  else
-    AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact_id:)
-  end
-end
-
-def seed_additional_expenses(case_contacts: nil, case_contact_ids: nil, count: 0)
-  if case_contacts.nil? && case_contact_ids.nil?
-    raise ArgumentError.new("case_contacts: or case_contact_ids: is required")
-  elsif !case_contacts.nil? && !case_contact_ids.nil?
-    raise ArgumentError.new("cannot use case_contacts: and case_contact_ids:")
-  end
-
-  created_additional_expense_ids = []
-
-  if !case_contacts.nil?
-    unless case_contacts.is_a?(ActiveRecord::Relation)
-      raise TypeError.new("param case_contacts must be an ActiveRecord::Relation")
+    seeded_record_count_diff.each do |record_type_name, record_count|
+      if record_count == 0
+        seeded_record_count_diff.delete(record_type_name)
+      end
     end
 
-    count.times {
-      created_additional_expense_ids.push(seed_additional_expense(case_contact: case_contacts.sample).id)
-    }
-  else
-    if !case_contact_ids.is_a?(Array)
-      raise TypeError.new("param case_contact_ids: must be an array")
-    elsif case_contact_ids.length === 0
-      raise RangeError.new("param case_contact_ids: must contain at least one element")
-    end
-
-    count.times {
-      created_additional_expense_ids.push(seed_additional_expense(case_contact_id: case_contact_ids.sample).id)
-    }
+    seeded_record_count_diff
   end
 
-  created_additional_expense_ids
+  def seed_additional_expense(case_contact: nil, case_contact_id: nil)
+    if case_contact.nil? && case_contact_id.nil?
+      raise ArgumentError.new("case_contact: or case_contact_id: is required")
+    elsif !case_contact.nil? && !case_contact_id.nil?
+      raise ArgumentError.new("cannot use case_contact: and case_contact_id:")
+    end
+
+    other_expense_amount = rand(1..40) + rand.round(2)
+    other_expenses_describe = Faker::Commerce.product_name
+
+    if !case_contact.nil?
+      AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact:)
+    else
+      AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact_id:)
+    end
+  end
+
+  def seed_additional_expenses(case_contacts: nil, case_contact_ids: nil, count: 0)
+    if case_contacts.nil? && case_contact_ids.nil?
+      raise ArgumentError.new("case_contacts: or case_contact_ids: is required")
+    elsif !case_contacts.nil? && !case_contact_ids.nil?
+      raise ArgumentError.new("cannot use case_contacts: and case_contact_ids:")
+    end
+
+    created_additional_expense_ids = []
+
+    if !case_contacts.nil?
+      unless case_contacts.is_a?(ActiveRecord::Relation)
+        raise TypeError.new("param case_contacts must be an ActiveRecord::Relation")
+      end
+
+      count.times {
+        created_additional_expense_ids.push(seed_additional_expense(case_contact: case_contacts.sample).id)
+      }
+    else
+      if !case_contact_ids.is_a?(Array)
+        raise TypeError.new("param case_contact_ids: must be an array")
+      elsif case_contact_ids.length === 0
+        raise RangeError.new("param case_contact_ids: must contain at least one element")
+      end
+
+      count.times {
+        created_additional_expense_ids.push(seed_additional_expense(case_contact_id: case_contact_ids.sample).id)
+      }
+    end
+
+    created_additional_expense_ids
+  end
+
+  def seed_address(user: nil, user_id: nil)
+    if user.nil? && user_id.nil?
+      raise ArgumentError.new("user: or user_id: is required")
+    elsif !user.nil? && !user_id.nil?
+      raise ArgumentError.new("cannot use user: and user_id:")
+    end
+
+    address = Faker::Address.full_address
+
+    if !user.nil?
+      Address.create(content: address, user:)
+    else
+      Address.create(content: address, user_id:)
+    end
+  end
+
+  def seed_addresses(users: nil, user_ids: nil, count: 0)
+    if user.nil? && user_id.nil?
+      raise ArgumentError.new("users: or user_ids: is required")
+    elsif !user.nil? && !user_id.nil?
+      raise ArgumentError.new("cannot use users: and user_ids:")
+    end
+  end
+
+  private
+
+  def diffSeededRecordCounts(updated_record_counts)
+    seeded_record_counts = {}
+
+    updated_record_counts.each do |record_type_name, new_record_count|
+      next if NonSeededRecordTables.has_key?(record_type_name)
+
+      if @pre_seeding_record_count.has_key?(record_type_name)
+        old_count = @pre_seeding_record_count[record_type_name]
+
+        seeded_record_counts[record_type_name] = new_record_count - old_count
+      end
+    end
+
+    seeded_record_counts
+  end
+
+  def getRecordCounts
+    record_counts = {}
+
+    ApplicationRecord.descendants.each do |record_type|
+      count = record_type.count
+      record_name = record_type.name
+
+      next if record_type.abstract_class?
+      record_counts[record_name] = count
+    end
+
+    record_counts
+  end
 end
 
 # # Seeder API

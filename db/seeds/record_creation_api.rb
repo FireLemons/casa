@@ -1,6 +1,7 @@
 class RecordCreator
   NONSEEDED_RECORD_TABLES = {
     "ApiCredential" => true,
+    "LoginActivity" => true,
     "SentEmail" => true,
     "SmsNotificationEvent" => true
   }
@@ -80,19 +81,69 @@ class RecordCreator
 
     address = Faker::Address.full_address
 
-    if !user.nil?
-      Address.create(content: address, user:)
-    else
-      Address.create(content: address, user_id:)
+    if user.nil?
+      user = User.find(user_id)
     end
+
+    unless user.address.nil?
+      raise ActiveRecord::RecordNotUnique.new("The specified user already has an address")
+    end
+
+    Address.create(content: address, user:)
   end
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)
-    if user.nil? && user_id.nil?
+    if users.nil? && user_ids.nil?
       raise ArgumentError.new("users: or user_ids: is required")
-    elsif !user.nil? && !user_id.nil?
+    elsif !users.nil? && !user_ids.nil?
       raise ArgumentError.new("cannot use users: and user_ids:")
     end
+
+    if count <= 0
+      return []
+    end
+
+    created_address_ids = []
+
+    if !users.nil?
+      unless users.is_a?(ActiveRecord::Relation)
+        raise TypeError.new("param users must be an ActiveRecord::Relation")
+      end
+
+      users_as_array = users.to_a
+
+      while count > 0 && users_as_array.size > 0
+        begin
+          created_address_ids.push(seed_address(user: pop_random(users_as_array)).id)
+          count -= 1
+        rescue
+          # do nothing
+        end
+      end
+    else
+      if !user_ids.is_a?(Array)
+        raise TypeError.new("param user_ids: must be an array")
+      elsif user_ids.length === 0
+        raise RangeError.new("param user_ids: must contain at least one element")
+      end
+
+      user_ids_copy = user_ids.clone
+
+      while count > 0 && user_ids_copy.size > 0
+        begin
+          created_address_ids.push(seed_address(user_id: pop_random(user_ids_copy)).id)
+          count -= 1
+        rescue
+          # do nothing
+        end
+      end
+    end
+
+    if created_address_ids.size == 0
+      raise ActiveRecord::RecordNotUnique.new("All users already had addresses. Could not create new ones.")
+    end
+
+    created_address_ids
   end
 
   private
@@ -125,6 +176,10 @@ class RecordCreator
     end
 
     record_counts
+  end
+
+  def pop_random(arr)
+    arr.delete_at(rand(arr.size))
   end
 end
 

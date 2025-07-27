@@ -6,9 +6,12 @@ class RecordCreator
     "SmsNotificationEvent" => true
   }
 
-  def initialize
+  def initialize(seed = nil)
     Rails.application.eager_load!
     @pre_seeding_record_count = getRecordCounts
+    @random = seed.nil? ? Random.new : Random.new(seed)
+    Faker::Config.random = @random
+    Faker::Config.locale = "en-US" # only allow US phone numbers
   end
 
   def getSeededRecordCounts
@@ -30,7 +33,7 @@ class RecordCreator
       raise ArgumentError.new("cannot use case_contact: and case_contact_id:")
     end
 
-    other_expense_amount = rand(1..40) + rand.round(2)
+    other_expense_amount = @random.rand(1..40) + @random.rand.round(2)
     other_expenses_describe = Faker::Commerce.product_name
 
     if !case_contact.nil?
@@ -54,20 +57,20 @@ class RecordCreator
         raise TypeError.new("param case_contacts must be an ActiveRecord::Relation")
       end
 
-      count.times {
-        created_additional_expense_ids.push(seed_additional_expense(case_contact: case_contacts.sample).id)
-      }
-    else
-      if !case_contact_ids.is_a?(Array)
-        raise TypeError.new("param case_contact_ids: must be an array")
-      elsif case_contact_ids.length === 0
-        raise RangeError.new("param case_contact_ids: must contain at least one element")
+      case_contact_ids = case_contacts.to_a.map do |case_contact|
+        case_contact.id
       end
-
-      count.times {
-        created_additional_expense_ids.push(seed_additional_expense(case_contact_id: case_contact_ids.sample).id)
-      }
     end
+
+    if !case_contact_ids.is_a?(Array)
+      raise TypeError.new("param case_contact_ids: must be an array")
+    elsif case_contact_ids.length === 0
+      raise RangeError.new("param case_contact_ids: must contain at least one element")
+    end
+
+    count.times {
+      created_additional_expense_ids.push(seed_additional_expense(case_contact_id: pick_random_element(case_contact_ids)).id)
+    }
 
     created_additional_expense_ids
   end
@@ -178,8 +181,12 @@ class RecordCreator
     record_counts
   end
 
+  def pick_random_element(arr)
+    arr.sample(random: rng)
+  end
+
   def pop_random(arr)
-    arr.delete_at(rand(arr.size))
+    arr.delete_at(@random.rand(arr.size))
   end
 end
 
@@ -187,6 +194,7 @@ end
 #
 #  A File containing functions that satisfy:
 #  - each function creates only one kind of record
+#  - each function's randomness is seeded
 #  - 2 functions per relevant model
 #   - one to create a single record of the model
 #    - if a record requires other records to exist they are passed in as an argument to the function
@@ -199,7 +207,6 @@ end
 #    - returns an array of the ids of the records created
 
 #
-# addresses
 # all_casa_admins
 # api_credentials
 # banners

@@ -6,6 +6,8 @@ class RecordCreator
     "SmsNotificationEvent" => true
   }
 
+  DEFAULT_PASSWORD = "12345678"
+
   def initialize(seed = nil)
     Rails.application.eager_load!
     @pre_seeding_record_count = getRecordCounts
@@ -68,9 +70,9 @@ class RecordCreator
       raise RangeError.new("param case_contact_ids: must contain at least one element")
     end
 
-    count.times {
+    count.times do
       created_additional_expense_ids.push(seed_additional_expense(case_contact_id: pick_random_element(case_contact_ids)).id)
-    }
+    end
 
     created_additional_expense_ids
   end
@@ -143,10 +145,36 @@ class RecordCreator
     end
 
     if created_address_ids.size == 0
-      raise ActiveRecord::RecordNotUnique.new("All users already had addresses. Could not create new ones.")
+      raise ActiveRecord::RecordNotUnique.new("Failed to create any address. Perhaps all users already had addresses.")
     end
 
     created_address_ids
+  end
+
+  def seed_casa_org
+    county = "#{Faker::Name.neutral_first_name} County"
+
+    CasaOrg.create(address: Faker::Address.full_address, name: county)
+  end
+
+  def seed_casa_orgs(count: 0)
+    if count <= 0
+      return []
+    end
+
+    seeded_casa_orgs = []
+
+    count.times do
+      seeded_casa_orgs.push(seed_casa_org.id)
+    rescue
+      # do nothing
+    end
+
+    if seeded_casa_orgs.size == 0
+      raise ActiveRecord::RecordNotUnique.new("Failed to create any casa org. Perhaps all the names were already taken")
+    end
+
+    seeded_casa_orgs
   end
 
   private
@@ -208,13 +236,11 @@ end
 
 #
 # all_casa_admins
-# api_credentials
 # banners
 # casa_case_contact_types
 # casa_case_emancipation_categories
 # casa_cases
 # casa_cases_emancipation_options
-# casa_orgs
 # case_assignments
 # case_contact_contact_types
 # case_contacts

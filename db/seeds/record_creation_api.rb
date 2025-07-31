@@ -55,8 +55,10 @@ class RecordCreator
     created_additional_expense_ids = []
 
     if !case_contacts.nil?
-      unless case_contacts.is_a?(ActiveRecord::Relation)
+      if !case_contacts.is_a?(ActiveRecord::Relation)
         raise TypeError.new("param case_contacts must be an ActiveRecord::Relation")
+      elsif case_contacts.empty?
+        raise ArgumentError.new("param case_contacts must contain at least one case contact")
       end
 
       case_contact_ids = case_contacts.to_a.map do |case_contact|
@@ -111,41 +113,37 @@ class RecordCreator
     created_address_ids = []
 
     if !users.nil?
-      unless users.is_a?(ActiveRecord::Relation)
+      if !users.is_a?(ActiveRecord::Relation)
         raise TypeError.new("param users must be an ActiveRecord::Relation")
+      elsif users.empty?
+        raise ArgumentError.new("param users must contain at least one user")
       end
 
-      users_as_array = users.to_a
-
-      while count > 0 && users_as_array.size > 0
-        begin
-          created_address_ids.push(seed_address(user: pop_random(users_as_array)).id)
-          count -= 1
-        rescue
-          # do nothing
-        end
+      user_ids_copy = users.to_a.map do |user|
+        user.id
       end
-    else
-      if !user_ids.is_a?(Array)
-        raise TypeError.new("param user_ids: must be an array")
-      elsif user_ids.length === 0
-        raise RangeError.new("param user_ids: must contain at least one element")
-      end
+    end
 
-      user_ids_copy = user_ids.clone
+    if !user_ids.is_a?(Array)
+      raise TypeError.new("param user_ids: must be an array")
+    elsif user_ids.length === 0
+      raise RangeError.new("param user_ids: must contain at least one element")
+    end
 
-      while count > 0 && user_ids_copy.size > 0
-        begin
-          created_address_ids.push(seed_address(user_id: pop_random(user_ids_copy)).id)
-          count -= 1
-        rescue
-          # do nothing
-        end
+    user_ids_copy = user_ids.clone
+
+    while count > 0 && user_ids_copy.size > 0
+      begin
+        new_address = seed_address(user_id: pop_random(user_ids_copy))
+        created_address_ids.push(new_address.id) if new_address.persisted?
+        count -= 1
+      rescue
+        # do nothing
       end
     end
 
     if created_address_ids.size == 0
-      raise ActiveRecord::RecordNotUnique.new("Failed to create any address. Perhaps all users already had addresses.")
+      raise ActiveRecord::RecordNotUnique.new("Failed to create any address. See output above for more details.")
     end
 
     created_address_ids
@@ -165,13 +163,16 @@ class RecordCreator
     seeded_casa_orgs = []
 
     count.times do
-      seeded_casa_orgs.push(seed_casa_org.id)
-    rescue
-      # do nothing
+      begin
+        new_org = seed_casa_org
+        seeded_casa_orgs.push(new_org) if new_org.persisted?
+      rescue
+        # do nothing
+      end
     end
 
     if seeded_casa_orgs.size == 0
-      raise ActiveRecord::RecordNotUnique.new("Failed to create any casa org. Perhaps all the names were already taken")
+      raise ActiveRecord::RecordNotUnique.new("Failed to create any casa org. See output above for more details.")
     end
 
     seeded_casa_orgs

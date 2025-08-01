@@ -122,15 +122,13 @@ class RecordCreator
       user_ids_copy = users.to_a.map do |user|
         user.id
       end
-    end
-
-    if !user_ids.is_a?(Array)
+    elsif !user_ids.is_a?(Array)
       raise TypeError.new("param user_ids: must be an array")
     elsif user_ids.length === 0
       raise RangeError.new("param user_ids: must contain at least one element")
+    else
+      user_ids_copy = user_ids.clone
     end
-
-    user_ids_copy = user_ids.clone
 
     while count > 0 && user_ids_copy.size > 0
       begin
@@ -211,7 +209,7 @@ class RecordCreator
   end
 
   def pick_random_element(arr)
-    arr.sample(random: rng)
+    arr.sample(random: @random)
   end
 
   def pop_random(arr)

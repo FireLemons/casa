@@ -100,11 +100,8 @@ class RecordCreator
   end
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)
-    if users.nil? && user_ids.nil?
-      raise ArgumentError.new("users: or user_ids: is required")
-    elsif !users.nil? && !user_ids.nil?
-      raise ArgumentError.new("cannot use users: and user_ids:")
-    end
+    validated_users = validate_seed_n_records_required_model_params(model_lowercase_name: "user", model_lowercase_plural_name: "suers", model_param_object_collection: users, model_param_id_array: user_ids)
+    validated_users_as_id_array = model_collection_as_id_array(validated_users)
 
     if count <= 0
       return []
@@ -112,27 +109,9 @@ class RecordCreator
 
     created_address_ids = []
 
-    if !users.nil?
-      if !users.is_a?(ActiveRecord::Relation)
-        raise TypeError.new("param users must be an ActiveRecord::Relation")
-      elsif users.empty?
-        raise ArgumentError.new("param users must contain at least one user")
-      end
-
-      user_ids_copy = users.to_a.map do |user|
-        user.id
-      end
-    elsif !user_ids.is_a?(Array)
-      raise TypeError.new("param user_ids: must be an array")
-    elsif user_ids.length === 0
-      raise RangeError.new("param user_ids: must contain at least one element")
-    else
-      user_ids_copy = user_ids.clone
-    end
-
-    while count > 0 && user_ids_copy.size > 0
+    while count > 0 && validated_users_as_id_array.size > 0
       begin
-        new_address = seed_address(user_id: pop_random(user_ids_copy))
+        new_address = seed_address(user_id: pop_random(validated_users_as_id_array))
         created_address_ids.push(new_address.id) if new_address.persisted?
         count -= 1
       rescue
@@ -176,6 +155,11 @@ class RecordCreator
     seeded_casa_orgs
   end
 
+  def seed_casa_case(casa_org: nil, casa_org_id: nil)
+    # Birth month year required
+    # Case Number Required
+  end
+
   private
 
   def diffSeededRecordCounts(updated_record_counts)
@@ -208,12 +192,50 @@ class RecordCreator
     record_counts
   end
 
+  def model_collection_as_id_array(model_collection)
+    if model_collection.is_a?(ActiveRecord::Relation)
+      return model_collection.to_a.map do |model|
+        model.id
+      end
+    else
+      return model_collection.clone
+    end
+  end
+
   def pick_random_element(arr)
     arr.sample(random: @random)
   end
 
   def pop_random(arr)
     arr.delete_at(@random.rand(arr.size))
+  end
+
+  def validate_seed_single_record_required_model_params(model_lowercase_name:, model_param_object:, model_param_id:)
+    # The type of model_param_object is not checked because the default error thrown for using an object of the wrong type is already very succinct
+  end
+
+  def validate_seed_n_records_required_model_params(model_lowercase_name:, model_lowercase_plural_name:, model_param_object_collection:, model_param_id_array:)
+    if model_param_object_collection.nil? && model_param_id_array.nil?
+      raise ArgumentError.new("#{model_lowercase_plural_name}: or #{model_lowercase_name}_ids: is required")
+    elsif !model_param_object_collection.nil? && !model_param_id_array.nil?
+      raise ArgumentError.new("cannot use #{model_lowercase_plural_name}: and #{model_lowercase_name}_ids:")
+    elsif !model_param_object_collection.nil?
+      if !model_param_object_collection.is_a?(ActiveRecord::Relation)
+        raise TypeError.new("param #{model_lowercase_plural_name} must be an ActiveRecord::Relation")
+      elsif model_param_object_collection.empty?
+        raise ArgumentError.new("param #{model_lowercase_plural_name} must contain at least one #{model_lowercase_name}")
+      else
+        return model_param_object_collection
+      end
+    else
+      if !model_param_id_array.is_a?(Array)
+        raise TypeError.new("param #{model_lowercase_name}_ids: must be an array")
+      elsif model_param_id_array.length === 0
+        raise RangeError.new("param #{model_lowercase_name}_ids: must contain at least one element")
+      else
+        return model_param_id_array
+      end
+    end
   end
 end
 

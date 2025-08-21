@@ -46,34 +46,13 @@ class RecordCreator
   end
 
   def seed_additional_expenses(case_contacts: nil, case_contact_ids: nil, count: 0)
-    if case_contacts.nil? && case_contact_ids.nil?
-      raise ArgumentError.new("case_contacts: or case_contact_ids: is required")
-    elsif !case_contacts.nil? && !case_contact_ids.nil?
-      raise ArgumentError.new("cannot use case_contacts: and case_contact_ids:")
-    end
+    validated_case_contacts = validate_seed_n_records_required_model_params("case_contact", "case_contacts", case_contacts, case_contact_ids)
+    validated_case_contacts_as_id_array = model_collection_as_id_array(validated_case_contacts)
 
     created_additional_expense_ids = []
 
-    if !case_contacts.nil?
-      if !case_contacts.is_a?(ActiveRecord::Relation)
-        raise TypeError.new("param case_contacts must be an ActiveRecord::Relation")
-      elsif case_contacts.empty?
-        raise ArgumentError.new("param case_contacts must contain at least one case contact")
-      end
-
-      case_contact_ids = case_contacts.to_a.map do |case_contact|
-        case_contact.id
-      end
-    end
-
-    if !case_contact_ids.is_a?(Array)
-      raise TypeError.new("param case_contact_ids: must be an array")
-    elsif case_contact_ids.length === 0
-      raise RangeError.new("param case_contact_ids: must contain at least one element")
-    end
-
     count.times do
-      created_additional_expense_ids.push(seed_additional_expense(case_contact_id: pick_random_element(case_contact_ids)).id)
+      created_additional_expense_ids.push(seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array)).id)
     end
 
     created_additional_expense_ids
@@ -100,7 +79,7 @@ class RecordCreator
   end
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)
-    validated_users = validate_seed_n_records_required_model_params(model_lowercase_name: "user", model_lowercase_plural_name: "suers", model_param_object_collection: users, model_param_id_array: user_ids)
+    validated_users = validate_seed_n_records_required_model_params("user", "users", users, user_ids)
     validated_users_as_id_array = model_collection_as_id_array(validated_users)
 
     if count <= 0
@@ -214,7 +193,7 @@ class RecordCreator
     # The type of model_param_object is not checked because the default error thrown for using an object of the wrong type is already very succinct
   end
 
-  def validate_seed_n_records_required_model_params(model_lowercase_name:, model_lowercase_plural_name:, model_param_object_collection:, model_param_id_array:)
+  def validate_seed_n_records_required_model_params(model_lowercase_name, model_lowercase_plural_name, model_param_object_collection, model_param_id_array)
     if model_param_object_collection.nil? && model_param_id_array.nil?
       raise ArgumentError.new("#{model_lowercase_plural_name}: or #{model_lowercase_name}_ids: is required")
     elsif !model_param_object_collection.nil? && !model_param_id_array.nil?

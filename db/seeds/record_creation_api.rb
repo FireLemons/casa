@@ -29,11 +29,7 @@ class RecordCreator
   end
 
   def seed_additional_expense(case_contact: nil, case_contact_id: nil)
-    if case_contact.nil? && case_contact_id.nil?
-      raise ArgumentError.new("case_contact: or case_contact_id: is required")
-    elsif !case_contact.nil? && !case_contact_id.nil?
-      raise ArgumentError.new("cannot use case_contact: and case_contact_id:")
-    end
+    validate_seed_single_record_required_model_params("case_contact", case_contact, case_contact_id)
 
     other_expense_amount = @random.rand(1..40) + @random.rand.round(2)
     other_expenses_describe = Faker::Commerce.product_name
@@ -59,11 +55,7 @@ class RecordCreator
   end
 
   def seed_address(user: nil, user_id: nil)
-    if user.nil? && user_id.nil?
-      raise ArgumentError.new("user: or user_id: is required")
-    elsif !user.nil? && !user_id.nil?
-      raise ArgumentError.new("cannot use user: and user_id:")
-    end
+    validate_seed_single_record_required_model_params("user", user, user_id)
 
     address = Faker::Address.full_address
 
@@ -189,8 +181,12 @@ class RecordCreator
     arr.delete_at(@random.rand(arr.size))
   end
 
-  def validate_seed_single_record_required_model_params(model_lowercase_name:, model_param_object:, model_param_id:)
-    # The type of model_param_object is not checked because the default error thrown for using an object of the wrong type is already very succinct
+  def validate_seed_single_record_required_model_params(model_lowercase_name, model_param_object, model_param_id)
+    if model_param_object.nil? && model_param_id.nil?
+      raise ArgumentError.new("#{model_lowercase_name} or #{model_lowercase_name}_id: is required")
+    elsif !model_param_object.nil? && !model_param_id.nil?
+      raise ArgumentError.new("cannot use #{model_lowercase_name} and #{model_lowercase_name}_id:")
+    end
   end
 
   def validate_seed_n_records_required_model_params(model_lowercase_name, model_lowercase_plural_name, model_param_object_collection, model_param_id_array)

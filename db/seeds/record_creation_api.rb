@@ -34,11 +34,13 @@ class RecordCreator
     other_expense_amount = @random.rand(1..40) + @random.rand.round(2)
     other_expenses_describe = Faker::Commerce.product_name
 
-    if !case_contact.nil?
+    new_expense = if !case_contact.nil?
       AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact:)
     else
       AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact_id:)
     end
+
+    validate_single_record_persisted(new_expense, "AdditionalExpense")
   end
 
   def seed_additional_expenses(case_contacts: nil, case_contact_ids: nil, count: 0)
@@ -67,7 +69,9 @@ class RecordCreator
       raise ActiveRecord::RecordNotUnique.new("The specified user already has an address")
     end
 
-    Address.create(content: address, user:)
+    new_address = Address.create(content: address, user:)
+
+    validate_single_record_persisted(new_address, "Address")
   end
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)
@@ -111,12 +115,10 @@ class RecordCreator
     seeded_casa_orgs = []
 
     count.times do
-      begin
-        new_org = seed_casa_org
-        seeded_casa_orgs.push(new_org) if new_org.persisted?
-      rescue
-        # do nothing
-      end
+      new_org = seed_casa_org
+      seeded_casa_orgs.push(new_org) if new_org.persisted?
+    rescue
+      # do nothing
     end
 
     if seeded_casa_orgs.size == 0
@@ -165,11 +167,11 @@ class RecordCreator
 
   def model_collection_as_id_array(model_collection)
     if model_collection.is_a?(ActiveRecord::Relation)
-      return model_collection.to_a.map do |model|
+      model_collection.to_a.map do |model|
         model.id
       end
     else
-      return model_collection.clone
+      model_collection.clone
     end
   end
 
@@ -200,17 +202,23 @@ class RecordCreator
       elsif model_param_object_collection.empty?
         raise ArgumentError.new("param #{model_lowercase_plural_name} must contain at least one #{model_lowercase_name}")
       else
-        return model_param_object_collection
+        model_param_object_collection
       end
+    elsif !model_param_id_array.is_a?(Array)
+      raise TypeError.new("param #{model_lowercase_name}_ids: must be an array")
+    elsif model_param_id_array.length === 0
+      raise RangeError.new("param #{model_lowercase_name}_ids: must contain at least one element")
     else
-      if !model_param_id_array.is_a?(Array)
-        raise TypeError.new("param #{model_lowercase_name}_ids: must be an array")
-      elsif model_param_id_array.length === 0
-        raise RangeError.new("param #{model_lowercase_name}_ids: must contain at least one element")
-      else
-        return model_param_id_array
-      end
+      model_param_id_array
     end
+  end
+
+  def validate_single_record_persisted(record, record_name)
+    if !record.persisted?
+      raise ActiveRecord::RecordNotSaved.new("#{record_name} failed to save")
+    end
+
+    record
   end
 end
 

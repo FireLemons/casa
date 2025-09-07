@@ -1,11 +1,4 @@
 class RecordCreator
-  NONSEEDED_RECORD_TABLES = {
-    "ApiCredential" => true,
-    "LoginActivity" => true,
-    "SentEmail" => true,
-    "SmsNotificationEvent" => true
-  }
-
   DEFAULT_PASSWORD = "12345678"
 
   def initialize(seed = nil)
@@ -17,7 +10,7 @@ class RecordCreator
   end
 
   def getSeededRecordCounts
-    seeded_record_count_diff = diffSeededRecordCounts(getCreatedRecordCounts)
+    seeded_record_count_diff = diffSeededRecordCounts(getRecordCounts)
 
     seeded_record_count_diff.each do |record_type_name, record_count|
       if record_count == 0
@@ -26,6 +19,7 @@ class RecordCreator
     end
 
     seeded_record_count_diff
+    getRecordCounts
   end
 
   def seed_additional_expense(case_contact: nil, case_contact_id: nil)
@@ -34,10 +28,10 @@ class RecordCreator
     other_expense_amount = @random.rand(1..40) + @random.rand.round(2)
     other_expenses_describe = Faker::Commerce.product_name
 
-    new_expense = if !case_contact.nil?
-      AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact:)
+    if !case_contact.nil?
+      new_expense = AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact:)
     else
-      AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact_id:)
+      new_expense = AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact_id:)
     end
 
     validate_single_record_persisted(new_expense, "AdditionalExpense")
@@ -47,13 +41,18 @@ class RecordCreator
     validated_case_contacts = validate_seed_n_records_required_model_params("case_contact", "case_contacts", case_contacts, case_contact_ids)
     validated_case_contacts_as_id_array = model_collection_as_id_array(validated_case_contacts)
 
-    created_additional_expense_ids = []
+    additional_expense_seed_results = []
 
     count.times do
-      created_additional_expense_ids.push(seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array)).id)
+      begin
+        new_additional_expense = seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array))
+        additional_expense_seed_results.push(new_additional_expense.id)
+      rescue => exception
+        additional_expense_seed_results.push(exception)
+      end
     end
 
-    created_additional_expense_ids
+    additional_expense_seed_results
   end
 
   def seed_address(user: nil, user_id: nil)
@@ -82,29 +81,31 @@ class RecordCreator
       return []
     end
 
-    created_address_ids = []
+    address_seed_results = []
 
     while count > 0 && validated_users_as_id_array.size > 0
       begin
         new_address = seed_address(user_id: pop_random(validated_users_as_id_array))
-        created_address_ids.push(new_address.id) if new_address.persisted?
+        address_seed_results.push(new_address.id)
         count -= 1
-      rescue
-        # do nothing
+      rescue => exception
+        address_seed_results.push(exception)
       end
     end
 
-    if created_address_ids.size == 0
+    if address_seed_results.size == 0
       raise ActiveRecord::RecordNotUnique.new("Failed to create any address. See output above for more details.")
     end
 
-    created_address_ids
+    address_seed_results
   end
 
   def seed_casa_org
     county = "#{Faker::Name.neutral_first_name} County"
 
-    CasaOrg.create(address: Faker::Address.full_address, name: county)
+    new_org = CasaOrg.create(address: Faker::Address.full_address, name: county)
+
+    validate_single_record_persisted(new_org, "CasaOrg")
   end
 
   def seed_casa_orgs(count: 0)
@@ -112,20 +113,20 @@ class RecordCreator
       return []
     end
 
-    seeded_casa_orgs = []
+    casa_org_seed_results = []
 
     count.times do
       new_org = seed_casa_org
-      seeded_casa_orgs.push(new_org) if new_org.persisted?
-    rescue
-      # do nothing
+      casa_org_seed_results.push(new_org)
+    rescue => exception
+      casa_org_seed_results.push(exception)
     end
 
-    if seeded_casa_orgs.size == 0
+    if casa_org_seed_results.size == 0
       raise ActiveRecord::RecordNotUnique.new("Failed to create any casa org. See output above for more details.")
     end
 
-    seeded_casa_orgs
+    casa_org_seed_results
   end
 
   def seed_casa_case(casa_org: nil, casa_org_id: nil)
@@ -139,8 +140,6 @@ class RecordCreator
     seeded_record_counts = {}
 
     updated_record_counts.each do |record_type_name, new_record_count|
-      next if NonSeededRecordTables.has_key?(record_type_name)
-
       if @pre_seeding_record_count.has_key?(record_type_name)
         old_count = @pre_seeding_record_count[record_type_name]
 
@@ -236,7 +235,7 @@ end
 #   - one to create n records of the model
 #    - if a record requires other records to exist they are passed in as an argument to the function
 #    - the collection(s) are completely error checked so no partial record creation is possible
-#    - returns an array of the ids of the records created
+#    - returns an array containing the ids of the records created and exceptions for records that weren't created
 
 #
 # all_casa_admins

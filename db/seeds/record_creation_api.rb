@@ -17,8 +17,6 @@ class RecordCreator
         seeded_record_count_diff.delete(record_type_name)
       end
     end
-
-    seeded_record_count_diff
     getRecordCounts
   end
 
@@ -28,10 +26,10 @@ class RecordCreator
     other_expense_amount = @random.rand(1..40) + @random.rand.round(2)
     other_expenses_describe = Faker::Commerce.product_name
 
-    if !case_contact.nil?
-      new_expense = AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact:)
+    new_expense = if !case_contact.nil?
+      AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact:)
     else
-      new_expense = AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact_id:)
+      AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact_id:)
     end
 
     validate_single_record_persisted(new_expense, "AdditionalExpense")
@@ -44,12 +42,10 @@ class RecordCreator
     additional_expense_seed_results = []
 
     count.times do
-      begin
-        new_additional_expense = seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array))
-        additional_expense_seed_results.push(new_additional_expense.id)
-      rescue => exception
-        additional_expense_seed_results.push(exception)
-      end
+      new_additional_expense = seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array))
+      additional_expense_seed_results.push(new_additional_expense.id)
+    rescue => exception
+      additional_expense_seed_results.push(exception)
     end
 
     additional_expense_seed_results

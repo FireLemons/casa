@@ -1,8 +1,8 @@
 require "rails_helper"
-require_relative '../../db/seeds/record_creation_api'
+require_relative "../../db/seeds/record_creation_api"
 
 RSpec.describe RecordCreator do
-#RSpec.describe RecordCreator, skip: 'disabled by default because this is a rarely used developer feature' do
+  # RSpec.describe RecordCreator, skip: 'disabled by default because this is a rarely used developer feature' do
   subject { RecordCreator.new(0) }
 
   describe "getSeededRecordCounts" do
@@ -15,7 +15,7 @@ RSpec.describe RecordCreator do
       create(:casa_org)
       create(:casa_admin)
 
-      seeded_record_counts = subject.getSeededRecordCounts()
+      seeded_record_counts = subject.getSeededRecordCounts
 
       expect(seeded_record_counts[CasaOrg.name]).to eq 3
       expect(seeded_record_counts[User.name]).to eq 1

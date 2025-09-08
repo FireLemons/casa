@@ -180,9 +180,9 @@ class RecordCreator
 
   def validate_seed_single_record_required_model_params(model_lowercase_name, model_param_object, model_param_id)
     if model_param_object.nil? && model_param_id.nil?
-      raise ArgumentError.new("#{model_lowercase_name} or #{model_lowercase_name}_id: is required")
+      raise ArgumentError.new("#{model_lowercase_name}: or #{model_lowercase_name}_id: is required")
     elsif !model_param_object.nil? && !model_param_id.nil?
-      raise ArgumentError.new("cannot use #{model_lowercase_name} and #{model_lowercase_name}_id:")
+      raise ArgumentError.new("cannot use #{model_lowercase_name}: and #{model_lowercase_name}_id:")
     end
   end
 

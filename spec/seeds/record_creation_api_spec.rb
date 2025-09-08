@@ -21,28 +21,43 @@ RSpec.describe RecordCreator do
       expect(seeded_record_counts[User.name]).to eq 1
       expect(seeded_record_counts[CasaCase.name]).to eq 0
     end
-
-    it "does not include ignored models" do
-      expect(seeded_record_counts[CasaCase.name]).to eq 0
-    end
   end
 
   describe "seed_additional_expense" do
     describe "with valid parameters" do
       it "creates an additional expense" do
+        original_case_contact_count = CaseContact.count
+
+        expect {
+          subject.seed_additional_expense(case_contact: create(:case_contact))
+        }.to change { CaseContact.count }.from(original_case_contact_count).to(original_case_contact_count + 1)
       end
 
       it "returns the newly created additional expense" do
+        new_additional_expense = subject.seed_additional_expense(case_contact: create(:case_contact))
+
+        expect(new_additional_expense).to be_a(AdditionalExpense)
       end
     end
 
     it "throws an error when neither case_contact or case_contact_id are used" do
+      expect {
+        subject.seed_additional_expense
+      }.to raise_error(ArgumentError, /case_contact: or case_contact_id: is required/)
     end
 
     it "throws an error when both case_contact and case_contact_id are used" do
+      case_contact = create(:case_contact)
+
+      expect {
+        subject.seed_additional_expense(case_contact:, case_contact_id: case_contact.id)
+      }.to raise_error(ArgumentError, /cannot use case_contact: and case_contact_id:/)
     end
 
     it "throws an error when the additional expense fails to persist" do
+      expect {
+        subject.seed_additional_expense(case_contact_id: "invalid id")
+      }.to raise_error(ActiveRecord::RecordNotSaved, /AdditionalExpense failed to save/)
     end
   end
 

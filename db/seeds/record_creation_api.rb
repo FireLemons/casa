@@ -193,9 +193,9 @@ class RecordCreator
       raise ArgumentError.new("cannot use #{model_lowercase_plural_name}: and #{model_lowercase_name}_ids:")
     elsif !model_param_object_collection.nil?
       if !model_param_object_collection.is_a?(ActiveRecord::Relation)
-        raise TypeError.new("param #{model_lowercase_plural_name} must be an ActiveRecord::Relation")
+        raise TypeError.new("param #{model_lowercase_plural_name}: must be an ActiveRecord::Relation")
       elsif model_param_object_collection.empty?
-        raise ArgumentError.new("param #{model_lowercase_plural_name} must contain at least one #{model_lowercase_name}")
+        raise ArgumentError.new("param #{model_lowercase_plural_name}: must contain at least one #{model_lowercase_name}")
       else
         model_param_object_collection
       end

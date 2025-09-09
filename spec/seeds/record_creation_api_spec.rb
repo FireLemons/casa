@@ -122,4 +122,42 @@ RSpec.describe RecordCreator do
       }.to raise_error(RangeError, /param case_contact_ids: must contain at least one element/)
     end
   end
+
+  describe "seed_address" do
+    describe "with valid parameters" do
+      it "creates an address" do
+        # original_additional_expense_count = AdditionalExpense.count
+
+        # expect {
+        #  subject.seed_additional_expense(case_contact: create(:case_contact))
+        # }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + 1)
+      end
+
+      it "returns the newly created address" do
+        # new_additional_expense = subject.seed_additional_expense(case_contact: create(:case_contact))
+
+        # expect(new_additional_expense).to be_a(AdditionalExpense)
+      end
+    end
+
+    it "throws an error when neither user or user_id are used" do
+      # expect {
+      #  subject.seed_additional_expense
+      # }.to raise_error(ArgumentError, /case_contact: or case_contact_id: is required/)
+    end
+
+    it "throws an error when both user and user_id are used" do
+      # case_contact = create(:case_contact)
+
+      # expect {
+      #  subject.seed_additional_expense(case_contact:, case_contact_id: case_contact.id)
+      # }.to raise_error(ArgumentError, /cannot use case_contact: and case_contact_id:/)
+    end
+
+    it "throws an error when the address fails to persist" do
+      # expect {
+      #  subject.seed_additional_expense(case_contact_id: "invalid id")
+      # }.to raise_error(ActiveRecord::RecordNotSaved, /AdditionalExpense failed to save/)
+    end
+  end
 end

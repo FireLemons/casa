@@ -3,7 +3,7 @@ require_relative "../../db/seeds/record_creation_api"
 
 RSpec.describe RecordCreator do
   # RSpec.describe RecordCreator, skip: 'disabled by default because this is a rarely used developer feature' do
-  subject { RecordCreator.new(0) }
+  subject { RecordCreator.new(RSpec.configuration.seed) }
 
   describe "getSeededRecordCounts" do
     it "includes the counts of all models created since the RecordCreator's initialization" do
@@ -26,11 +26,11 @@ RSpec.describe RecordCreator do
   describe "seed_additional_expense" do
     describe "with valid parameters" do
       it "creates an additional expense" do
-        original_case_contact_count = CaseContact.count
+        original_additional_expense_count = AdditionalExpense.count
 
         expect {
           subject.seed_additional_expense(case_contact: create(:case_contact))
-        }.to change { CaseContact.count }.from(original_case_contact_count).to(original_case_contact_count + 1)
+        }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + 1)
       end
 
       it "returns the newly created additional expense" do
@@ -64,15 +64,25 @@ RSpec.describe RecordCreator do
   describe "seed_additional_expenses" do
     describe "with valid parameters" do
       it "returns an array containing the additional expenses created" do
+        create(:case_contact)
+        original_additional_expense_count = AdditionalExpense.count
+        ADDITIONAL_EXPENSE_SEED_COUNT = 2
+
+        expect {
+          subject.seed_additional_expenses(case_contacts: CaseContact.all, count: ADDITIONAL_EXPENSE_SEED_COUNT)
+        }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + ADDITIONAL_EXPENSE_SEED_COUNT)
       end
 
       it "returns an array containing an error for each additional expense that could not be created" do
-      end
+        error_array = subject.seed_additional_expenses(case_contact_ids: [-1], count: 2)
 
-      it "returns an array with length equal to the count argument" do
+        error_array.each do |error|
+          expect(error.message).to include("AdditionalExpense failed to save")
+        end
       end
 
       it "returns empty array for negative counts" do
+        expect(subject.seed_additional_expenses(case_contact_ids: [1], count: -1)).to eq([])
       end
     end
 

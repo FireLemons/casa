@@ -60,13 +60,12 @@ class RecordCreator
       user = User.find(user_id)
     end
 
-    unless user.address.nil?
-      raise ActiveRecord::RecordNotUnique.new("The specified user already has an address")
+    if user.address.nil?
+      Address.create(content: address, user:)
+    else
+      user.address.update(content: address)
+      user.address
     end
-
-    new_address = Address.create(content: address, user:)
-
-    validate_single_record_persisted(new_address, "Address")
   end
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)

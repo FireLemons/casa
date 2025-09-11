@@ -88,10 +88,6 @@ class RecordCreator
       end
     end
 
-    if address_seed_results.size == 0
-      raise ActiveRecord::RecordInvalid.new("Failed to create any address. See output above for more details.")
-    end
-
     address_seed_results
   end
 
@@ -115,10 +111,6 @@ class RecordCreator
       casa_org_seed_results.push(new_org)
     rescue => exception
       casa_org_seed_results.push(exception)
-    end
-
-    if casa_org_seed_results.size == 0
-      raise ActiveRecord::RecordInvalid.new("Failed to create any casa org. See output above for more details.")
     end
 
     casa_org_seed_results

@@ -1,3 +1,21 @@
+# # Seeder API
+#
+#  Seeding functions satisfy:
+#  - each function creates one kind of record
+#  - each function's randomness is seeded
+#  - 2 functions per model
+#   - one to create a single record of the model
+#    - if a record requires other records to exist they are passed in as an argument to the function
+#     - accepts an active record object or a database id for each required object
+#     - an error is thrown when the parameters are invalid
+#    - returns the new activerecord object created
+#    - throws an error if the record could not be seeded
+#   - one to create n records of the model
+#    - if a record requires other records to exist they are passed in as an argument to the function
+#     - accepts an active record collection or an array of database ids for each required object
+#     - an error is thrown when the parameters are invalid
+#    - returns an array containing the ids of the records created and exceptions for records that weren't created
+
 class RecordCreator
   DEFAULT_PASSWORD = "12345678"
 
@@ -207,22 +225,6 @@ class RecordCreator
     record
   end
 end
-
-# # Seeder API
-#
-#  A File containing functions that satisfy:
-#  - each function creates only one kind of record
-#  - each function's randomness is seeded
-#  - 2 functions per relevant model
-#   - one to create a single record of the model
-#    - if a record requires other records to exist they are passed in as an argument to the function
-#     - accepts an active record object or a database id for each required object
-#     - error checking to make sure each of the required objects is present
-#     - returns the new activerecord object created
-#   - one to create n records of the model
-#    - if a record requires other records to exist they are passed in as an argument to the function
-#    - the collection(s) are completely error checked so no partial record creation is possible
-#    - returns an array containing the ids of the records created and exceptions for records that weren't created
 
 #
 # all_casa_admins

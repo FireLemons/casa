@@ -225,4 +225,22 @@ RSpec.describe RecordCreator do
       }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
     end
   end
+
+  describe "seed_casa_org" do
+    describe "with valid parameters" do
+      it "creates a casa org" do
+        # original_address_count = Address.count
+
+        # expect {
+        #   subject.seed_address(user: create(:user))
+        # }.to change { Address.count }.from(original_address_count).to(original_address_count + 1)
+      end
+
+      it "returns the newly created casa org" do
+        # new_address = subject.seed_address(user: create(:user))
+
+        # expect(new_address).to be_a(Address)
+      end
+    end
+  end
 end

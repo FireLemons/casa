@@ -227,20 +227,43 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_casa_org" do
-    describe "with valid parameters" do
-      it "creates a casa org" do
-        # original_address_count = Address.count
+    it "creates a casa org" do
+      # original_address_count = Address.count
 
-        # expect {
-        #   subject.seed_address(user: create(:user))
-        # }.to change { Address.count }.from(original_address_count).to(original_address_count + 1)
-      end
+      # expect {
+      #   subject.seed_address(user: create(:user))
+      # }.to change { Address.count }.from(original_address_count).to(original_address_count + 1)
+    end
 
-      it "returns the newly created casa org" do
-        # new_address = subject.seed_address(user: create(:user))
+    it "returns the newly created casa org" do
+      # new_address = subject.seed_address(user: create(:user))
 
-        # expect(new_address).to be_a(Address)
-      end
+      # expect(new_address).to be_a(Address)
+    end
+  end
+
+  describe "seed_casa_orgs" do
+    it "returns an array containing the casa orgs created" do
+      # create(:user)
+      # create(:user)
+      # original_address_count = Address.count
+      # address_seed_count = 2
+
+      # expect {
+      #   subject.seed_addresses(users: User.all, count: address_seed_count)
+      # }.to change { Address.count }.from(original_address_count).to(original_address_count + address_seed_count)
+    end
+
+    it "returns an array containing an error for each casa org that could not be created" do
+      # error_array = subject.seed_addresses(user_ids: [-1], count: 2)
+
+      # error_array.each do |error|
+      #   expect(error).to be_a(Exception)
+      # end
+    end
+
+    it "returns empty array for negative counts" do
+      # expect(subject.seed_addresses(user_ids: [1], count: -1)).to eq([])
     end
   end
 end

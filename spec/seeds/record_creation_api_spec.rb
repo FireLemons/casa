@@ -244,26 +244,31 @@ RSpec.describe RecordCreator do
 
   describe "seed_casa_orgs" do
     it "returns an array containing the casa orgs created" do
-      # create(:user)
-      # create(:user)
-      # original_address_count = Address.count
-      # address_seed_count = 2
+      original_casa_org_count = CasaOrg.count
+      casa_org_seed_count = 2
 
-      # expect {
-      #   subject.seed_addresses(users: User.all, count: address_seed_count)
-      # }.to change { Address.count }.from(original_address_count).to(original_address_count + address_seed_count)
+      expect {
+        subject.seed_casa_orgs(count: casa_org_seed_count)
+      }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + casa_org_seed_count)
     end
 
     it "returns an array containing an error for each casa org that could not be created" do
-      # error_array = subject.seed_addresses(user_ids: [-1], count: 2)
+      subject.seed_casa_orgs(count: 2)
+      subject = RecordCreator.new(RSpec.configuration.seed)
 
-      # error_array.each do |error|
-      #   expect(error).to be_a(Exception)
-      # end
+      # Resetting the RecordCreator with the same seed
+      # will result in casa orgs with duplicate names
+      # but casa orgs require unique names
+      # thus causing the errors
+      error_array = subject.seed_casa_orgs(count: 2)
+
+      error_array.each do |error|
+        expect(error).to be_a(Exception)
+      end
     end
 
     it "returns empty array for negative counts" do
-      # expect(subject.seed_addresses(user_ids: [1], count: -1)).to eq([])
+      expect(subject.seed_casa_orgs(count: -1)).to eq([])
     end
   end
 end

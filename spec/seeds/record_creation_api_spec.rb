@@ -38,6 +38,17 @@ RSpec.describe RecordCreator do
 
         expect(new_additional_expense).to be_a(AdditionalExpense)
       end
+
+      it "has randomness derived from the seed" do
+        case_contact = create(:case_contact)
+        first_generated_additional_expense = subject.seed_additional_expense(case_contact:).attributes.slice("other_expense_amount", "other_expenses_describe")
+
+        subject = RecordCreator.new(RSpec.configuration.seed)
+
+        second_generated_additional_expense = subject.seed_additional_expense(case_contact:).attributes.slice("other_expense_amount", "other_expenses_describe")
+
+        expect(first_generated_additional_expense).to eq(second_generated_additional_expense)
+      end
     end
 
     it "throws an error when neither case_contact or case_contact_id are used" do
@@ -83,6 +94,26 @@ RSpec.describe RecordCreator do
 
       it "returns empty array for negative counts" do
         expect(subject.seed_additional_expenses(case_contact_ids: [1], count: -1)).to eq([])
+      end
+
+      it "has randomness derived from the seed" do
+        create(:case_contact)
+        additional_expense_seed_count = 2
+        first_pass_generated_additional_expenses = subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count).map do |id|
+          additional_expense = AdditionalExpense.find(id)
+          additional_expense.attributes.slice("other_expense_amount", "other_expenses_describe")
+        end
+
+        subject = RecordCreator.new(RSpec.configuration.seed)
+
+        second_pass_generated_additional_expenses = subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count).map do |id|
+          additional_expense = AdditionalExpense.find(id)
+          additional_expense.attributes.slice("other_expense_amount", "other_expenses_describe")
+        end
+
+        (0...additional_expense_seed_count).each do |i|
+          expect(first_pass_generated_additional_expenses[i]).to eq(second_pass_generated_additional_expenses[i])
+        end
       end
     end
 
@@ -146,6 +177,17 @@ RSpec.describe RecordCreator do
 
         expect(new_address).to be_a(Address)
       end
+
+      it "has randomness derived from the seed" do
+        user = create(:user)
+        first_generated_address = subject.seed_address(user:).content
+
+        subject = RecordCreator.new(RSpec.configuration.seed)
+
+        second_generated_address = subject.seed_address(user:).content
+
+        expect(first_generated_address).to eq(second_generated_address)
+      end
     end
 
     it "throws an error when neither user or user_id are used" do
@@ -186,6 +228,26 @@ RSpec.describe RecordCreator do
 
       it "returns empty array for negative counts" do
         expect(subject.seed_addresses(user_ids: [1], count: -1)).to eq([])
+      end
+
+      it "has randomness derived from the seed" do
+        create(:user)
+        create(:user)
+        address_seed_count = 2
+        # The string address has to be preserved because reseeding the addresses will overwrite the strings of the addresses first seeded first
+        first_pass_generated_addresses = subject.seed_addresses(users: User.all, count: address_seed_count).map do |id|
+          address = Address.find(id)
+          address.content
+        end
+
+        subject = RecordCreator.new(RSpec.configuration.seed)
+
+        second_pass_generated_addresses = subject.seed_addresses(users: User.all, count: address_seed_count).map do |id|
+          address = Address.find(id)
+          address.content
+        end
+
+        expect(first_pass_generated_addresses).to eq(second_pass_generated_addresses)
       end
     end
 
@@ -240,6 +302,24 @@ RSpec.describe RecordCreator do
 
       expect(new_casa_org).to be_a(CasaOrg)
     end
+
+    it "has randomness derived from the seed" do
+      subject.seed_casa_org
+      subject.seed_casa_org
+
+      subject = RecordCreator.new(RSpec.configuration.seed)
+
+      # Organizations must have unique names
+      # generating orgs again with the same seed will cause duplicate names
+
+      expect {
+        subject.seed_casa_org
+      }.to raise_error
+
+      expect { # 2 checks to reduce the chance of a coincidence
+        subject.seed_casa_org
+      }.to raise_error
+    end
   end
 
   describe "seed_casa_orgs" do
@@ -257,7 +337,7 @@ RSpec.describe RecordCreator do
       subject = RecordCreator.new(RSpec.configuration.seed)
 
       # Resetting the RecordCreator with the same seed
-      # will result in casa orgs with duplicate names
+      # should result in casa orgs with duplicate names
       # but casa orgs require unique names
       # thus causing the errors
       error_array = subject.seed_casa_orgs(count: 2)
@@ -269,6 +349,21 @@ RSpec.describe RecordCreator do
 
     it "returns empty array for negative counts" do
       expect(subject.seed_casa_orgs(count: -1)).to eq([])
+    end
+
+    it "has randomness derived from the seed" do
+      subject.seed_casa_orgs(count: 2)
+      subject = RecordCreator.new(RSpec.configuration.seed)
+
+      # Resetting the RecordCreator with the same seed
+      # should result in casa orgs with duplicate names
+      # but casa orgs require unique names
+      # thus causing the errors
+      error_array = subject.seed_casa_orgs(count: 2)
+
+      error_array.each do |error|
+        expect(error).to be_a(Exception)
+      end
     end
   end
 end

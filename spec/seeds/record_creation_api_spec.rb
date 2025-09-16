@@ -99,17 +99,27 @@ RSpec.describe RecordCreator do
       it "has randomness derived from the seed" do
         create(:case_contact)
         additional_expense_seed_count = 2
-        first_pass_generated_additional_expenses = subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count).map do |id|
-          additional_expense = AdditionalExpense.find(id)
-          additional_expense.attributes.slice("other_expense_amount", "other_expenses_describe")
-        end
+        first_pass_generated_additional_expenses = id_array_to_hash(
+          AdditionalExpense,
+          subject.seed_additional_expenses(
+            case_contacts: CaseContact.all,
+            count: additional_expense_seed_count
+          ),
+          "other_expense_amount",
+          "other_expenses_describe"
+        )
 
         subject = RecordCreator.new(RSpec.configuration.seed)
 
-        second_pass_generated_additional_expenses = subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count).map do |id|
-          additional_expense = AdditionalExpense.find(id)
-          additional_expense.attributes.slice("other_expense_amount", "other_expenses_describe")
-        end
+        second_pass_generated_additional_expenses = id_array_to_hash(
+          AdditionalExpense,
+          subject.seed_additional_expenses(
+            case_contacts: CaseContact.all,
+            count: additional_expense_seed_count
+          ),
+          "other_expense_amount",
+          "other_expenses_describe"
+        )
 
         (0...additional_expense_seed_count).each do |i|
           expect(first_pass_generated_additional_expenses[i]).to eq(second_pass_generated_additional_expenses[i])
@@ -364,6 +374,18 @@ RSpec.describe RecordCreator do
       error_array.each do |error|
         expect(error).to be_a(Exception)
       end
+    end
+  end
+
+  # Helper Methods
+
+  def id_array_to_hash(object_class, ids, *field_names)
+    if !ids.is_a?(Array)
+      raise TypeError.new("param ids: must be an array")
+    end
+
+    ids.map do |id|
+      object_class.find(id).attributes.slice(*field_names)
     end
   end
 end

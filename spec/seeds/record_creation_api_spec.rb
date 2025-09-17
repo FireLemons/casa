@@ -41,13 +41,12 @@ RSpec.describe RecordCreator do
 
       it "has randomness derived from the seed" do
         case_contact = create(:case_contact)
-        first_generated_additional_expense = subject.seed_additional_expense(case_contact:).attributes.slice("other_expense_amount", "other_expenses_describe")
 
+        first_generated_additional_expense = subject.seed_additional_expense(case_contact:)
         subject = RecordCreator.new(RSpec.configuration.seed)
+        second_generated_additional_expense = subject.seed_additional_expense(case_contact:)
 
-        second_generated_additional_expense = subject.seed_additional_expense(case_contact:).attributes.slice("other_expense_amount", "other_expenses_describe")
-
-        expect(first_generated_additional_expense).to eq(second_generated_additional_expense)
+        test_models_equal(first_generated_additional_expense, second_generated_additional_expense, "other_expense_amount", "other_expenses_describe")
       end
     end
 
@@ -99,31 +98,12 @@ RSpec.describe RecordCreator do
       it "has randomness derived from the seed" do
         create(:case_contact)
         additional_expense_seed_count = 2
-        first_pass_generated_additional_expenses = id_array_to_hash(
-          AdditionalExpense,
-          subject.seed_additional_expenses(
-            case_contacts: CaseContact.all,
-            count: additional_expense_seed_count
-          ),
-          "other_expense_amount",
-          "other_expenses_describe"
-        )
 
+        first_pass_generated_additional_expenses = subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count)
         subject = RecordCreator.new(RSpec.configuration.seed)
+        second_pass_generated_additional_expenses = subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count)
 
-        second_pass_generated_additional_expenses = id_array_to_hash(
-          AdditionalExpense,
-          subject.seed_additional_expenses(
-            case_contacts: CaseContact.all,
-            count: additional_expense_seed_count
-          ),
-          "other_expense_amount",
-          "other_expenses_describe"
-        )
-
-        (0...additional_expense_seed_count).each do |i|
-          expect(first_pass_generated_additional_expenses[i]).to eq(second_pass_generated_additional_expenses[i])
-        end
+        test_model_arrays_equal(AdditionalExpense, first_pass_generated_additional_expenses, second_pass_generated_additional_expenses, "other_expense_amount", "other_expenses_describe")
       end
     end
 
@@ -190,10 +170,9 @@ RSpec.describe RecordCreator do
 
       it "has randomness derived from the seed" do
         user = create(:user)
+
         first_generated_address = subject.seed_address(user:).content
-
         subject = RecordCreator.new(RSpec.configuration.seed)
-
         second_generated_address = subject.seed_address(user:).content
 
         expect(first_generated_address).to eq(second_generated_address)
@@ -244,14 +223,13 @@ RSpec.describe RecordCreator do
         create(:user)
         create(:user)
         address_seed_count = 2
+
         # The string address has to be preserved because reseeding the addresses will overwrite the strings of the addresses first seeded first
         first_pass_generated_addresses = subject.seed_addresses(users: User.all, count: address_seed_count).map do |id|
           address = Address.find(id)
           address.content
         end
-
         subject = RecordCreator.new(RSpec.configuration.seed)
-
         second_pass_generated_addresses = subject.seed_addresses(users: User.all, count: address_seed_count).map do |id|
           address = Address.find(id)
           address.content
@@ -379,13 +357,47 @@ RSpec.describe RecordCreator do
 
   # Helper Methods
 
-  def id_array_to_hash(object_class, ids, *field_names)
-    if !ids.is_a?(Array)
-      raise TypeError.new("param ids: must be an array")
+  def test_models_equal(model1, model2, *business_data_field_names)
+    if model1.is_a?(Class) && model1 < ActiveRecord::Base
+      raise TypeError.new("param model1 must be an ActiveRecord object")
     end
 
-    ids.map do |id|
-      object_class.find(id).attributes.slice(*field_names)
+    if model2.is_a?(Class) && model2 < ActiveRecord::Base
+      raise TypeError.new("param model2 must be an ActiveRecord object")
     end
+
+    unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
+      raise TypeError, "All business_data_field_names must be strings"
+    end
+
+    expect(model1.attributes.slice(*business_data_field_names)).to eq(model2.attributes.slice(*business_data_field_names))
+  end
+
+  def test_model_arrays_equal(object_class, model_id_array_1, model_id_array_2, *business_data_field_names)
+    unless object_class.is_a?(Class) && object_class < ActiveRecord::Base
+      raise TypeError.new("param object_class must be an ActiveRecord class")
+    end
+
+    unless model_id_array_1.is_a?(Array)
+      raise TypeError.new("param model_id_array_1 must be an array")
+    end
+
+    unless model_id_array_2.is_a?(Array)
+      raise TypeError.new("param model_id_array_2 must be an array")
+    end
+
+    unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
+      raise TypeError, "All business_data_field_names must be strings"
+    end
+
+    model_array_1_as_hash_array = model_id_array_1.map do |id|
+      object_class.find(id).attributes.slice(*business_data_field_names)
+    end
+
+    model_array_2_as_hash_array = model_id_array_2.map do |id|
+      object_class.find(id).attributes.slice(*business_data_field_names)
+    end
+
+    expect(model_array_1_as_hash_array).to eq(model_array_2_as_hash_array)
   end
 end

@@ -311,13 +311,16 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_casa_orgs" do
-    it "returns an array containing the casa orgs created" do
+    it "creates the specified number of  casa orgs" do
       original_casa_org_count = CasaOrg.count
       casa_org_seed_count = 2
 
       expect {
         subject.seed_casa_orgs(count: casa_org_seed_count)
       }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + casa_org_seed_count)
+    end
+
+    it "returns an array containing the casa orgs created" do
     end
 
     it "returns an array containing an error for each casa org that could not be created" do
@@ -352,6 +355,36 @@ RSpec.describe RecordCreator do
       error_array.each do |error|
         expect(error).to be_a(Exception)
       end
+    end
+  end
+
+  describe "seed_casa_case" do
+    it "creates a casa case" do
+    end
+
+    it "returns the newly created casa case" do
+    end
+
+    it "has randomness derived from the seed" do
+    end
+  end
+
+  describe "seed_casa_cases" do
+    describe "with valid parameters" do
+    end
+    it "creates the specified number of casa cases" do
+    end
+
+    it "returns an array containing the ids of the casa cases created" do
+    end
+
+    it "returns an array containing an error for each casa case that could not be created" do
+    end
+
+    it "returns empty array for negative counts" do
+    end
+
+    it "has randomness derived from the seed" do
     end
   end
 

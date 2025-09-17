@@ -109,6 +109,21 @@ class RecordCreator
     address_seed_results
   end
 
+  def seed_casa_case(casa_org: nil, casa_org_id: nil)
+    # Birth month year required
+    # Case Number Required
+
+    # Can generate
+    #  transition_aged_youth
+    #  court_report_due_date
+    #  date_in_care
+    raise NotImplementedError.new
+  end
+
+  def seed_casa_cases(casa_orgs: nil, casa_org_ids: nil)
+    raise NotImplementedError.new
+  end
+
   def seed_casa_org
     county = "#{Faker::Name.neutral_first_name} County"
 
@@ -132,11 +147,6 @@ class RecordCreator
     end
 
     casa_org_seed_results
-  end
-
-  def seed_casa_case(casa_org: nil, casa_org_id: nil)
-    # Birth month year required
-    # Case Number Required
   end
 
   private

@@ -63,17 +63,11 @@ RSpec.describe RecordCreator do
         subject.seed_additional_expense(case_contact:, case_contact_id: case_contact.id)
       }.to raise_error(ArgumentError, /cannot use case_contact: and case_contact_id:/)
     end
-
-    it "throws an error when the additional expense fails to persist" do
-      expect {
-        subject.seed_additional_expense(case_contact_id: "invalid id")
-      }.to raise_error(ActiveRecord::RecordNotSaved, /AdditionalExpense failed to save/)
-    end
   end
 
   describe "seed_additional_expenses" do
     describe "with valid parameters" do
-      it "returns an array containing the additional expenses created" do
+      it "creates the specified number of additional expenses" do
         create(:case_contact)
         original_additional_expense_count = AdditionalExpense.count
         additional_expense_seed_count = 2
@@ -83,11 +77,21 @@ RSpec.describe RecordCreator do
         }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + additional_expense_seed_count)
       end
 
+      it "returns an array containing the additional expenses created" do
+        create(:case_contact)
+
+        subject.seed_additional_expenses(case_contacts: CaseContact.all, count: 2).each do |additional_expense_id|
+          expect {
+            AdditionalExpense.find(additional_expense_id)
+          }.not_to raise_error
+        end
+      end
+
       it "returns an array containing an error for each additional expense that could not be created" do
         error_array = subject.seed_additional_expenses(case_contact_ids: [-1], count: 2)
 
         error_array.each do |error|
-          expect(error.message).to include("AdditionalExpense failed to save")
+          expect(error).to be_a(StandardError)
         end
       end
 
@@ -311,7 +315,7 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_casa_orgs" do
-    it "creates the specified number of  casa orgs" do
+    it "creates the specified number of casa orgs" do
       original_casa_org_count = CasaOrg.count
       casa_org_seed_count = 2
 

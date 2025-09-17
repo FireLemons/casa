@@ -8,5 +8,8 @@ Wrong test logic for several methods
     }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + casa_org_seed_count)
   end
 
+  missing id array return type check
+
 seed_casa_case
 seed_casa_cases
+tests

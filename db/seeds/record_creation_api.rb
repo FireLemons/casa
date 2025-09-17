@@ -44,13 +44,11 @@ class RecordCreator
     other_expense_amount = @random.rand(1..40) + @random.rand.round(2)
     other_expenses_describe = Faker::Commerce.product_name
 
-    new_expense = if !case_contact.nil?
-      AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact:)
+    if !case_contact.nil?
+      AdditionalExpense.create!(other_expense_amount:, other_expenses_describe:, case_contact:)
     else
-      AdditionalExpense.create(other_expense_amount:, other_expenses_describe:, case_contact_id:)
+      AdditionalExpense.create!(other_expense_amount:, other_expenses_describe:, case_contact_id:)
     end
-
-    validate_single_record_persisted(new_expense, "AdditionalExpense")
   end
 
   def seed_additional_expenses(case_contacts: nil, case_contact_ids: nil, count: 0)
@@ -79,7 +77,7 @@ class RecordCreator
     end
 
     if user.address.nil?
-      Address.create(content: address, user:)
+      Address.create!(content: address, user:)
     else
       user.address.update(content: address)
       user.address
@@ -117,6 +115,7 @@ class RecordCreator
     #  transition_aged_youth
     #  court_report_due_date
     #  date_in_care
+    #  the slug should auto generate
     raise NotImplementedError.new
   end
 
@@ -127,9 +126,7 @@ class RecordCreator
   def seed_casa_org
     county = "#{Faker::Name.neutral_first_name} County"
 
-    new_org = CasaOrg.create(address: Faker::Address.full_address, name: county)
-
-    validate_single_record_persisted(new_org, "CasaOrg")
+    CasaOrg.create!(address: Faker::Address.full_address, name: county)
   end
 
   def seed_casa_orgs(count: 0)
@@ -225,14 +222,6 @@ class RecordCreator
     else
       model_param_id_array
     end
-  end
-
-  def validate_single_record_persisted(record, record_name)
-    if !record.persisted?
-      raise ActiveRecord::RecordNotSaved.new("#{record_name} failed to save")
-    end
-
-    record
   end
 end
 

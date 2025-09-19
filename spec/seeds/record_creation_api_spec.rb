@@ -77,7 +77,7 @@ RSpec.describe RecordCreator do
         }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + additional_expense_seed_count)
       end
 
-      it "returns an array containing the additional expenses created" do
+      it "returns an array containing the ids of the additional expenses created" do
         create(:case_contact)
 
         subject.seed_additional_expenses(case_contacts: CaseContact.all, count: 2).each do |additional_expense_id|
@@ -200,7 +200,7 @@ RSpec.describe RecordCreator do
 
   describe "seed_addresses" do
     describe "with valid parameters" do
-      it "returns an array containing the addresses created" do
+      it "creates the specified number of addresses" do
         create(:user)
         create(:user)
         original_address_count = Address.count
@@ -209,6 +209,28 @@ RSpec.describe RecordCreator do
         expect {
           subject.seed_addresses(users: User.all, count: address_seed_count)
         }.to change { Address.count }.from(original_address_count).to(original_address_count + address_seed_count)
+      end
+
+      it "overwrites an existing address if a user already has an address" do
+        user_with_address = create(:user)
+        create(:user)
+        overridden_address = create(:address, content: "", user: user_with_address)
+
+        subject.seed_addresses(users: User.all, count: 2)
+        overridden_address.reload
+
+        expect(overridden_address.content).not_to eq("")
+      end
+
+      it "returns an array containing the ids of the addresses seeded" do
+        create(:user)
+        create(:user)
+
+        subject.seed_addresses(users: User.all, count: 2).each do |address_id|
+          expect {
+            Address.find(address_id)
+          }.not_to raise_error
+        end
       end
 
       it "returns an array containing an error for each address that could not be created" do

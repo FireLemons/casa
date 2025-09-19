@@ -328,11 +328,11 @@ RSpec.describe RecordCreator do
 
       expect {
         subject.seed_casa_org
-      }.to raise_error
+      }.to raise_error(ActiveRecord::RecordInvalid)
 
       expect { # 2 checks to reduce the chance of a coincidence
         subject.seed_casa_org
-      }.to raise_error
+      }.to raise_error(ActiveRecord::RecordInvalid)
     end
   end
 

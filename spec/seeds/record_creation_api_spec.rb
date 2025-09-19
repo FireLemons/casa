@@ -347,6 +347,11 @@ RSpec.describe RecordCreator do
     end
 
     it "returns an array containing the casa orgs created" do
+      subject.seed_casa_orgs(count: 2).each do |casa_org_id|
+        expect {
+          CasaOrg.find(casa_org_id)
+        }.not_to raise_error
+      end
     end
 
     it "returns an array containing an error for each casa org that could not be created" do

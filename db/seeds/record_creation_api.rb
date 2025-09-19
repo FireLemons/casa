@@ -138,7 +138,7 @@ class RecordCreator
 
     count.times do
       new_org = seed_casa_org
-      casa_org_seed_results.push(new_org)
+      casa_org_seed_results.push(new_org.id)
     rescue => exception
       casa_org_seed_results.push(exception)
     end

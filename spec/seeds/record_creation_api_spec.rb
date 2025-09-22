@@ -390,18 +390,49 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_casa_case" do
-    it "creates a casa case" do
-      original_casa_case_count = CasaCase.count
+    describe "with valid parameters" do
+      it "creates a casa case" do
+        original_casa_case_count = CasaCase.count
+
+        expect {
+          subject.seed_casa_case(casa_org: create(:casa_org))
+        }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + 1)
+      end
+
+      it "returns the newly created casa case" do
+        new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
+
+        expect(new_casa_case).to be_a(CasaCase)
+      end
+
+      it "has randomness derived from the seed" do
+        casa_org = create(:casa_org)
+
+        subject.seed_casa_case(casa_org:)
+
+        subject = RecordCreator.new(RSpec.configuration.seed)
+
+        # Casa cases must have unique numbers
+        # generating casa cases again with the same seed will cause duplicate numbers
+
+        expect {
+          subject.seed_casa_case(casa_org:)
+        }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+
+    it "throws an error when neither casa_org or casa_org_id are used" do
+      expect {
+        subject.seed_casa_case
+      }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
+    end
+
+    it "throws an error when both casa_org and casa_org_id are used" do
+      casa_org = create(:casa_org)
 
       expect {
-        subject.seed_casa_case(casa_org: create(:casa_org))
-      }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + 1)
-    end
-
-    it "returns the newly created casa case" do
-    end
-
-    it "has randomness derived from the seed" do
+        subject.seed_casa_case(casa_org:, casa_org_id: casa_org.id)
+      }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
     end
   end
 

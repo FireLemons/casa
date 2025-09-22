@@ -1,4 +1,5 @@
-seed_casa_case
+seed_casa_cases
+  tests
 
 check if activerecord arg is persisted
   default throws null reference error
@@ -10,6 +11,3 @@ check if activerecord arg is persisted
   elsif model_param_id.nil? && !model_param_object.persisted?
     raise ActiveRecord::RecordNotSaved.new("Value for #{model_lowercase_name}: has not been saved to the database")
   end
-
-seed_casa_cases
-tests

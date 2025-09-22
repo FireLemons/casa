@@ -438,20 +438,56 @@ RSpec.describe RecordCreator do
 
   describe "seed_casa_cases" do
     describe "with valid parameters" do
-    end
-    it "creates the specified number of casa cases" do
+      it "creates the specified number of casa cases" do
+      end
+
+      it "returns an array containing the ids of the casa cases created" do
+      end
+
+      it "returns an array containing an error for each casa case that could not be created" do
+      end
+
+      it "returns empty array for negative counts" do
+      end
+
+      it "has randomness derived from the seed" do
+      end
     end
 
-    it "returns an array containing the ids of the casa cases created" do
+    it "throws an error when neither users or user_ids are used" do
+      # expect {
+      #   subject.seed_addresses
+      # }.to raise_error(ArgumentError, /users: or user_ids: is required/)
     end
 
-    it "returns an array containing an error for each casa case that could not be created" do
+    it "throws an error when both users and user_ids are used" do
+      # expect {
+      #   subject.seed_addresses(users: User.all, user_ids: [1, 2])
+      # }.to raise_error(ArgumentError, /cannot use users: and user_ids:/)
     end
 
-    it "returns empty array for negative counts" do
+    it "throws an error when users is not an ActiveRecord::Relation" do
+      # expect {
+      #   subject.seed_addresses(users: 2)
+      # }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
     end
 
-    it "has randomness derived from the seed" do
+    it "throws an error when users is an empty ActiveRecord::Relation" do
+      # expect {
+      #   subject.seed_addresses(users: User.where(id: -1))
+      # }.to raise_error(ArgumentError, /param users: must contain at least one user/)
+    end
+
+    it "throws an error when user_ids is not an array" do
+      # expect {
+      #   subject.seed_addresses(user_ids: 2)
+      # }.to raise_error(TypeError, /param user_ids: must be an array/)
+    end
+
+    it "throws an error when user_ids is an empty array" do
+      # expect {
+      #   subject.seed_addresses(user_ids: [])
+      # }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
     end
   end
 

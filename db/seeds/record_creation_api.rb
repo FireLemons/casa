@@ -108,15 +108,19 @@ class RecordCreator
   end
 
   def seed_casa_case(casa_org: nil, casa_org_id: nil)
-    # Birth month year required
-    # Case Number Required
+    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
-    # Can generate
-    #  transition_aged_youth
-    #  court_report_due_date
-    #  date_in_care
-    #  the slug should auto generate
-    raise NotImplementedError.new
+    birth_month = random_youth_birth_month
+    case_number = random_casa_case_number
+    date_in_care = Faker::Date.between(from: birth_month)
+
+    address = Faker::Address.full_address
+
+    if casa_org.nil?
+      casa_org = CasaOrg.find(casa_org_id)
+    end
+
+    CasaCase.create!(birth_month_year_youth: birth_month, casa_org:, date_in_care:)
   end
 
   def seed_casa_cases(casa_orgs: nil, casa_org_ids: nil)
@@ -192,6 +196,14 @@ class RecordCreator
 
   def pop_random(arr)
     arr.delete_at(@random.rand(arr.size))
+  end
+
+  def random_casa_case_number
+    "#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}"
+  end
+
+  def random_youth_birth_month
+    @random.rand(20) < 1 ? Faker::Date.birthday(min_age: 18, max_age: 21) : Faker::Date.birthday(min_age: 0, max_age: 18)
   end
 
   def validate_seed_single_record_required_model_params(model_lowercase_name, model_param_object, model_param_id)

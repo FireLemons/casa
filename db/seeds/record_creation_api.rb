@@ -88,10 +88,6 @@ class RecordCreator
     validated_users = validate_seed_n_records_required_model_params("user", "users", users, user_ids)
     validated_users_as_id_array = model_collection_as_id_array(validated_users)
 
-    if count <= 0
-      return []
-    end
-
     address_seed_results = []
 
     while count > 0 && validated_users_as_id_array.size > 0
@@ -123,8 +119,20 @@ class RecordCreator
     CasaCase.create!(birth_month_year_youth: birth_month, casa_org:, case_number:, date_in_care:)
   end
 
-  def seed_casa_cases(casa_orgs: nil, casa_org_ids: nil)
-    raise NotImplementedError.new
+  def seed_casa_cases(casa_orgs: nil, casa_org_ids: nil, count: 0)
+    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_org, casa_org_id)
+    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+
+    casa_case_seed_results = []
+
+    count.times do
+      new_casa_case = seed_casa_case(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      casa_case_seed_results.push(new_casa_case.id)
+    rescue => exception
+      casa_case_seed_results.push(exception)
+    end
+
+    casa_case_seed_results
   end
 
   def seed_casa_org
@@ -134,10 +142,6 @@ class RecordCreator
   end
 
   def seed_casa_orgs(count: 0)
-    if count <= 0
-      return []
-    end
-
     casa_org_seed_results = []
 
     count.times do

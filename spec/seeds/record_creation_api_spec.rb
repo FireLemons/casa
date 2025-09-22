@@ -391,6 +391,11 @@ RSpec.describe RecordCreator do
 
   describe "seed_casa_case" do
     it "creates a casa case" do
+      original_casa_case_count = CasaCase.count
+
+      expect {
+        subject.seed_casa_case(casa_org: create(:casa_org))
+      }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + 1)
     end
 
     it "returns the newly created casa case" do

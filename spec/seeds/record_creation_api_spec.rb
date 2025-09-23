@@ -50,18 +50,20 @@ RSpec.describe RecordCreator do
       end
     end
 
-    it "throws an error when neither case_contact or case_contact_id are used" do
-      expect {
-        subject.seed_additional_expense
-      }.to raise_error(ArgumentError, /case_contact: or case_contact_id: is required/)
-    end
+    describe "with invalid parameters" do
+      it "throws an error when neither case_contact or case_contact_id are used" do
+        expect {
+          subject.seed_additional_expense
+        }.to raise_error(ArgumentError, /case_contact: or case_contact_id: is required/)
+      end
 
-    it "throws an error when both case_contact and case_contact_id are used" do
-      case_contact = create(:case_contact)
+      it "throws an error when both case_contact and case_contact_id are used" do
+        case_contact = create(:case_contact)
 
-      expect {
-        subject.seed_additional_expense(case_contact:, case_contact_id: case_contact.id)
-      }.to raise_error(ArgumentError, /cannot use case_contact: and case_contact_id:/)
+        expect {
+          subject.seed_additional_expense(case_contact:, case_contact_id: case_contact.id)
+        }.to raise_error(ArgumentError, /cannot use case_contact: and case_contact_id:/)
+      end
     end
   end
 
@@ -111,40 +113,42 @@ RSpec.describe RecordCreator do
       end
     end
 
-    it "throws an error when neither case_contacts or case_contact_ids are used" do
-      expect {
-        subject.seed_additional_expenses
-      }.to raise_error(ArgumentError, /case_contacts: or case_contact_ids: is required/)
-    end
+    describe "with invalid parameters" do
+      it "throws an error when neither case_contacts or case_contact_ids are used" do
+        expect {
+          subject.seed_additional_expenses
+        }.to raise_error(ArgumentError, /case_contacts: or case_contact_ids: is required/)
+      end
 
-    it "throws an error when both case_contacts and case_contact_ids are used" do
-      expect {
-        subject.seed_additional_expenses(case_contacts: CaseContact.all, case_contact_ids: [1, 2])
-      }.to raise_error(ArgumentError, /cannot use case_contacts: and case_contact_ids:/)
-    end
+      it "throws an error when both case_contacts and case_contact_ids are used" do
+        expect {
+          subject.seed_additional_expenses(case_contacts: CaseContact.all, case_contact_ids: [1, 2])
+        }.to raise_error(ArgumentError, /cannot use case_contacts: and case_contact_ids:/)
+      end
 
-    it "throws an error when case_contacts is not an ActiveRecord::Relation" do
-      expect {
-        subject.seed_additional_expenses(case_contacts: 2)
-      }.to raise_error(TypeError, /param case_contacts: must be an ActiveRecord::Relation/)
-    end
+      it "throws an error when case_contacts is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_additional_expenses(case_contacts: 2)
+        }.to raise_error(TypeError, /param case_contacts: must be an ActiveRecord::Relation/)
+      end
 
-    it "throws an error when case_contacts is an empty ActiveRecord::Relation" do
-      expect {
-        subject.seed_additional_expenses(case_contacts: CaseContact.where(id: -1))
-      }.to raise_error(ArgumentError, /param case_contacts: must contain at least one case_contact/)
-    end
+      it "throws an error when case_contacts is an empty ActiveRecord::Relation" do
+        expect {
+          subject.seed_additional_expenses(case_contacts: CaseContact.where(id: -1))
+        }.to raise_error(ArgumentError, /param case_contacts: must contain at least one case_contact/)
+      end
 
-    it "throws an error when case_contact_ids is not an array" do
-      expect {
-        subject.seed_additional_expenses(case_contact_ids: 2)
-      }.to raise_error(TypeError, /param case_contact_ids: must be an array/)
-    end
+      it "throws an error when case_contact_ids is not an array" do
+        expect {
+          subject.seed_additional_expenses(case_contact_ids: 2)
+        }.to raise_error(TypeError, /param case_contact_ids: must be an array/)
+      end
 
-    it "throws an error when case_contact_ids is an empty array" do
-      expect {
-        subject.seed_additional_expenses(case_contact_ids: [])
-      }.to raise_error(RangeError, /param case_contact_ids: must contain at least one element/)
+      it "throws an error when case_contact_ids is an empty array" do
+        expect {
+          subject.seed_additional_expenses(case_contact_ids: [])
+        }.to raise_error(RangeError, /param case_contact_ids: must contain at least one element/)
+      end
     end
   end
 
@@ -265,40 +269,42 @@ RSpec.describe RecordCreator do
       end
     end
 
-    it "throws an error when neither users or user_ids are used" do
-      expect {
-        subject.seed_addresses
-      }.to raise_error(ArgumentError, /users: or user_ids: is required/)
-    end
+    describe "with invalid parameters" do
+      it "throws an error when neither users or user_ids are used" do
+        expect {
+          subject.seed_addresses
+        }.to raise_error(ArgumentError, /users: or user_ids: is required/)
+      end
 
-    it "throws an error when both users and user_ids are used" do
-      expect {
-        subject.seed_addresses(users: User.all, user_ids: [1, 2])
-      }.to raise_error(ArgumentError, /cannot use users: and user_ids:/)
-    end
+      it "throws an error when both users and user_ids are used" do
+        expect {
+          subject.seed_addresses(users: User.all, user_ids: [1, 2])
+        }.to raise_error(ArgumentError, /cannot use users: and user_ids:/)
+      end
 
-    it "throws an error when users is not an ActiveRecord::Relation" do
-      expect {
-        subject.seed_addresses(users: 2)
-      }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
-    end
+      it "throws an error when users is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_addresses(users: 2)
+        }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
+      end
 
-    it "throws an error when users is an empty ActiveRecord::Relation" do
-      expect {
-        subject.seed_addresses(users: User.where(id: -1))
-      }.to raise_error(ArgumentError, /param users: must contain at least one user/)
-    end
+      it "throws an error when users is an empty ActiveRecord::Relation" do
+        expect {
+          subject.seed_addresses(users: User.where(id: -1))
+        }.to raise_error(ArgumentError, /param users: must contain at least one user/)
+      end
 
-    it "throws an error when user_ids is not an array" do
-      expect {
-        subject.seed_addresses(user_ids: 2)
-      }.to raise_error(TypeError, /param user_ids: must be an array/)
-    end
+      it "throws an error when user_ids is not an array" do
+        expect {
+          subject.seed_addresses(user_ids: 2)
+        }.to raise_error(TypeError, /param user_ids: must be an array/)
+      end
 
-    it "throws an error when user_ids is an empty array" do
-      expect {
-        subject.seed_addresses(user_ids: [])
-      }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
+      it "throws an error when user_ids is an empty array" do
+        expect {
+          subject.seed_addresses(user_ids: [])
+        }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
+      end
     end
   end
 
@@ -421,18 +427,20 @@ RSpec.describe RecordCreator do
       end
     end
 
-    it "throws an error when neither casa_org or casa_org_id are used" do
-      expect {
-        subject.seed_casa_case
-      }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-    end
+    describe "with invalid parameters" do
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_casa_case
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
+      end
 
-    it "throws an error when both casa_org and casa_org_id are used" do
-      casa_org = create(:casa_org)
+      it "throws an error when both casa_org and casa_org_id are used" do
+        casa_org = create(:casa_org)
 
-      expect {
-        subject.seed_casa_case(casa_org:, casa_org_id: casa_org.id)
-      }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+        expect {
+          subject.seed_casa_case(casa_org:, casa_org_id: casa_org.id)
+        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
     end
   end
 
@@ -454,40 +462,42 @@ RSpec.describe RecordCreator do
       end
     end
 
-    it "throws an error when neither users or user_ids are used" do
-      # expect {
-      #   subject.seed_addresses
-      # }.to raise_error(ArgumentError, /users: or user_ids: is required/)
-    end
+    describe "with invalid parameters" do
+      it "throws an error when neither users or user_ids are used" do
+        # expect {
+        #   subject.seed_addresses
+        # }.to raise_error(ArgumentError, /users: or user_ids: is required/)
+      end
 
-    it "throws an error when both users and user_ids are used" do
-      # expect {
-      #   subject.seed_addresses(users: User.all, user_ids: [1, 2])
-      # }.to raise_error(ArgumentError, /cannot use users: and user_ids:/)
-    end
+      it "throws an error when both users and user_ids are used" do
+        # expect {
+        #   subject.seed_addresses(users: User.all, user_ids: [1, 2])
+        # }.to raise_error(ArgumentError, /cannot use users: and user_ids:/)
+      end
 
-    it "throws an error when users is not an ActiveRecord::Relation" do
-      # expect {
-      #   subject.seed_addresses(users: 2)
-      # }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
-    end
+      it "throws an error when users is not an ActiveRecord::Relation" do
+        # expect {
+        #   subject.seed_addresses(users: 2)
+        # }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
+      end
 
-    it "throws an error when users is an empty ActiveRecord::Relation" do
-      # expect {
-      #   subject.seed_addresses(users: User.where(id: -1))
-      # }.to raise_error(ArgumentError, /param users: must contain at least one user/)
-    end
+      it "throws an error when users is an empty ActiveRecord::Relation" do
+        # expect {
+        #   subject.seed_addresses(users: User.where(id: -1))
+        # }.to raise_error(ArgumentError, /param users: must contain at least one user/)
+      end
 
-    it "throws an error when user_ids is not an array" do
-      # expect {
-      #   subject.seed_addresses(user_ids: 2)
-      # }.to raise_error(TypeError, /param user_ids: must be an array/)
-    end
+      it "throws an error when user_ids is not an array" do
+        # expect {
+        #   subject.seed_addresses(user_ids: 2)
+        # }.to raise_error(TypeError, /param user_ids: must be an array/)
+      end
 
-    it "throws an error when user_ids is an empty array" do
-      # expect {
-      #   subject.seed_addresses(user_ids: [])
-      # }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
+      it "throws an error when user_ids is an empty array" do
+        # expect {
+        #   subject.seed_addresses(user_ids: [])
+        # }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
+      end
     end
   end
 

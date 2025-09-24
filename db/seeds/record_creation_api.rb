@@ -120,7 +120,7 @@ class RecordCreator
   end
 
   def seed_casa_cases(casa_orgs: nil, casa_org_ids: nil, count: 0)
-    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_org, casa_org_id)
+    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
     casa_case_seed_results = []

@@ -1,6 +1,3 @@
-seed_casa_cases
-  tests
-
 check if activerecord arg is persisted
   default throws null reference error
 

@@ -447,56 +447,90 @@ RSpec.describe RecordCreator do
   describe "seed_casa_cases" do
     describe "with valid parameters" do
       it "creates the specified number of casa cases" do
+        create(:casa_org)
+        original_casa_case_count = CasaCase.count
+        casa_case_seed_count = 2
+
+        expect {
+          subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: casa_case_seed_count)
+        }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + casa_case_seed_count)
       end
 
       it "returns an array containing the ids of the casa cases created" do
+        create(:casa_org)
+
+        subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2).each do |casa_case_id|
+          expect {
+            CasaCase.find(casa_case_id)
+          }.not_to raise_error
+        end
       end
 
       it "returns an array containing an error for each casa case that could not be created" do
+        error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
+
+        error_array.each do |error|
+          expect(error).to be_a(Exception)
+        end
       end
 
       it "returns empty array for negative counts" do
+        expect(subject.seed_casa_cases(casa_org_ids: [1], count: -1)).to eq([])
       end
 
       it "has randomness derived from the seed" do
+        create(:casa_org)
+
+        subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
+        subject = RecordCreator.new(RSpec.configuration.seed)
+
+        # Resetting the RecordCreator with the same seed
+        # should result in casa cases with duplicate numbers
+        # but casa cases require unique numbers
+        # thus causing the errors
+        error_array = subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
+
+        error_array.each do |error|
+          expect(error).to be_a(Exception)
+        end
       end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither users or user_ids are used" do
-        # expect {
-        #   subject.seed_addresses
-        # }.to raise_error(ArgumentError, /users: or user_ids: is required/)
+      it "throws an error when neither casa_orgs or casa_org_ids are used" do
+        expect {
+          subject.seed_casa_cases
+        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
       end
 
-      it "throws an error when both users and user_ids are used" do
-        # expect {
-        #   subject.seed_addresses(users: User.all, user_ids: [1, 2])
-        # }.to raise_error(ArgumentError, /cannot use users: and user_ids:/)
+      it "throws an error when both casa_orgs or casa_org_ids are used" do
+        expect {
+          subject.seed_casa_cases(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
+        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
       end
 
-      it "throws an error when users is not an ActiveRecord::Relation" do
-        # expect {
-        #   subject.seed_addresses(users: 2)
-        # }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
+      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_casa_cases(casa_orgs: 2)
+        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
       end
 
-      it "throws an error when users is an empty ActiveRecord::Relation" do
-        # expect {
-        #   subject.seed_addresses(users: User.where(id: -1))
-        # }.to raise_error(ArgumentError, /param users: must contain at least one user/)
+      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
+        expect {
+          subject.seed_casa_cases(casa_orgs: CasaOrg.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
       end
 
-      it "throws an error when user_ids is not an array" do
-        # expect {
-        #   subject.seed_addresses(user_ids: 2)
-        # }.to raise_error(TypeError, /param user_ids: must be an array/)
+      it "throws an error when casa_org_ids is not an array" do
+        expect {
+          subject.seed_casa_cases(casa_org_ids: 2)
+        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
       end
 
-      it "throws an error when user_ids is an empty array" do
-        # expect {
-        #   subject.seed_addresses(user_ids: [])
-        # }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
+      it "throws an error when casa_org_ids is an empty array" do
+        expect {
+          subject.seed_casa_cases(casa_org_ids: [])
+        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
       end
     end
   end

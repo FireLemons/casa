@@ -411,6 +411,13 @@ RSpec.describe RecordCreator do
         expect(new_casa_case).to be_a(CasaCase)
       end
 
+      it "automatically generates values for fields birth_month_year_youth and date_in_care" do
+        new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
+
+        expect(new_casa_case.birth_month_year_youth).not_to be_nil
+        expect(new_casa_case.date_in_care).not_to be_nil
+      end
+
       it "has randomness derived from the seed" do
         casa_org = create(:casa_org)
 

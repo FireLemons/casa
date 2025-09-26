@@ -310,88 +310,88 @@ RSpec.describe RecordCreator do
 
   describe "seed_all_casa_admin" do
     it "creates an all casa admin" do
-      # original_casa_org_count = CasaOrg.count
+      original_all_casa_admin_count = AllCasaAdmin.count
 
-      # expect {
-      #   subject.seed_casa_org
-      # }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + 1)
+      expect {
+        subject.seed_all_casa_admin
+      }.to change { AllCasaAdmin.count }.from(original_all_casa_admin_count).to(original_all_casa_admin_count + 1)
     end
 
     it "returns the newly created all casa admin" do
-      # new_casa_org = subject.seed_casa_org
+      new_all_casa_admin = subject.seed_all_casa_admin
 
-      # expect(new_casa_org).to be_a(CasaOrg)
+      expect(new_all_casa_admin).to be_a(AllCasaAdmin)
     end
 
     it "has randomness derived from the seed" do
-      # subject.seed_casa_org
-      # subject.seed_casa_org
+      subject.seed_all_casa_admin
+      subject.seed_all_casa_admin
 
-      # subject = RecordCreator.new(RSpec.configuration.seed)
+      subject = RecordCreator.new(RSpec.configuration.seed)
 
-      # # Organizations must have unique names
-      # # generating orgs again with the same seed will cause duplicate names
+      # All casa admins must have unique emails
+      # generating all casa admins again with the same seed will cause duplicate emails
 
-      # expect {
-      #   subject.seed_casa_org
-      # }.to raise_error(ActiveRecord::RecordInvalid)
+      expect {
+        subject.seed_all_casa_admin
+      }.to raise_error(ActiveRecord::RecordInvalid)
 
-      # expect { # 2 checks to reduce the chance of a coincidence
-      #   subject.seed_casa_org
-      # }.to raise_error(ActiveRecord::RecordInvalid)
+      expect { # 2 checks to reduce the chance of a coincidence
+        subject.seed_all_casa_admin
+      }.to raise_error(ActiveRecord::RecordInvalid)
     end
   end
 
   describe "seed_all_casa_admins" do
     it "creates the specified number of all casa admins" do
-      # original_casa_org_count = CasaOrg.count
-      # casa_org_seed_count = 2
+      original_all_casa_admin_count = AllCasaAdmin.count
+      all_casa_admin_seed_count = 2
 
-      # expect {
-      #   subject.seed_casa_orgs(count: casa_org_seed_count)
-      # }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + casa_org_seed_count)
+      expect {
+        subject.seed_all_casa_admins(count: all_casa_admin_seed_count)
+      }.to change { AllCasaAdmin.count }.from(original_all_casa_admin_count).to(original_all_casa_admin_count + all_casa_admin_seed_count)
     end
 
     it "returns an array containing the all casa admins created" do
-      # subject.seed_casa_orgs(count: 2).each do |casa_org_id|
-      #   expect {
-      #     CasaOrg.find(casa_org_id)
-      #   }.not_to raise_error
-      # end
+      subject.seed_all_casa_admins(count: 2).each do |all_casa_admin_id|
+        expect {
+          AllCasaAdmin.find(all_casa_admin_id)
+        }.not_to raise_error
+      end
     end
 
     it "returns an array containing an error for each all casa admin that could not be created" do
-      # subject.seed_casa_orgs(count: 2)
-      # subject = RecordCreator.new(RSpec.configuration.seed)
+      subject.seed_all_casa_admins(count: 2)
+      subject = RecordCreator.new(RSpec.configuration.seed)
 
-      # # Resetting the RecordCreator with the same seed
-      # # should result in casa orgs with duplicate names
-      # # but casa orgs require unique names
-      # # thus causing the errors
-      # error_array = subject.seed_casa_orgs(count: 2)
+      # Resetting the RecordCreator with the same seed
+      # should result in all casa admins with duplicate emails
+      # but all casa admins require unique emails
+      # thus causing the errors
+      error_array = subject.seed_all_casa_admins(count: 2)
 
-      # error_array.each do |error|
-      #   expect(error).to be_a(Exception)
-      # end
+      error_array.each do |error|
+        expect(error).to be_a(Exception)
+      end
     end
 
     it "returns empty array for negative counts" do
-      # expect(subject.seed_casa_orgs(count: -1)).to eq([])
+      expect(subject.seed_all_casa_admins(count: -1)).to eq([])
     end
 
     it "has randomness derived from the seed" do
-      # subject.seed_casa_orgs(count: 2)
-      # subject = RecordCreator.new(RSpec.configuration.seed)
+      subject.seed_all_casa_admins(count: 2)
+      subject = RecordCreator.new(RSpec.configuration.seed)
 
-      # # Resetting the RecordCreator with the same seed
-      # # should result in casa orgs with duplicate names
-      # # but casa orgs require unique names
-      # # thus causing the errors
-      # error_array = subject.seed_casa_orgs(count: 2)
+      # Resetting the RecordCreator with the same seed
+      # should result in all casa admins with duplicate emails
+      # but all casa admins require unique emails
+      # thus causing the errors
+      error_array = subject.seed_all_casa_admins(count: 2)
 
-      # error_array.each do |error|
-      #   expect(error).to be_a(Exception)
-      # end
+      error_array.each do |error|
+        expect(error).to be_a(Exception)
+      end
     end
   end
 

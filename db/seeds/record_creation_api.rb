@@ -103,6 +103,23 @@ class RecordCreator
     address_seed_results
   end
 
+  def seed_all_casa_admin
+    AllCasaAdmin.create!(email: Faker::Internet.email, password: DEFAULT_PASSWORD, password_confirmation: DEFAULT_PASSWORD)
+  end
+
+  def seed_all_casa_admins(count: 0)
+    all_casa_admin_seed_results = []
+
+    count.times do
+      new_all_casa_admin = seed_all_casa_admin
+      all_casa_admin_seed_results.push(new_all_casa_admin.id)
+    rescue => exception
+      all_casa_admin_seed_results.push(exception)
+    end
+
+    all_casa_admin_seed_results
+  end
+
   def seed_casa_case(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 

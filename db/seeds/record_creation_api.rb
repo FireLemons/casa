@@ -152,6 +152,34 @@ class RecordCreator
     casa_case_seed_results
   end
 
+  def seed_case_group(casa_org: nil, casa_org_id: nil)
+    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+
+    name = "The #{Faker::Name.last_name} Siblings"
+
+    if casa_org.nil?
+      casa_org = CasaOrg.find(casa_org_id)
+    end
+
+    CaseGroup.create!(name:, casa_org:)
+  end
+
+  def seed_case_groups(casa_orgs: nil, casa_org_ids: nil, count: 0)
+    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+
+    case_group_seed_results = []
+
+    count.times do
+      new_case_group = seed_case_group(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      case_group_seed_results.push(new_case_group.id)
+    rescue => exception
+      case_group_seed_results.push(exception)
+    end
+
+    case_group_seed_results
+  end
+
   def seed_casa_org
     county = "#{Faker::Name.neutral_first_name} County"
 
@@ -259,18 +287,15 @@ class RecordCreator
 end
 
 #
-# all_casa_admins
 # banners
 # casa_case_contact_types
 # casa_case_emancipation_categories
-# casa_cases
 # casa_cases_emancipation_options
 # case_assignments
 # case_contact_contact_types
 # case_contacts
 # case_court_orders
 # case_group_memberships
-# case_groups
 # checklist_items
 # contact_topic_answers
 # contact_topics

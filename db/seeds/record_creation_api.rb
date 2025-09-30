@@ -152,6 +152,25 @@ class RecordCreator
     casa_case_seed_results
   end
 
+  def seed_casa_org
+    county = "#{Faker::Name.neutral_first_name} County"
+
+    CasaOrg.create!(address: Faker::Address.full_address, name: county)
+  end
+
+  def seed_casa_orgs(count: 0)
+    casa_org_seed_results = []
+
+    count.times do
+      new_org = seed_casa_org
+      casa_org_seed_results.push(new_org.id)
+    rescue => exception
+      casa_org_seed_results.push(exception)
+    end
+
+    casa_org_seed_results
+  end
+
   def seed_case_group(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
@@ -178,25 +197,6 @@ class RecordCreator
     end
 
     case_group_seed_results
-  end
-
-  def seed_casa_org
-    county = "#{Faker::Name.neutral_first_name} County"
-
-    CasaOrg.create!(address: Faker::Address.full_address, name: county)
-  end
-
-  def seed_casa_orgs(count: 0)
-    casa_org_seed_results = []
-
-    count.times do
-      new_org = seed_casa_org
-      casa_org_seed_results.push(new_org.id)
-    rescue => exception
-      casa_org_seed_results.push(exception)
-    end
-
-    casa_org_seed_results
   end
 
   private

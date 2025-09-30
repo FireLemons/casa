@@ -395,93 +395,6 @@ RSpec.describe RecordCreator do
     end
   end
 
-  describe "seed_casa_org" do
-    it "creates a casa org" do
-      original_casa_org_count = CasaOrg.count
-
-      expect {
-        subject.seed_casa_org
-      }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + 1)
-    end
-
-    it "returns the newly created casa org" do
-      new_casa_org = subject.seed_casa_org
-
-      expect(new_casa_org).to be_a(CasaOrg)
-    end
-
-    it "has randomness derived from the seed" do
-      subject.seed_casa_org
-      subject.seed_casa_org
-
-      subject = RecordCreator.new(RSpec.configuration.seed)
-
-      # Organizations must have unique names
-      # generating orgs again with the same seed will cause duplicate names
-
-      expect {
-        subject.seed_casa_org
-      }.to raise_error(ActiveRecord::RecordInvalid)
-
-      expect { # 2 checks to reduce the chance of a coincidence
-        subject.seed_casa_org
-      }.to raise_error(ActiveRecord::RecordInvalid)
-    end
-  end
-
-  describe "seed_casa_orgs" do
-    it "creates the specified number of casa orgs" do
-      original_casa_org_count = CasaOrg.count
-      casa_org_seed_count = 2
-
-      expect {
-        subject.seed_casa_orgs(count: casa_org_seed_count)
-      }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + casa_org_seed_count)
-    end
-
-    it "returns an array containing the casa orgs created" do
-      subject.seed_casa_orgs(count: 2).each do |casa_org_id|
-        expect {
-          CasaOrg.find(casa_org_id)
-        }.not_to raise_error
-      end
-    end
-
-    it "returns an array containing an error for each casa org that could not be created" do
-      subject.seed_casa_orgs(count: 2)
-      subject = RecordCreator.new(RSpec.configuration.seed)
-
-      # Resetting the RecordCreator with the same seed
-      # should result in casa orgs with duplicate names
-      # but casa orgs require unique names
-      # thus causing the errors
-      error_array = subject.seed_casa_orgs(count: 2)
-
-      error_array.each do |error|
-        expect(error).to be_a(Exception)
-      end
-    end
-
-    it "returns empty array for negative counts" do
-      expect(subject.seed_casa_orgs(count: -1)).to eq([])
-    end
-
-    it "has randomness derived from the seed" do
-      subject.seed_casa_orgs(count: 2)
-      subject = RecordCreator.new(RSpec.configuration.seed)
-
-      # Resetting the RecordCreator with the same seed
-      # should result in casa orgs with duplicate names
-      # but casa orgs require unique names
-      # thus causing the errors
-      error_array = subject.seed_casa_orgs(count: 2)
-
-      error_array.each do |error|
-        expect(error).to be_a(Exception)
-      end
-    end
-  end
-
   describe "seed_casa_case" do
     describe "with valid parameters" do
       it "creates a casa case" do
@@ -625,6 +538,233 @@ RSpec.describe RecordCreator do
         expect {
           subject.seed_casa_cases(casa_org_ids: [])
         }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+      end
+    end
+  end
+
+  describe "seed_casa_org" do
+    it "creates a casa org" do
+      original_casa_org_count = CasaOrg.count
+
+      expect {
+        subject.seed_casa_org
+      }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + 1)
+    end
+
+    it "returns the newly created casa org" do
+      new_casa_org = subject.seed_casa_org
+
+      expect(new_casa_org).to be_a(CasaOrg)
+    end
+
+    it "has randomness derived from the seed" do
+      subject.seed_casa_org
+      subject.seed_casa_org
+
+      subject = RecordCreator.new(RSpec.configuration.seed)
+
+      # Organizations must have unique names
+      # generating orgs again with the same seed will cause duplicate names
+
+      expect {
+        subject.seed_casa_org
+      }.to raise_error(ActiveRecord::RecordInvalid)
+
+      expect { # 2 checks to reduce the chance of a coincidence
+        subject.seed_casa_org
+      }.to raise_error(ActiveRecord::RecordInvalid)
+    end
+  end
+
+  describe "seed_casa_orgs" do
+    it "creates the specified number of casa orgs" do
+      original_casa_org_count = CasaOrg.count
+      casa_org_seed_count = 2
+
+      expect {
+        subject.seed_casa_orgs(count: casa_org_seed_count)
+      }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + casa_org_seed_count)
+    end
+
+    it "returns an array containing the casa orgs created" do
+      subject.seed_casa_orgs(count: 2).each do |casa_org_id|
+        expect {
+          CasaOrg.find(casa_org_id)
+        }.not_to raise_error
+      end
+    end
+
+    it "returns an array containing an error for each casa org that could not be created" do
+      subject.seed_casa_orgs(count: 2)
+      subject = RecordCreator.new(RSpec.configuration.seed)
+
+      # Resetting the RecordCreator with the same seed
+      # should result in casa orgs with duplicate names
+      # but casa orgs require unique names
+      # thus causing the errors
+      error_array = subject.seed_casa_orgs(count: 2)
+
+      error_array.each do |error|
+        expect(error).to be_a(Exception)
+      end
+    end
+
+    it "returns empty array for negative counts" do
+      expect(subject.seed_casa_orgs(count: -1)).to eq([])
+    end
+
+    it "has randomness derived from the seed" do
+      subject.seed_casa_orgs(count: 2)
+      subject = RecordCreator.new(RSpec.configuration.seed)
+
+      # Resetting the RecordCreator with the same seed
+      # should result in casa orgs with duplicate names
+      # but casa orgs require unique names
+      # thus causing the errors
+      error_array = subject.seed_casa_orgs(count: 2)
+
+      error_array.each do |error|
+        expect(error).to be_a(Exception)
+      end
+    end
+  end
+
+  describe "seed_case_group" do
+    describe "with valid parameters" do
+      it "creates a case group" do
+        # original_casa_case_count = CasaCase.count
+
+        # expect {
+        #   subject.seed_casa_case(casa_org: create(:casa_org))
+        # }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + 1)
+      end
+
+      it "returns the newly created case group" do
+        # new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
+
+        # expect(new_casa_case).to be_a(CasaCase)
+      end
+
+      it "has randomness derived from the seed" do
+        casa_org = create(:casa_org)
+
+        # subject.seed_casa_case(casa_org:)
+
+        # subject = RecordCreator.new(RSpec.configuration.seed)
+
+        # # Casa cases must have unique numbers
+        # # generating casa cases again with the same seed will cause duplicate numbers
+
+        # expect {
+        #   subject.seed_casa_case(casa_org:)
+        # }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+
+    describe "with invalid parameters" do
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_casa_case
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
+      end
+
+      it "throws an error when both casa_org and casa_org_id are used" do
+        casa_org = create(:casa_org)
+
+        expect {
+          subject.seed_casa_case(casa_org:, casa_org_id: casa_org.id)
+        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+    end
+  end
+
+  describe "seed_case_groups" do
+    describe "with valid parameters" do
+      it "creates the specified number of case groups" do
+        create(:casa_org)
+        # original_casa_case_count = CasaCase.count
+        # casa_case_seed_count = 2
+
+        # expect {
+        #   subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: casa_case_seed_count)
+        # }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + casa_case_seed_count)
+      end
+
+      it "returns an array containing the ids of the case groups created" do
+        create(:casa_org)
+
+        # subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2).each do |casa_case_id|
+        #   expect {
+        #     CasaCase.find(casa_case_id)
+        #   }.not_to raise_error
+        end
+      end
+
+      it "returns an array containing an error for each case group that could not be created" do
+        # error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
+
+        # error_array.each do |error|
+        #   expect(error).to be_a(Exception)
+        # end
+      end
+
+      it "returns empty array for negative counts" do
+        # expect(subject.seed_casa_cases(casa_org_ids: [1], count: -1)).to eq([])
+      end
+
+      it "has randomness derived from the seed" do
+        create(:casa_org)
+
+        # subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
+        # subject = RecordCreator.new(RSpec.configuration.seed)
+
+        # # Resetting the RecordCreator with the same seed
+        # # should result in casa cases with duplicate numbers
+        # # but casa cases require unique numbers
+        # # thus causing the errors
+        # error_array = subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
+
+        # error_array.each do |error|
+        #   expect(error).to be_a(Exception)
+        # end
+      end
+    end
+
+    describe "with invalid parameters" do
+      it "throws an error when neither casa_orgs or casa_org_ids are used" do
+        # expect {
+        #   subject.seed_casa_cases
+        # }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
+      end
+
+      it "throws an error when both casa_orgs or casa_org_ids are used" do
+        # expect {
+        #   subject.seed_casa_cases(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
+        # }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
+      end
+
+      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+        # expect {
+        #   subject.seed_casa_cases(casa_orgs: 2)
+        # }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
+      end
+
+      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
+        # expect {
+        #   subject.seed_casa_cases(casa_orgs: CasaOrg.where(id: -1))
+        # }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+      end
+
+      it "throws an error when casa_org_ids is not an array" do
+        # expect {
+        #   subject.seed_casa_cases(casa_org_ids: 2)
+        # }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
+      end
+
+      it "throws an error when casa_org_ids is an empty array" do
+        # expect {
+        #   subject.seed_casa_cases(casa_org_ids: [])
+        # }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
       end
     end
   end

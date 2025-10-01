@@ -455,6 +455,7 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       it "creates the specified number of casa cases" do
         create(:casa_org)
+
         original_casa_case_count = CasaCase.count
         casa_case_seed_count = 2
 
@@ -632,39 +633,44 @@ RSpec.describe RecordCreator do
   describe "seed_case_group" do
     describe "with valid parameters" do
       it "creates a case group" do
-        # original_casa_case_count = CasaCase.count
+        create(:casa_org)
+        create(:casa_case)
+        original_case_group_count = CaseGroup.count
 
-        # expect {
-        #   subject.seed_casa_case(casa_org: create(:casa_org))
-        # }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + 1)
+        expect {
+          subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
+        }.to change { CaseGroup.count }.from(original_case_group_count).to(original_case_group_count + 1)
       end
 
       it "returns the newly created case group" do
-        # new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
+        create(:casa_org)
+        create(:casa_case)
+        new_case_group = subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
 
-        # expect(new_casa_case).to be_a(CasaCase)
+        expect(new_case_group).to be_a(CaseGroup)
       end
 
       it "has randomness derived from the seed" do
         casa_org = create(:casa_org)
+        create(:casa_case)
 
-        # subject.seed_casa_case(casa_org:)
+        subject.seed_case_group(casa_cases: CasaCase.all, casa_org:)
 
-        # subject = RecordCreator.new(RSpec.configuration.seed)
+        subject = RecordCreator.new(RSpec.configuration.seed)
 
-        # # Casa cases must have unique numbers
-        # # generating casa cases again with the same seed will cause duplicate numbers
+        # Case groups must have unique names
+        # generating case groups again with the same seed will cause duplicate names
 
-        # expect {
-        #   subject.seed_casa_case(casa_org:)
-        # }.to raise_error(ActiveRecord::RecordInvalid)
+        expect {
+          subject.seed_case_group(casa_cases: CasaCase.all, casa_org:)
+        }.to raise_error(ActiveRecord::RecordInvalid)
       end
     end
 
     describe "with invalid parameters" do
       it "throws an error when neither casa_org or casa_org_id are used" do
         expect {
-          subject.seed_casa_case
+          subject.seed_case_group
         }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
       end
 
@@ -672,7 +678,7 @@ RSpec.describe RecordCreator do
         casa_org = create(:casa_org)
 
         expect {
-          subject.seed_casa_case(casa_org:, casa_org_id: casa_org.id)
+          subject.seed_case_group(casa_org:, casa_org_id: casa_org.id)
         }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
       end
     end
@@ -681,13 +687,13 @@ RSpec.describe RecordCreator do
   describe "seed_case_groups" do
     describe "with valid parameters" do
       it "creates the specified number of case groups" do
-        create(:casa_org)
-        # original_casa_case_count = CasaCase.count
-        # casa_case_seed_count = 2
+        # create(:casa_org)
+        # original_case_group_count = CaseGroup.count
+        # case_group_seed_count = 2
 
         # expect {
-        #   subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: casa_case_seed_count)
-        # }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + casa_case_seed_count)
+        #   subject.seed_case_groups(casa_orgs: CasaOrg.all, count: case_group_seed_count)
+        # }.to change { CaseGroup.count }.from(original_case_group_count).to(original_case_group_count + case_group_seed_count)
       end
 
       it "returns an array containing the ids of the case groups created" do
@@ -697,7 +703,7 @@ RSpec.describe RecordCreator do
         #   expect {
         #     CasaCase.find(casa_case_id)
         #   }.not_to raise_error
-        end
+        # end
       end
 
       it "returns an array containing an error for each case group that could not be created" do

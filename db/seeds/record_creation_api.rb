@@ -171,8 +171,13 @@ class RecordCreator
     casa_org_seed_results
   end
 
-  def seed_case_group(casa_org: nil, casa_org_id: nil)
+  def seed_case_group(casa_cases: nil, casa_case_ids: nil, casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+    validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
+
+    unless validated_casa_cases.is_a?(ActiveRecord::Relation)
+      validated_casa_cases = CasaCase.find(validated_casa_cases)
+    end
 
     name = "The #{Faker::Name.last_name} Siblings"
 
@@ -180,10 +185,15 @@ class RecordCreator
       casa_org = CasaOrg.find(casa_org_id)
     end
 
-    CaseGroup.create!(name:, casa_org:)
+    new_case_group = CaseGroup.new(casa_cases:, casa_org:, name:)
+
+    new_case_group.casa_cases << validated_casa_cases
+    new_case_group.save!
+
+    new_case_group
   end
 
-  def seed_case_groups(casa_orgs: nil, casa_org_ids: nil, count: 0)
+  def seed_case_groups(casa_cases: nil, casa_case_ids: nil, casa_orgs: nil, casa_org_ids: nil, count: 0)
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 

@@ -1,6 +1,7 @@
-seed_case_group
 seed_case_groups
 tests
+
+function to test if a single record creation is seeded
 
 try to create new addresses when possible
 
@@ -14,3 +15,5 @@ check if activerecord arg is persisted
   elsif model_param_id.nil? && !model_param_object.persisted?
     raise ActiveRecord::RecordNotSaved.new("Value for #{model_lowercase_name}: has not been saved to the database")
   end
+
+Display logins

@@ -651,19 +651,12 @@ RSpec.describe RecordCreator do
       end
 
       it "has randomness derived from the seed" do
-        casa_org = create(:casa_org)
+        create(:casa_org)
         create(:casa_case)
 
-        subject.seed_case_group(casa_cases: CasaCase.all, casa_org:)
-
-        subject = RecordCreator.new(RSpec.configuration.seed)
-
-        # Case groups must have unique names
-        # generating case groups again with the same seed will cause duplicate names
-
-        expect {
-          subject.seed_case_group(casa_cases: CasaCase.all, casa_org:)
-        }.to raise_error(ActiveRecord::RecordInvalid)
+        test_single_object_seed_method_seeded("name") do
+          subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
+        end
       end
     end
 
@@ -776,6 +769,17 @@ RSpec.describe RecordCreator do
   end
 
   # Helper Methods
+
+  def test_single_object_seed_method_seeded(*business_data_field_names, &seed_expression)
+    model = seed_expression.call
+    model.destroy
+
+    RecordCreator.new(RSpec.configuration.seed)
+
+    reseeded_model = seed_expression.call
+
+    test_models_equal(model, reseeded_model, *business_data_field_names)
+  end
 
   def test_models_equal(model1, model2, *business_data_field_names)
     if model1.is_a?(Class) && model1 < ActiveRecord::Base

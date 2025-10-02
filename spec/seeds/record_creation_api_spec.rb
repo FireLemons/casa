@@ -419,18 +419,11 @@ RSpec.describe RecordCreator do
       end
 
       it "has randomness derived from the seed" do
-        casa_org = create(:casa_org)
+        create(:casa_org)
 
-        subject.seed_casa_case(casa_org:)
-
-        subject = RecordCreator.new(RSpec.configuration.seed)
-
-        # Casa cases must have unique numbers
-        # generating casa cases again with the same seed will cause duplicate numbers
-
-        expect {
-          subject.seed_casa_case(casa_org:)
-        }.to raise_error(ActiveRecord::RecordInvalid)
+        test_single_object_seed_method_seeded("birth_month_year_youth", "case_number", "date_in_care") do |subject|
+          subject.seed_casa_case(casa_org: CasaOrg.first)
+        end
       end
     end
 
@@ -559,21 +552,9 @@ RSpec.describe RecordCreator do
     end
 
     it "has randomness derived from the seed" do
-      subject.seed_casa_org
-      subject.seed_casa_org
-
-      subject = RecordCreator.new(RSpec.configuration.seed)
-
-      # Organizations must have unique names
-      # generating orgs again with the same seed will cause duplicate names
-
-      expect {
+      test_single_object_seed_method_seeded("address", "name") do |subject|
         subject.seed_casa_org
-      }.to raise_error(ActiveRecord::RecordInvalid)
-
-      expect { # 2 checks to reduce the chance of a coincidence
-        subject.seed_casa_org
-      }.to raise_error(ActiveRecord::RecordInvalid)
+      end
     end
   end
 
@@ -622,6 +603,7 @@ RSpec.describe RecordCreator do
       # should result in casa orgs with duplicate names
       # but casa orgs require unique names
       # thus causing the errors
+
       error_array = subject.seed_casa_orgs(count: 2)
 
       error_array.each do |error|
@@ -654,7 +636,7 @@ RSpec.describe RecordCreator do
         create(:casa_org)
         create(:casa_case)
 
-        test_single_object_seed_method_seeded("name") do
+        test_single_object_seed_method_seeded("name") do |subject|
           subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
         end
       end
@@ -771,12 +753,12 @@ RSpec.describe RecordCreator do
   # Helper Methods
 
   def test_single_object_seed_method_seeded(*business_data_field_names, &seed_expression)
-    model = seed_expression.call
+    model = seed_expression.call(subject)
     model.destroy
 
-    RecordCreator.new(RSpec.configuration.seed)
+    reset_subject = RecordCreator.new(RSpec.configuration.seed)
 
-    reseeded_model = seed_expression.call
+    reseeded_model = seed_expression.call(reset_subject)
 
     test_models_equal(model, reseeded_model, *business_data_field_names)
   end

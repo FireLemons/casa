@@ -1,7 +1,7 @@
+function to test if a single record creation is seeded
+
 seed_case_groups
 tests
-
-function to test if a single record creation is seeded
 
 try to create new addresses when possible
 

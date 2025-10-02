@@ -40,13 +40,11 @@ RSpec.describe RecordCreator do
       end
 
       it "has randomness derived from the seed" do
-        case_contact = create(:case_contact)
+        create(:case_contact)
 
-        first_generated_additional_expense = subject.seed_additional_expense(case_contact:)
-        subject = RecordCreator.new(RSpec.configuration.seed)
-        second_generated_additional_expense = subject.seed_additional_expense(case_contact:)
-
-        test_models_equal(first_generated_additional_expense, second_generated_additional_expense, "other_expense_amount", "other_expenses_describe")
+        test_single_object_seed_method_seeded("other_expense_amount", "other_expenses_describe") do |subject|
+          subject.seed_additional_expense(case_contact: CaseContact.first)
+        end
       end
     end
 
@@ -177,13 +175,11 @@ RSpec.describe RecordCreator do
       end
 
       it "has randomness derived from the seed" do
-        user = create(:user)
+        create(:user)
 
-        first_generated_address = subject.seed_address(user:).content
-        subject = RecordCreator.new(RSpec.configuration.seed)
-        second_generated_address = subject.seed_address(user:).content
-
-        expect(first_generated_address).to eq(second_generated_address)
+        test_single_object_seed_method_seeded("content") do |subject|
+          subject.seed_address(user: User.first)
+        end
       end
     end
 
@@ -324,21 +320,9 @@ RSpec.describe RecordCreator do
     end
 
     it "has randomness derived from the seed" do
-      subject.seed_all_casa_admin
-      subject.seed_all_casa_admin
-
-      subject = RecordCreator.new(RSpec.configuration.seed)
-
-      # All casa admins must have unique emails
-      # generating all casa admins again with the same seed will cause duplicate emails
-
-      expect {
+      test_single_object_seed_method_seeded("email") do |subject|
         subject.seed_all_casa_admin
-      }.to raise_error(ActiveRecord::RecordInvalid)
-
-      expect { # 2 checks to reduce the chance of a coincidence
-        subject.seed_all_casa_admin
-      }.to raise_error(ActiveRecord::RecordInvalid)
+      end
     end
   end
 

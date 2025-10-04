@@ -103,11 +103,9 @@ RSpec.describe RecordCreator do
         create(:case_contact)
         additional_expense_seed_count = 2
 
-        first_pass_generated_additional_expenses = subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count)
-        subject = RecordCreator.new(RSpec.configuration.seed)
-        second_pass_generated_additional_expenses = subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count)
-
-        test_model_arrays_equal(AdditionalExpense, first_pass_generated_additional_expenses, second_pass_generated_additional_expenses, "other_expense_amount", "other_expenses_describe")
+        test_multi_object_seed_method_seeded(AdditionalExpense, "other_expense_amount", "other_expenses_describe") do |subject|
+          subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count)
+        end
       end
     end
 
@@ -736,17 +734,6 @@ RSpec.describe RecordCreator do
 
   # Helper Methods
 
-  def test_single_object_seed_method_seeded(*business_data_field_names, &seed_expression)
-    model = seed_expression.call(subject)
-    model.destroy
-
-    reset_subject = RecordCreator.new(RSpec.configuration.seed)
-
-    reseeded_model = seed_expression.call(reset_subject)
-
-    test_models_equal(model, reseeded_model, *business_data_field_names)
-  end
-
   def test_models_equal(model1, model2, *business_data_field_names)
     if model1.is_a?(Class) && model1 < ActiveRecord::Base
       raise TypeError.new("param model1 must be an ActiveRecord object")
@@ -763,16 +750,12 @@ RSpec.describe RecordCreator do
     expect(model1.attributes.slice(*business_data_field_names)).to eq(model2.attributes.slice(*business_data_field_names))
   end
 
-  def test_model_arrays_equal(object_class, model_id_array_1, model_id_array_2, *business_data_field_names)
-    unless object_class.is_a?(Class) && object_class < ActiveRecord::Base
-      raise TypeError.new("param object_class must be an ActiveRecord class")
-    end
-
-    unless model_id_array_1.is_a?(Array)
+  def test_model_arrays_equal(model_array_1, model_array_2, *business_data_field_names)
+    unless model_array_1.is_a?(Array)
       raise TypeError.new("param model_id_array_1 must be an array")
     end
 
-    unless model_id_array_2.is_a?(Array)
+    unless model_array_2.is_a?(Array)
       raise TypeError.new("param model_id_array_2 must be an array")
     end
 
@@ -780,14 +763,53 @@ RSpec.describe RecordCreator do
       raise TypeError, "All business_data_field_names must be strings"
     end
 
-    model_array_1_as_hash_array = model_id_array_1.map do |id|
-      object_class.find(id).attributes.slice(*business_data_field_names)
+    model_array_1_as_hash_array = model_array_1.map do |model|
+      model.attributes.slice(*business_data_field_names)
     end
 
-    model_array_2_as_hash_array = model_id_array_2.map do |id|
-      object_class.find(id).attributes.slice(*business_data_field_names)
+    model_array_2_as_hash_array = model_array_2.map do |model|
+      model.attributes.slice(*business_data_field_names)
     end
 
     expect(model_array_1_as_hash_array).to eq(model_array_2_as_hash_array)
+  end
+
+  def test_multi_object_seed_method_seeded(object_class, *business_data_field_names, &seed_expression)
+    unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
+      raise TypeError, "All business_data_field_names must be strings"
+    end
+
+    model_id_array = seed_expression.call(subject)
+    model_array = model_id_array.map do |id|
+      object_class.find(id)
+    end
+
+    model_array.each do |model|
+      model.destroy
+    end
+
+    reset_subject = RecordCreator.new(RSpec.configuration.seed)
+
+    reseeded_model_id_array = seed_expression.call(reset_subject)
+    reseeded_model_array = reseeded_model_id_array.map do |id|
+      object_class.find(id)
+    end
+
+    test_model_arrays_equal(model_array, reseeded_model_array, *business_data_field_names)
+  end
+
+  def test_single_object_seed_method_seeded(*business_data_field_names, &seed_expression)
+    unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
+      raise TypeError, "All business_data_field_names must be strings"
+    end
+
+    model = seed_expression.call(subject)
+    model.destroy
+
+    reset_subject = RecordCreator.new(RSpec.configuration.seed)
+
+    reseeded_model = seed_expression.call(reset_subject)
+
+    test_models_equal(model, reseeded_model, *business_data_field_names)
   end
 end

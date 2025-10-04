@@ -1,4 +1,5 @@
-function to test if a single record creation is seeded
+function to test if multiple record creation is seeded
+  error checking
 
 seed_case_groups
 tests

@@ -248,18 +248,9 @@ RSpec.describe RecordCreator do
         create(:user)
         address_seed_count = 2
 
-        # The string address has to be preserved because reseeding the addresses will overwrite the strings of the addresses first seeded first
-        first_pass_generated_addresses = subject.seed_addresses(users: User.all, count: address_seed_count).map do |id|
-          address = Address.find(id)
-          address.content
+        test_multi_object_seed_method_seeded(Address, "content") do |subject|
+          subject.seed_addresses(users: User.all, count: address_seed_count)
         end
-        subject = RecordCreator.new(RSpec.configuration.seed)
-        second_pass_generated_addresses = subject.seed_addresses(users: User.all, count: address_seed_count).map do |id|
-          address = Address.find(id)
-          address.content
-        end
-
-        expect(first_pass_generated_addresses).to eq(second_pass_generated_addresses)
       end
     end
 
@@ -344,6 +335,7 @@ RSpec.describe RecordCreator do
 
     it "returns an array containing an error for each all casa admin that could not be created" do
       subject.seed_all_casa_admins(count: 2)
+
       subject = RecordCreator.new(RSpec.configuration.seed)
 
       # Resetting the RecordCreator with the same seed
@@ -362,17 +354,8 @@ RSpec.describe RecordCreator do
     end
 
     it "has randomness derived from the seed" do
-      subject.seed_all_casa_admins(count: 2)
-      subject = RecordCreator.new(RSpec.configuration.seed)
-
-      # Resetting the RecordCreator with the same seed
-      # should result in all casa admins with duplicate emails
-      # but all casa admins require unique emails
-      # thus causing the errors
-      error_array = subject.seed_all_casa_admins(count: 2)
-
-      error_array.each do |error|
-        expect(error).to be_a(Exception)
+      test_multi_object_seed_method_seeded(AllCasaAdmin, "email") do |subject|
+        subject.seed_all_casa_admins(count: 2)
       end
     end
   end
@@ -464,17 +447,8 @@ RSpec.describe RecordCreator do
       it "has randomness derived from the seed" do
         create(:casa_org)
 
-        subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
-        subject = RecordCreator.new(RSpec.configuration.seed)
-
-        # Resetting the RecordCreator with the same seed
-        # should result in casa cases with duplicate numbers
-        # but casa cases require unique numbers
-        # thus causing the errors
-        error_array = subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
+        test_multi_object_seed_method_seeded(CasaCase, "birth_month_year_youth", "case_number", "date_in_care") do |subject|
+          subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
         end
       end
     end
@@ -578,18 +552,8 @@ RSpec.describe RecordCreator do
     end
 
     it "has randomness derived from the seed" do
-      subject.seed_casa_orgs(count: 2)
-      subject = RecordCreator.new(RSpec.configuration.seed)
-
-      # Resetting the RecordCreator with the same seed
-      # should result in casa orgs with duplicate names
-      # but casa orgs require unique names
-      # thus causing the errors
-
-      error_array = subject.seed_casa_orgs(count: 2)
-
-      error_array.each do |error|
-        expect(error).to be_a(Exception)
+      test_multi_object_seed_method_seeded(CasaOrg, "address", "name") do |subject|
+        subject.seed_casa_orgs(count: 2)
       end
     end
   end

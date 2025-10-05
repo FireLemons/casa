@@ -739,8 +739,16 @@ RSpec.describe RecordCreator do
   end
 
   def test_multi_object_seed_method_seeded(object_class, *business_data_field_names, &seed_expression)
+    unless object_class.is_a?(Class) && object_class < ActiveRecord::Base
+      raise TypeError, "Param object_class must be a active record class"
+    end
+
     unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
       raise TypeError, "All business_data_field_names must be strings"
+    end
+
+    unless seed_expression
+      raise ArgumentError, "seed_expression is required"
     end
 
     model_id_array = seed_expression.call(subject)
@@ -765,6 +773,10 @@ RSpec.describe RecordCreator do
   def test_single_object_seed_method_seeded(*business_data_field_names, &seed_expression)
     unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
       raise TypeError, "All business_data_field_names must be strings"
+    end
+
+    unless seed_expression
+      raise ArgumentError, "seed_expression is required"
     end
 
     model = seed_expression.call(subject)

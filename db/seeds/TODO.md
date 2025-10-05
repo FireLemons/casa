@@ -17,3 +17,6 @@ check if activerecord arg is persisted
   end
 
 Display logins
+  Org header
+    logins
+  Password info

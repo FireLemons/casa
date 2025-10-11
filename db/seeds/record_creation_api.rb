@@ -218,7 +218,7 @@ class RecordCreator
   def count_cases_available_to_form_groups_with_3_or_more_members(casa_case_array_cursor, casa_case_array_size, unformed_group_count)
     available_cases_for_groups_count = casa_case_array_size - casa_case_array_cursor
 
-    return available_cases_for_groups_count - (2 * unformed_group_count)
+    available_cases_for_groups_count - (2 * unformed_group_count)
   end
 
   def diffSeededRecordCounts(updated_record_counts)
@@ -236,7 +236,7 @@ class RecordCreator
   end
 
   def form_case_groups(casa_case_ids, group_count)
-    if casa_case_ids.size <= group_count * 2
+    if casa_case_ids.size < group_count * 2
       form_case_groups_sample(casa_case_ids, group_count)
     else
       form_case_groups_divide(casa_case_ids, group_count)
@@ -290,6 +290,7 @@ class RecordCreator
       record_name = record_type.name
 
       next if record_type.abstract_class?
+
       record_counts[record_name] = count
     end
 

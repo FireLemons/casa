@@ -619,9 +619,34 @@ RSpec.describe RecordCreator do
       end
 
       it "does not add the same case to multiple groups when there are there are enough cases for each group" do
+        create(:casa_case)
+        create(:casa_case)
+        create(:casa_case)
+        create(:casa_case)
+        create(:casa_org)
+
+        case_group_ids = subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2)
+
+        case_group_1_casa_cases = CaseGroup.find(case_group_ids[0])&.casa_cases
+        case_group_2_casa_cases = CaseGroup.find(case_group_ids[1])&.casa_cases
+
+        expect(case_group_1_casa_cases).not_to include(*case_group_2_casa_cases)
       end
 
-      it "forms casa case groups with at least 2 cases when there are at least 2 cases" do
+      it "forms casa case groups with at least 2 cases when able" do
+        create(:casa_case)
+        create(:casa_case)
+        create(:casa_org)
+
+        case_group_ids = subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 3)
+
+        case_group_1_casa_cases = CaseGroup.find(case_group_ids[0])&.casa_cases
+        case_group_2_casa_cases = CaseGroup.find(case_group_ids[1])&.casa_cases
+        case_group_3_casa_cases = CaseGroup.find(case_group_ids[2])&.casa_cases
+
+        expect(case_group_1_casa_cases.size).to be >= 2
+        expect(case_group_2_casa_cases.size).to be >= 2
+        expect(case_group_3_casa_cases.size).to be >= 2
       end
 
       it "returns an array containing the ids of the case groups created" do

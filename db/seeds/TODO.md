@@ -1,6 +1,3 @@
-seed_case_groups
-  tests
-
 try to create new addresses when possible
 
 check if activerecord arg is persisted

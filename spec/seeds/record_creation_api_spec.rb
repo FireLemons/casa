@@ -608,90 +608,126 @@ RSpec.describe RecordCreator do
   describe "seed_case_groups" do
     describe "with valid parameters" do
       it "creates the specified number of case groups" do
-        # create(:casa_org)
-        # original_case_group_count = CaseGroup.count
-        # case_group_seed_count = 2
+        create(:casa_case)
+        create(:casa_org)
+        original_case_group_count = CaseGroup.count
+        case_group_seed_count = 2
 
-        # expect {
-        #   subject.seed_case_groups(casa_orgs: CasaOrg.all, count: case_group_seed_count)
-        # }.to change { CaseGroup.count }.from(original_case_group_count).to(original_case_group_count + case_group_seed_count)
+        expect {
+          subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: case_group_seed_count)
+        }.to change { CaseGroup.count }.from(original_case_group_count).to(original_case_group_count + case_group_seed_count)
+      end
+
+      it "does not add the same case to multiple groups when there are there are enough cases for each group" do
+      end
+
+      it "forms casa case groups with at least 2 cases when there are at least 2 cases" do
       end
 
       it "returns an array containing the ids of the case groups created" do
+        create(:casa_case)
         create(:casa_org)
 
-        # subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2).each do |casa_case_id|
-        #   expect {
-        #     CasaCase.find(casa_case_id)
-        #   }.not_to raise_error
-        # end
+        subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2).each do |case_group_id|
+          expect {
+            CaseGroup.find(case_group_id)
+          }.not_to raise_error
+        end
       end
 
       it "returns an array containing an error for each case group that could not be created" do
-        # error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
+        error_array = subject.seed_case_groups(casa_case_ids: [-1], casa_org_ids: [-1], count: 2)
 
-        # error_array.each do |error|
-        #   expect(error).to be_a(Exception)
-        # end
+        error_array.each do |error|
+          expect(error).to be_a(Exception)
+        end
       end
 
       it "returns empty array for negative counts" do
-        # expect(subject.seed_casa_cases(casa_org_ids: [1], count: -1)).to eq([])
+        expect(subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: [1], count: -1)).to eq([])
       end
 
       it "has randomness derived from the seed" do
+        create(:casa_case)
         create(:casa_org)
 
-        # subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
-        # subject = RecordCreator.new(RSpec.configuration.seed)
-
-        # # Resetting the RecordCreator with the same seed
-        # # should result in casa cases with duplicate numbers
-        # # but casa cases require unique numbers
-        # # thus causing the errors
-        # error_array = subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
-
-        # error_array.each do |error|
-        #   expect(error).to be_a(Exception)
-        # end
+        test_multi_object_seed_method_seeded(CaseGroup, "name") do |subject|
+          subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2)
+        end
       end
     end
 
     describe "with invalid parameters" do
+      it "throws an error when neither casa_cases or casa_case_ids are used" do
+        expect {
+          subject.seed_case_groups(casa_org_ids: [1])
+        }.to raise_error(ArgumentError, /casa_cases: or casa_case_ids: is required/)
+      end
+
       it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        # expect {
-        #   subject.seed_casa_cases
-        # }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
+        expect {
+          subject.seed_case_groups(casa_case_ids: [1])
+        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
+      end
+
+      it "throws an error when both casa_cases or casa_case_ids are used" do
+        expect {
+          subject.seed_case_groups(casa_cases: CasaCase.all, casa_case_ids: [1, 2])
+        }.to raise_error(ArgumentError, /cannot use casa_cases: and casa_case_ids:/)
       end
 
       it "throws an error when both casa_orgs or casa_org_ids are used" do
-        # expect {
-        #   subject.seed_casa_cases(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
-        # }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
+        expect {
+          subject.seed_case_groups(casa_case_ids: [1], casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
+        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
+      end
+
+      it "throws an error when casa_cases is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_case_groups(casa_cases: 2)
+        }.to raise_error(TypeError, /param casa_cases: must be an ActiveRecord::Relation/)
+      end
+
+      it "throws an error when casa_cases is an empty ActiveRecord::Relation" do
+        expect {
+          subject.seed_case_groups(casa_cases: CasaCase.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_cases: must contain at least one casa_case/)
       end
 
       it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
-        # expect {
-        #   subject.seed_casa_cases(casa_orgs: 2)
-        # }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
+        expect {
+          subject.seed_case_groups(casa_case_ids: [1], casa_orgs: 2)
+        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
       end
 
       it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
-        # expect {
-        #   subject.seed_casa_cases(casa_orgs: CasaOrg.where(id: -1))
-        # }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+        expect {
+          subject.seed_case_groups(casa_case_ids: [1], casa_orgs: CasaOrg.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+      end
+
+      it "throws an error when casa_case_ids is not an array" do
+        expect {
+          subject.seed_case_groups(casa_case_ids: 2)
+        }.to raise_error(TypeError, /param casa_case_ids: must be an array/)
+      end
+
+      it "throws an error when casa_case_ids is an empty array" do
+        expect {
+          subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: [])
+        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
       end
 
       it "throws an error when casa_org_ids is not an array" do
-        # expect {
-        #   subject.seed_casa_cases(casa_org_ids: 2)
-        # }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
+        expect {
+          subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: 2)
+        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
       end
 
       it "throws an error when casa_org_ids is an empty array" do
-        # expect {
-        #   subject.seed_casa_cases(casa_org_ids: [])
-        # }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+        expect {
+          subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: [])
+        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
       end
     end
   end

@@ -21,21 +21,21 @@ class RecordCreator
 
   def initialize(seed = nil)
     Rails.application.eager_load!
-    @pre_seeding_record_count = getRecordCounts
+    @pre_seeding_record_count = get_record_counts
     @random = seed.nil? ? Random.new : Random.new(seed)
     Faker::Config.random = @random
     Faker::Config.locale = "en-US" # only allow US phone numbers
   end
 
   def getSeededRecordCounts
-    seeded_record_count_diff = diffSeededRecordCounts(getRecordCounts)
+    seeded_record_count_diff = diffSeededRecordCounts(get_record_counts)
 
     seeded_record_count_diff.each do |record_type_name, record_count|
       if record_count == 0
         seeded_record_count_diff.delete(record_type_name)
       end
     end
-    getRecordCounts
+    get_record_counts
   end
 
   def seed_additional_expense(case_contact: nil, case_contact_id: nil)
@@ -185,7 +185,7 @@ class RecordCreator
       casa_org = CasaOrg.find(casa_org_id)
     end
 
-    new_case_group = CaseGroup.new(casa_cases:, casa_org:, name:)
+    new_case_group = CaseGroup.new(casa_org:, name:)
 
     new_case_group.casa_cases << validated_casa_cases
     new_case_group.save!
@@ -194,13 +194,17 @@ class RecordCreator
   end
 
   def seed_case_groups(casa_cases: nil, casa_case_ids: nil, casa_orgs: nil, casa_org_ids: nil, count: 0)
+    validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_cases_as_id_array = model_collection_as_id_array(validated_casa_cases)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
     case_group_seed_results = []
 
-    count.times do
-      new_case_group = seed_case_group(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+    grouped_casa_case_ids = form_case_groups(validated_casa_cases_as_id_array, count)
+
+    count.times do |i|
+      new_case_group = seed_case_group(casa_case_ids: grouped_casa_case_ids[i], casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
       case_group_seed_results.push(new_case_group.id)
     rescue => exception
       case_group_seed_results.push(exception)
@@ -210,6 +214,12 @@ class RecordCreator
   end
 
   private
+
+  def count_cases_available_to_form_groups_with_3_or_more_members(casa_case_array_cursor, casa_case_array_size, unformed_group_count)
+    available_cases_for_groups_count = casa_case_array_size - casa_case_array_cursor
+
+    return available_cases_for_groups_count - (2 * unformed_group_count)
+  end
 
   def diffSeededRecordCounts(updated_record_counts)
     seeded_record_counts = {}
@@ -225,7 +235,54 @@ class RecordCreator
     seeded_record_counts
   end
 
-  def getRecordCounts
+  def form_case_groups(casa_case_ids, group_count)
+    if casa_case_ids.size <= group_count * 2
+      form_case_groups_sample(casa_case_ids, group_count)
+    else
+      form_case_groups_divide(casa_case_ids, group_count)
+    end
+  end
+
+  def form_case_groups_divide(casa_case_ids, group_count)
+    case_groups = []
+    shuffled_casa_cases = casa_case_ids.shuffle(random: @random)
+
+    unconsumed_casa_case_ids_starting_index = 0
+
+    group_count.times do
+      group_size = 2
+      extra_case_count = count_cases_available_to_form_groups_with_3_or_more_members(unconsumed_casa_case_ids_starting_index, casa_case_ids.size, group_count - case_groups.size)
+
+      # this distribution comes from census data in the US
+      # in sibling groups about 50% of the groups have 2 siblings, 30% have 3, 20% have 4 or more
+      if extra_case_count > 0
+        group_size += @random.rand(2)
+
+        if group_size > 2 && extra_case_count > 1 && @random.rand(5) > 1
+          group_size += 1
+        end
+      end
+
+      casa_case_group = shuffled_casa_cases.slice(unconsumed_casa_case_ids_starting_index, group_size)
+      unconsumed_casa_case_ids_starting_index += casa_case_group.size
+
+      case_groups.push(casa_case_group)
+    end
+
+    case_groups
+  end
+
+  def form_case_groups_sample(casa_case_ids, group_count)
+    case_groups = []
+
+    group_count.times do
+      case_groups.push(casa_case_ids.sample(2, random: @random))
+    end
+
+    case_groups
+  end
+
+  def get_record_counts
     record_counts = {}
 
     ApplicationRecord.descendants.each do |record_type|

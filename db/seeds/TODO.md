@@ -1,7 +1,5 @@
-error checking for helper functions
-
 seed_case_groups
-tests
+  tests
 
 try to create new addresses when possible
 

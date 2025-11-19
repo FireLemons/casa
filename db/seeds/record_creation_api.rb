@@ -86,15 +86,36 @@ class RecordCreator
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)
     validated_users = validate_seed_n_records_required_model_params("user", "users", users, user_ids)
-    validated_users_as_id_array = model_collection_as_id_array(validated_users)
+    validated_users_as_model_array = model_collection_as_model_array(validated_users, User)
+
+    users_with_addresses = []
+    users_without_addresses = []
+
+    validated_users_as_model_array.each do |user|
+      if user.address.nil?
+        users_without_addresses.push(user)
+      else
+        users_with_addresses.push(user)
+      end
+    end
 
     address_seed_results = []
 
-    while count > 0 && validated_users_as_id_array.size > 0
+    while count > 0 && users_without_addresses.size > 0
       begin
-        new_address = seed_address(user_id: pop_random(validated_users_as_id_array))
-        address_seed_results.push(new_address.id)
         count -= 1
+        new_address = seed_address(user: pop_random(users_without_addresses))
+        address_seed_results.push(new_address.id)
+      rescue => exception
+        address_seed_results.push(exception)
+      end
+    end
+
+    while count > 0 && users_with_addresses.size > 0
+      begin
+        count -= 1
+        new_address = seed_address(user: pop_random(users_with_addresses))
+        address_seed_results.push(new_address.id)
       rescue => exception
         address_seed_results.push(exception)
       end
@@ -304,6 +325,20 @@ class RecordCreator
       end
     else
       model_collection.clone
+    end
+  end
+
+  def model_collection_as_model_array(model_collection, model_class = nil)
+    if model_collection.is_a?(ActiveRecord::Relation)
+      model_collection.to_a
+    else
+      if model_class.nil?
+        raise ArgumentError.new("param model_class is required when passing an array of ids") 
+      end
+
+      model_collection.clone.map do |model_id|
+        model_class.find(model_id)
+      end
     end
   end
 

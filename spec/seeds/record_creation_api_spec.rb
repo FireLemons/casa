@@ -198,6 +198,20 @@ RSpec.describe RecordCreator do
 
   describe "seed_addresses" do
     describe "with valid parameters" do
+      it "associates the new addresses with users without addresses when possible" do
+        create(:address, user: create(:user))
+        create(:address, user: create(:user))
+
+        users_without_addresses = [create(:user), create(:user), create(:user), create(:user)]
+
+        subject.seed_addresses(users: User.all, count: 4)
+        
+        expect(users_without_addresses[0].address).not_to be_nil
+        expect(users_without_addresses[1].address).not_to be_nil
+        expect(users_without_addresses[2].address).not_to be_nil
+        expect(users_without_addresses[3].address).not_to be_nil
+      end
+
       it "creates the specified number of addresses" do
         create(:user)
         create(:user)
@@ -231,16 +245,9 @@ RSpec.describe RecordCreator do
         end
       end
 
-      it "returns an array containing an error for each address that could not be created" do
-        error_array = subject.seed_addresses(user_ids: [-1], count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
-        end
-      end
-
       it "returns empty array for negative counts" do
-        expect(subject.seed_addresses(user_ids: [1], count: -1)).to eq([])
+        create(:user)
+        expect(subject.seed_addresses(users: User.all, count: -1)).to eq([])
       end
 
       it "has randomness derived from the seed" do

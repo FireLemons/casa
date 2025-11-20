@@ -764,6 +764,59 @@ RSpec.describe RecordCreator do
     end
   end
 
+  describe "seed_mileage_rate" do
+    describe "with valid parameters" do
+      it "creates a mileage rate" do
+        create(:casa_org)
+        original_mileage_rate_count = MileageRate.count
+
+        expect {
+          subject.seed_mileage_rate(casa_org: CasaOrg.first)
+        }.to change { MileageRate.count }.from(original_mileage_rate_count).to(original_mileage_rate_count + 1)
+      end
+
+      it "automatically generates a vlaue for effective_date" do
+        create(:casa_org)
+        new_mileage_rate = subject.seed_mileage_rate(casa_org: CasaOrg.first)
+
+        expect(new_mileage_rate).to be_a(MileageRate)
+
+        expect(new_mileage_rate.effective_date).not_to be_nil
+      end
+
+      it "returns the newly created mileage rate" do
+        create(:casa_org)
+        new_mileage_rate = subject.seed_mileage_rate(casa_org: CasaOrg.first)
+
+        expect(new_mileage_rate).to be_a(MileageRate)
+      end
+
+      it "has randomness derived from the seed" do
+        create(:casa_org)
+
+        test_single_object_seed_method_seeded("amount", "effective_date") do |subject|
+          subject.seed_mileage_rate(casa_org: CasaOrg.first)
+        end
+      end
+    end
+
+    describe "with invalid parameters" do
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_mileage_rate
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
+      end
+
+      it "throws an error when both casa_org and casa_org_id are used" do
+        casa_org = create(:casa_org)
+
+        expect {
+          subject.seed_mileage_rate(casa_org:, casa_org_id: casa_org.id)
+        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+    end
+  end
+
   # Helper Methods
 
   def test_models_equal(model1, model2, *business_data_field_names)

@@ -234,6 +234,20 @@ class RecordCreator
     case_group_seed_results
   end
 
+  def seed_mileage_rate (casa_org: nil, casa_org_id: nil)
+    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+
+    if casa_org.nil?
+      casa_org = CasaOrg.find(casa_org_id)
+    end
+
+    MileageRate.create!(amount: random_change_amount, casa_org:, effective_date: Faker::Date.backward)
+  end
+
+  def seed_mileage_rates (casa_orgs: nil, casa_org_ids: nil)
+    #TODO
+  end
+
   private
 
   def count_cases_available_to_form_groups_with_3_or_more_members(casa_case_array_cursor, casa_case_array_size, unformed_group_count)
@@ -354,6 +368,10 @@ class RecordCreator
     "#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}"
   end
 
+  def random_change_amount ()
+    @random.rand(100) * 0.01
+  end
+
   def random_youth_birth_month
     (@random.rand(20) < 1) ? Faker::Date.birthday(min_age: 18, max_age: 21) : Faker::Date.birthday(min_age: 0, max_age: 18)
   end
@@ -420,7 +438,6 @@ end
 # learning_hour_types
 # learning_hours
 # login_activities
-# mileage_rates
 # notes
 # noticed_events
 # noticed_notifications

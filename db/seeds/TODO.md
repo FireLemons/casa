@@ -1,4 +1,9 @@
-try to create new addresses when possible
+mileage_rates
+  seed_milage_rates
+  tests
+
+manual seeding script
+  comment with usage hint
 
 check if activerecord arg is persisted
   default throws null reference error

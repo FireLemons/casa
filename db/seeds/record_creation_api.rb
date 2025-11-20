@@ -244,8 +244,20 @@ class RecordCreator
     MileageRate.create!(amount: random_change_amount, casa_org:, effective_date: Faker::Date.backward)
   end
 
-  def seed_mileage_rates (casa_orgs: nil, casa_org_ids: nil)
-    #TODO
+  def seed_mileage_rates (casa_orgs: nil, casa_org_ids: nil, count: 0)
+    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+
+    mileage_rate_seed_results = []
+
+    count.times do
+      new_mileage_rate = seed_mileage_rate(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      mileage_rate_seed_results.push(new_mileage_rate.id)
+    rescue => exception
+      mileage_rate_seed_results.push(exception)
+    end
+
+    mileage_rate_seed_results
   end
 
   private

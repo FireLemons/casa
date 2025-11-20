@@ -1,7 +1,3 @@
-mileage_rates
-  seed_milage_rates
-  tests
-
 manual seeding script
   comment with usage hint
 

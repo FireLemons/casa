@@ -817,6 +817,89 @@ RSpec.describe RecordCreator do
     end
   end
 
+  describe "seed_mileage_rates" do
+    describe "with valid parameters" do
+      it "creates the specified number of mileage rates" do
+        create(:casa_org)
+
+        original_mileage_rate_count = MileageRate.count
+        mileage_rate_seed_count = 2
+
+        expect {
+          subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: mileage_rate_seed_count)
+        }.to change { MileageRate.count }.from(original_mileage_rate_count).to(original_mileage_rate_count + mileage_rate_seed_count)
+      end
+
+      it "returns an array containing the ids of the mileage rates created" do
+        create(:casa_org)
+
+        subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: 2).each do |mileage_rate_id|
+          expect {
+            MileageRate.find(mileage_rate_id)
+          }.not_to raise_error
+        end
+      end
+
+      it "returns an array containing an error for each casa case that could not be created" do
+        error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
+
+        error_array.each do |error|
+          expect(error).to be_a(Exception)
+        end
+      end
+
+      it "returns empty array for negative counts" do
+        expect(subject.seed_mileage_rates(casa_org_ids: [1], count: -1)).to eq([])
+      end
+
+      it "has randomness derived from the seed" do
+        create(:casa_org)
+
+        test_multi_object_seed_method_seeded(MileageRate, "amount", "effective_date") do |subject|
+          subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: 2)
+        end
+      end
+    end
+
+    describe "with invalid parameters" do
+      it "throws an error when neither casa_orgs or casa_org_ids are used" do
+        expect {
+          subject.seed_mileage_rates
+        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
+      end
+
+      it "throws an error when both casa_orgs or casa_org_ids are used" do
+        expect {
+          subject.seed_mileage_rates(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
+        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
+      end
+
+      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_mileage_rates(casa_orgs: 2)
+        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
+      end
+
+      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
+        expect {
+          subject.seed_mileage_rates(casa_orgs: CasaOrg.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+      end
+
+      it "throws an error when casa_org_ids is not an array" do
+        expect {
+          subject.seed_mileage_rates(casa_org_ids: 2)
+        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
+      end
+
+      it "throws an error when casa_org_ids is an empty array" do
+        expect {
+          subject.seed_mileage_rates(casa_org_ids: [])
+        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+      end
+    end
+  end
+
   # Helper Methods
 
   def test_models_equal(model1, model2, *business_data_field_names)

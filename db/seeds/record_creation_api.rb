@@ -260,6 +260,16 @@ class RecordCreator
     mileage_rate_seed_results
   end
 
+  def seed_language (casa_org: nil, casa_org_id: nil)
+    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+
+    if casa_org.nil?
+      casa_org = CasaOrg.find(casa_org_id)
+    end
+
+    Language.create!(name: Faker::Nation.language, casa_org:)
+  end
+
   private
 
   def count_cases_available_to_form_groups_with_3_or_more_members(casa_case_array_cursor, casa_case_array_size, unformed_group_count)
@@ -445,7 +455,6 @@ end
 # healths
 # hearing_types
 # judges
-# languages
 # learning_hour_topics
 # learning_hour_types
 # learning_hours

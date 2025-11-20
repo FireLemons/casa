@@ -1,3 +1,6 @@
+seed_languages
+  tests
+
 manual seeding script
   comment with usage hint
 

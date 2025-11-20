@@ -775,7 +775,7 @@ RSpec.describe RecordCreator do
         }.to change { MileageRate.count }.from(original_mileage_rate_count).to(original_mileage_rate_count + 1)
       end
 
-      it "automatically generates a vlaue for effective_date" do
+      it "automatically generates a value for effective_date" do
         create(:casa_org)
         new_mileage_rate = subject.seed_mileage_rate(casa_org: CasaOrg.first)
 
@@ -896,6 +896,50 @@ RSpec.describe RecordCreator do
         expect {
           subject.seed_mileage_rates(casa_org_ids: [])
         }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+      end
+    end
+  end
+
+  describe "seed_language" do
+    describe "with valid parameters" do
+      it "creates a language" do
+        create(:casa_org)
+        original_language_count = Language.count
+
+        expect {
+          subject.seed_language(casa_org: CasaOrg.first)
+        }.to change { Language.count }.from(original_language_count).to(original_language_count + 1)
+      end
+
+      it "returns the newly created language" do
+        create(:casa_org)
+        new_language = subject.seed_language(casa_org: CasaOrg.first)
+
+        expect(new_language).to be_a(Language)
+      end
+
+      it "has randomness derived from the seed" do
+        create(:casa_org)
+
+        test_single_object_seed_method_seeded("name") do |subject|
+          subject.seed_language(casa_org: CasaOrg.first)
+        end
+      end
+    end
+
+    describe "with invalid parameters" do
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_language
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
+      end
+
+      it "throws an error when both casa_org and casa_org_id are used" do
+        casa_org = create(:casa_org)
+
+        expect {
+          subject.seed_language(casa_org:, casa_org_id: casa_org.id)
+        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
       end
     end
   end

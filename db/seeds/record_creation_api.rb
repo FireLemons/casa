@@ -234,6 +234,32 @@ class RecordCreator
     case_group_seed_results
   end
 
+  def seed_language (casa_org: nil, casa_org_id: nil)
+    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+
+    if casa_org.nil?
+      casa_org = CasaOrg.find(casa_org_id)
+    end
+
+    Language.create!(name: Faker::Nation.language, casa_org:)
+  end
+
+  def seed_languages(casa_orgs: nil, casa_org_ids: nil, count: 0)
+    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+
+    language_seed_results = []
+
+    count.times do
+      new_language = seed_language(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      language_seed_results.push(new_language.id)
+    rescue => exception
+      language_seed_results.push(exception)
+    end
+
+    language_seed_results
+  end
+
   def seed_mileage_rate (casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
@@ -258,16 +284,6 @@ class RecordCreator
     end
 
     mileage_rate_seed_results
-  end
-
-  def seed_language (casa_org: nil, casa_org_id: nil)
-    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
-
-    if casa_org.nil?
-      casa_org = CasaOrg.find(casa_org_id)
-    end
-
-    Language.create!(name: Faker::Nation.language, casa_org:)
   end
 
   private

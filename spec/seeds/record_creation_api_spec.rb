@@ -764,6 +764,134 @@ RSpec.describe RecordCreator do
     end
   end
 
+
+  describe "seed_language" do
+    describe "with valid parameters" do
+      it "creates a language" do
+        create(:casa_org)
+        original_language_count = Language.count
+
+        expect {
+          subject.seed_language(casa_org: CasaOrg.first)
+        }.to change { Language.count }.from(original_language_count).to(original_language_count + 1)
+      end
+
+      it "returns the newly created language" do
+        create(:casa_org)
+        new_language = subject.seed_language(casa_org: CasaOrg.first)
+
+        expect(new_language).to be_a(Language)
+      end
+
+      it "has randomness derived from the seed" do
+        create(:casa_org)
+
+        test_single_object_seed_method_seeded("name") do |subject|
+          subject.seed_language(casa_org: CasaOrg.first)
+        end
+      end
+    end
+
+    describe "with invalid parameters" do
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_language
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
+      end
+
+      it "throws an error when both casa_org and casa_org_id are used" do
+        casa_org = create(:casa_org)
+
+        expect {
+          subject.seed_language(casa_org:, casa_org_id: casa_org.id)
+        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+    end
+  end
+
+  describe "seed_languages" do
+    describe "with valid parameters" do
+      it "creates the specified number of languages" do
+        create(:casa_org)
+
+        original_language_count = Language.count
+        language_seed_count = 2
+
+        expect {
+          subject.seed_languages(casa_orgs: CasaOrg.all, count: language_seed_count)
+        }.to change { Language.count }.from(original_language_count).to(original_language_count + language_seed_count)
+      end
+
+      it "returns an array containing the ids of the languages created" do
+        create(:casa_org)
+
+        subject.seed_languages(casa_orgs: CasaOrg.all, count: 2).each do |language_id|
+          expect {
+            Language.find(language_id)
+          }.not_to raise_error
+        end
+      end
+
+      it "returns an array containing an error for each language that could not be created" do
+        error_array = subject.seed_languages(casa_org_ids: [-1], count: 2)
+
+        error_array.each do |error|
+          expect(error).to be_a(Exception)
+        end
+      end
+
+      it "returns empty array for negative counts" do
+        expect(subject.seed_languages(casa_org_ids: [1], count: -1)).to eq([])
+      end
+
+      it "has randomness derived from the seed" do
+        create(:casa_org)
+
+        test_multi_object_seed_method_seeded(Language, "name") do |subject|
+          subject.seed_languages(casa_orgs: CasaOrg.all, count: 2)
+        end
+      end
+    end
+
+    describe "with invalid parameters" do
+      it "throws an error when neither casa_orgs or casa_org_ids are used" do
+        expect {
+          subject.seed_languages
+        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
+      end
+
+      it "throws an error when both casa_orgs or casa_org_ids are used" do
+        expect {
+          subject.seed_languages(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
+        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
+      end
+
+      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_languages(casa_orgs: 2)
+        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
+      end
+
+      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
+        expect {
+          subject.seed_languages(casa_orgs: CasaOrg.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+      end
+
+      it "throws an error when casa_org_ids is not an array" do
+        expect {
+          subject.seed_languages(casa_org_ids: 2)
+        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
+      end
+
+      it "throws an error when casa_org_ids is an empty array" do
+        expect {
+          subject.seed_languages(casa_org_ids: [])
+        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+      end
+    end
+  end
+
   describe "seed_mileage_rate" do
     describe "with valid parameters" do
       it "creates a mileage rate" do
@@ -840,8 +968,8 @@ RSpec.describe RecordCreator do
         end
       end
 
-      it "returns an array containing an error for each casa case that could not be created" do
-        error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
+      it "returns an array containing an error for each mileage rate that could not be created" do
+        error_array = subject.seed_mileage_rates(casa_org_ids: [-1], count: 2)
 
         error_array.each do |error|
           expect(error).to be_a(Exception)
@@ -896,50 +1024,6 @@ RSpec.describe RecordCreator do
         expect {
           subject.seed_mileage_rates(casa_org_ids: [])
         }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
-      end
-    end
-  end
-
-  describe "seed_language" do
-    describe "with valid parameters" do
-      it "creates a language" do
-        create(:casa_org)
-        original_language_count = Language.count
-
-        expect {
-          subject.seed_language(casa_org: CasaOrg.first)
-        }.to change { Language.count }.from(original_language_count).to(original_language_count + 1)
-      end
-
-      it "returns the newly created language" do
-        create(:casa_org)
-        new_language = subject.seed_language(casa_org: CasaOrg.first)
-
-        expect(new_language).to be_a(Language)
-      end
-
-      it "has randomness derived from the seed" do
-        create(:casa_org)
-
-        test_single_object_seed_method_seeded("name") do |subject|
-          subject.seed_language(casa_org: CasaOrg.first)
-        end
-      end
-    end
-
-    describe "with invalid parameters" do
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_language
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
-
-      it "throws an error when both casa_org and casa_org_id are used" do
-        casa_org = create(:casa_org)
-
-        expect {
-          subject.seed_language(casa_org:, casa_org_id: casa_org.id)
-        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
       end
     end
   end

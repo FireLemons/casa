@@ -1,9 +1,3 @@
-seed_languages
-  tests
-
-manual seeding script
-  comment with usage hint
-
 check if activerecord arg is persisted
   default throws null reference error
 

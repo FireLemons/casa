@@ -202,14 +202,15 @@ RSpec.describe RecordCreator do
         create(:address, user: create(:user))
         create(:address, user: create(:user))
 
-        users_without_addresses = [create(:user), create(:user), create(:user), create(:user)]
+        users_without_address_count = 4
 
-        subject.seed_addresses(users: User.all, count: 4)
-        
-        expect(users_without_addresses[0].address).not_to be_nil
-        expect(users_without_addresses[1].address).not_to be_nil
-        expect(users_without_addresses[2].address).not_to be_nil
-        expect(users_without_addresses[3].address).not_to be_nil
+        users_without_addresses = create_list(:user, users_without_address_count)
+
+        subject.seed_addresses(users: User.all, count: users_without_address_count)
+
+        users_without_address_count.times do |i|
+          expect(users_without_addresses[i].address).not_to be_nil
+        end
       end
 
       it "creates the specified number of addresses" do
@@ -763,7 +764,6 @@ RSpec.describe RecordCreator do
       end
     end
   end
-
 
   describe "seed_language" do
     describe "with valid parameters" do

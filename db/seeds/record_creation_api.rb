@@ -234,7 +234,7 @@ class RecordCreator
     case_group_seed_results
   end
 
-  def seed_language (casa_org: nil, casa_org_id: nil)
+  def seed_language(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
     if casa_org.nil?
@@ -260,7 +260,7 @@ class RecordCreator
     language_seed_results
   end
 
-  def seed_mileage_rate (casa_org: nil, casa_org_id: nil)
+  def seed_mileage_rate(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
     if casa_org.nil?
@@ -270,7 +270,7 @@ class RecordCreator
     MileageRate.create!(amount: random_change_amount, casa_org:, effective_date: Faker::Date.backward)
   end
 
-  def seed_mileage_rates (casa_orgs: nil, casa_org_ids: nil, count: 0)
+  def seed_mileage_rates(casa_orgs: nil, casa_org_ids: nil, count: 0)
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
@@ -385,7 +385,7 @@ class RecordCreator
       model_collection.to_a
     else
       if model_class.nil?
-        raise ArgumentError.new("param model_class is required when passing an array of ids") 
+        raise ArgumentError.new("param model_class is required when passing an array of ids")
       end
 
       model_collection.clone.map do |model_id|
@@ -406,7 +406,7 @@ class RecordCreator
     "#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}"
   end
 
-  def random_change_amount ()
+  def random_change_amount
     @random.rand(100) * 0.01
   end
 

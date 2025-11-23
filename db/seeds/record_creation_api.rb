@@ -172,6 +172,24 @@ class RecordCreator
     new_banner
   end
 
+  def seed_banners(casa_orgs: nil, casa_org_ids: nil, casa_admins: nil, casa_admin_ids: nil, count: 0)
+    validated_casa_admins = validate_seed_n_records_required_model_params("casa_admin", "casa_admins", casa_admins, casa_admin_ids)
+    validated_casa_admins_as_id_array = model_collection_as_id_array(validated_casa_admins)
+    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+
+    banner_seed_results = []
+
+    count.times do
+      new_banner = seed_banner(casa_admin_id: pick_random_element(validated_casa_admins_as_id_array), casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      banner_seed_results.push(new_banner.id)
+    rescue => exception
+      banner_seed_results.push(exception)
+    end
+
+    banner_seed_results
+  end
+
   def seed_casa_case(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 

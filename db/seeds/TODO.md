@@ -1,3 +1,11 @@
+seed_banners
+  check prod for actual chance of banner expiration date being nil
+  check if user is admin
+  renders previous banners inactive
+  tests
+seed_banners
+  tests
+
 check if activerecord arg is persisted
   default throws null reference error
 

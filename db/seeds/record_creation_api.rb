@@ -141,6 +141,28 @@ class RecordCreator
     all_casa_admin_seed_results
   end
 
+  def seed_banner(casa_org: nil, casa_org_id: nil, casa_admin: nil, casa_admin_id: nil)
+    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+    validate_seed_single_record_required_model_params("casa_admin", casa_admin, casa_admin_id)
+
+    if casa_org.nil?
+      casa_org = CasaOrg.find(casa_org_id)
+    end
+
+    if casa_admin.nil?
+      casa_admin = CasaAdmin.find(casa_admin_id)
+    end
+
+    banner_name = Faker::Lorem.words(number: 2)
+    banner_message = Faker::Lorem.sentence
+    banner_expiration_date = random_banner_expiration_date
+
+    new_banner = Banner.create!(casa_org:, content: banner_message, expires_at: banner_expiration_date, name: banner_name, user: casa_admin)
+    Banner.where(active: true).where.not(id: new_banner.id).update_all(active: false)
+
+    new_banner
+  end
+
   def seed_casa_case(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
@@ -404,6 +426,13 @@ class RecordCreator
 
   def random_casa_case_number
     "#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}"
+  end
+
+  def random_banner_expiration_date
+    @random.rand < 0.3 ? nil : Faker::Date.between(
+      from: 1.week.from_now,
+      to: 6.months.from_now
+    )
   end
 
   def random_change_amount

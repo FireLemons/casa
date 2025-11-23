@@ -65,6 +65,98 @@ RSpec.describe RecordCreator do
     end
   end
 
+  describe "seed_banner" do
+    describe "with valid parameters" do
+      it "creates a banner" do
+        original_banner_count = Banner.count
+
+        casa_org = create(:casa_org)
+        banner_creator = create(:casa_admin, casa_org:)
+
+        expect {
+          subject.seed_banner(casa_admin: banner_creator, casa_org:)
+        }.to change { Banner.count }.from(original_banner_count).to(original_banner_count + 1)
+      end
+
+      it "marks all existing active banners as inactive" do
+        casa_org = create(:casa_org)
+        banner_creator = create(:casa_admin, casa_org:)
+
+        existing_active_banner = create(:banner, active: true, casa_org:, user: banner_creator)
+
+        subject.seed_banner(casa_admin: banner_creator, casa_org:)
+
+        expect(existing_active_banner.active).to be(true)
+      end
+
+      it "sets the new banner as active" do
+        casa_org = create(:casa_org)
+        banner_creator = create(:casa_admin, casa_org:)
+
+        expect(subject.seed_banner(casa_admin: banner_creator, casa_org:).active).to be(true)
+      end
+
+      it "returns the newly created banner" do
+        casa_org = create(:casa_org)
+        banner_creator = create(:casa_admin, casa_org:)
+
+        new_banner = subject.seed_banner(casa_admin: banner_creator, casa_org:)
+
+        expect(new_banner).to be_a(Banner)
+      end
+
+      it "has randomness derived from the seed" do
+        casa_org = create(:casa_org)
+        banner_creator = create(:casa_admin, casa_org:)
+
+        test_single_object_seed_method_seeded("content", "expires_at", "name") do |subject|
+          subject.seed_banner(casa_admin: banner_creator, casa_org:)
+        end
+      end
+    end
+
+    describe "with invalid parameters" do
+      it "throws an error when a user who is not an admin is used" do
+        casa_org = create(:casa_org)
+        banner_creator = create(:supervisor, casa_org:)
+
+        expect {
+          subject.seed_banner(casa_admin: banner_creator, casa_org:)
+        }.to raise_error { |e|
+          expect(e).to be_a(ArgumentError).or be_a(ActiveRecord::RecordNotFound)
+        }
+      end
+
+      it "throws an error when neither casa_admin or casa_admin_id are used" do
+        expect {
+          subject.seed_banner
+        }.to raise_error(ArgumentError, /casa_admin: or casa_admin_id: is required/)
+      end
+
+      it "throws an error when both casa_admin and casa_admin_id are used" do
+        casa_admin = create(:casa_admin)
+
+        expect {
+          subject.seed_banner(casa_admin:, casa_admin_id: casa_admin.id)
+        }.to raise_error(ArgumentError, /cannot use casa_admin: and casa_admin_id:/)
+      end
+
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_banner(casa_admin_id: 1)
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
+      end
+
+      it "throws an error when both casa_org and casa_org_id are used" do
+        casa_org = create(:casa_org)
+
+        expect {
+          subject.seed_banner(casa_admin_id: 1, casa_org:, casa_org_id: casa_org.id)
+        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+    end
+  end
+
   describe "seed_additional_expenses" do
     describe "with valid parameters" do
       it "creates the specified number of additional expenses" do

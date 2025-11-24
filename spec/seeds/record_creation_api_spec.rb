@@ -33,12 +33,6 @@ RSpec.describe RecordCreator do
         }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + 1)
       end
 
-      it "returns the newly created additional expense" do
-        new_additional_expense = subject.seed_additional_expense(case_contact: create(:case_contact))
-
-        expect(new_additional_expense).to be_a(AdditionalExpense)
-      end
-
       it "has randomness derived from the seed" do
         create(:case_contact)
 
@@ -46,21 +40,27 @@ RSpec.describe RecordCreator do
           subject.seed_additional_expense(case_contact: CaseContact.first)
         end
       end
+
+      it "returns the newly created additional expense" do
+        new_additional_expense = subject.seed_additional_expense(case_contact: create(:case_contact))
+
+        expect(new_additional_expense).to be_a(AdditionalExpense)
+      end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither case_contact or case_contact_id are used" do
-        expect {
-          subject.seed_additional_expense
-        }.to raise_error(ArgumentError, /case_contact: or case_contact_id: is required/)
-      end
-
       it "throws an error when both case_contact and case_contact_id are used" do
         case_contact = create(:case_contact)
 
         expect {
           subject.seed_additional_expense(case_contact:, case_contact_id: case_contact.id)
         }.to raise_error(ArgumentError, /cannot use case_contact: and case_contact_id:/)
+      end
+
+      it "throws an error when neither case_contact or case_contact_id are used" do
+        expect {
+          subject.seed_additional_expense
+        }.to raise_error(ArgumentError, /case_contact: or case_contact_id: is required/)
       end
     end
   end
@@ -77,13 +77,11 @@ RSpec.describe RecordCreator do
         }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + additional_expense_seed_count)
       end
 
-      it "returns an array containing the ids of the additional expenses created" do
+      it "has randomness derived from the seed" do
         create(:case_contact)
 
-        subject.seed_additional_expenses(case_contacts: CaseContact.all, count: 2).each do |additional_expense_id|
-          expect {
-            AdditionalExpense.find(additional_expense_id)
-          }.not_to raise_error
+        test_multi_object_seed_method_seeded(AdditionalExpense, "other_expense_amount", "other_expenses_describe") do |subject|
+          subject.seed_additional_expenses(case_contacts: CaseContact.all, count: 2)
         end
       end
 
@@ -95,42 +93,32 @@ RSpec.describe RecordCreator do
         end
       end
 
-      it "returns empty array for negative counts" do
-        expect(subject.seed_additional_expenses(case_contact_ids: [1], count: -1)).to eq([])
-      end
-
-      it "has randomness derived from the seed" do
+      it "returns an array containing the ids of the additional expenses created" do
         create(:case_contact)
 
-        test_multi_object_seed_method_seeded(AdditionalExpense, "other_expense_amount", "other_expenses_describe") do |subject|
-          subject.seed_additional_expenses(case_contacts: CaseContact.all, count: 2)
+        subject.seed_additional_expenses(case_contacts: CaseContact.all, count: 2).each do |additional_expense_id|
+          expect {
+            AdditionalExpense.find(additional_expense_id)
+          }.not_to raise_error
         end
+      end
+
+      it "returns empty array for negative counts" do
+        expect(subject.seed_additional_expenses(case_contact_ids: [1], count: -1)).to eq([])
       end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither case_contacts or case_contact_ids are used" do
-        expect {
-          subject.seed_additional_expenses
-        }.to raise_error(ArgumentError, /case_contacts: or case_contact_ids: is required/)
-      end
-
       it "throws an error when both case_contacts and case_contact_ids are used" do
         expect {
           subject.seed_additional_expenses(case_contacts: CaseContact.all, case_contact_ids: [1, 2])
         }.to raise_error(ArgumentError, /cannot use case_contacts: and case_contact_ids:/)
       end
 
-      it "throws an error when case_contacts is not an ActiveRecord::Relation" do
+      it "throws an error when case_contact_ids is an empty array" do
         expect {
-          subject.seed_additional_expenses(case_contacts: 2)
-        }.to raise_error(TypeError, /param case_contacts: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when case_contacts is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_additional_expenses(case_contacts: CaseContact.where(id: -1))
-        }.to raise_error(ArgumentError, /param case_contacts: must contain at least one case_contact/)
+          subject.seed_additional_expenses(case_contact_ids: [])
+        }.to raise_error(RangeError, /param case_contact_ids: must contain at least one element/)
       end
 
       it "throws an error when case_contact_ids is not an array" do
@@ -139,10 +127,22 @@ RSpec.describe RecordCreator do
         }.to raise_error(TypeError, /param case_contact_ids: must be an array/)
       end
 
-      it "throws an error when case_contact_ids is an empty array" do
+      it "throws an error when case_contacts is an empty ActiveRecord::Relation" do
         expect {
-          subject.seed_additional_expenses(case_contact_ids: [])
-        }.to raise_error(RangeError, /param case_contact_ids: must contain at least one element/)
+          subject.seed_additional_expenses(case_contacts: CaseContact.where(id: -1))
+        }.to raise_error(ArgumentError, /param case_contacts: must contain at least one case_contact/)
+      end
+
+      it "throws an error when case_contacts is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_additional_expenses(case_contacts: 2)
+        }.to raise_error(TypeError, /param case_contacts: must be an ActiveRecord::Relation/)
+      end
+
+      it "throws an error when neither case_contacts or case_contact_ids are used" do
+        expect {
+          subject.seed_additional_expenses
+        }.to raise_error(ArgumentError, /case_contacts: or case_contact_ids: is required/)
       end
     end
   end
@@ -157,12 +157,12 @@ RSpec.describe RecordCreator do
         }.to change { Address.count }.from(original_address_count).to(original_address_count + 1)
       end
 
-      it "updates an address if the user already has an address" do
-        user = create(:user)
-        Address.create(user:, content: "")
+      it "has randomness derived from the seed" do
+        create(:user)
 
-        subject.seed_address(user:)
-        expect(user.address.content).not_to eq("")
+        test_single_object_seed_method_seeded("content") do |subject|
+          subject.seed_address(user: User.first)
+        end
       end
 
       it "returns the newly created address" do
@@ -171,27 +171,29 @@ RSpec.describe RecordCreator do
         expect(new_address).to be_a(Address)
       end
 
-      it "has randomness derived from the seed" do
-        create(:user)
+      it "updates an address if the user already has an address" do
+        user = create(:user)
+        Address.create(user:, content: "")
 
-        test_single_object_seed_method_seeded("content") do |subject|
-          subject.seed_address(user: User.first)
-        end
+        subject.seed_address(user:)
+        expect(user.address.content).not_to eq("")
       end
     end
 
-    it "throws an error when neither user or user_id are used" do
-      expect {
-        subject.seed_address
-      }.to raise_error(ArgumentError, /user: or user_id: is required/)
-    end
+    describe "with invalid parameters" do
+      it "throws an error when both user and user_id are used" do
+        user = create(:user)
 
-    it "throws an error when both user and user_id are used" do
-      user = create(:user)
+        expect {
+          subject.seed_address(user:, user_id: user.id)
+        }.to raise_error(ArgumentError, /cannot use user: and user_id:/)
+      end
 
-      expect {
-        subject.seed_address(user:, user_id: user.id)
-      }.to raise_error(ArgumentError, /cannot use user: and user_id:/)
+      it "throws an error when neither user or user_id are used" do
+        expect {
+          subject.seed_address
+        }.to raise_error(ArgumentError, /user: or user_id: is required/)
+      end
     end
   end
 
@@ -223,6 +225,15 @@ RSpec.describe RecordCreator do
         }.to change { Address.count }.from(original_address_count).to(original_address_count + address_seed_count)
       end
 
+      it "has randomness derived from the seed" do
+        create(:user)
+        create(:user)
+
+        test_multi_object_seed_method_seeded(Address, "content") do |subject|
+          subject.seed_addresses(users: User.all, count: 2)
+        end
+      end
+
       it "overwrites an existing address if a user already has an address" do
         user_with_address = create(:user)
         create(:user)
@@ -249,40 +260,25 @@ RSpec.describe RecordCreator do
         create(:user)
         expect(subject.seed_addresses(users: User.all, count: -1)).to eq([])
       end
-
-      it "has randomness derived from the seed" do
-        create(:user)
-        create(:user)
-
-        test_multi_object_seed_method_seeded(Address, "content") do |subject|
-          subject.seed_addresses(users: User.all, count: 2)
-        end
-      end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither users or user_ids are used" do
-        expect {
-          subject.seed_addresses
-        }.to raise_error(ArgumentError, /users: or user_ids: is required/)
-      end
-
       it "throws an error when both users and user_ids are used" do
         expect {
           subject.seed_addresses(users: User.all, user_ids: [1, 2])
         }.to raise_error(ArgumentError, /cannot use users: and user_ids:/)
       end
 
-      it "throws an error when users is not an ActiveRecord::Relation" do
+      it "throws an error when neither users or user_ids are used" do
         expect {
-          subject.seed_addresses(users: 2)
-        }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
+          subject.seed_addresses
+        }.to raise_error(ArgumentError, /users: or user_ids: is required/)
       end
 
-      it "throws an error when users is an empty ActiveRecord::Relation" do
+      it "throws an error when user_ids is an empty array" do
         expect {
-          subject.seed_addresses(users: User.where(id: -1))
-        }.to raise_error(ArgumentError, /param users: must contain at least one user/)
+          subject.seed_addresses(user_ids: [])
+        }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
       end
 
       it "throws an error when user_ids is not an array" do
@@ -291,10 +287,16 @@ RSpec.describe RecordCreator do
         }.to raise_error(TypeError, /param user_ids: must be an array/)
       end
 
-      it "throws an error when user_ids is an empty array" do
+      it "throws an error when users is an empty ActiveRecord::Relation" do
         expect {
-          subject.seed_addresses(user_ids: [])
-        }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
+          subject.seed_addresses(users: User.where(id: -1))
+        }.to raise_error(ArgumentError, /param users: must contain at least one user/)
+      end
+
+      it "throws an error when users is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_addresses(users: 2)
+        }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
       end
     end
   end
@@ -308,16 +310,16 @@ RSpec.describe RecordCreator do
       }.to change { AllCasaAdmin.count }.from(original_all_casa_admin_count).to(original_all_casa_admin_count + 1)
     end
 
-    it "returns the newly created all casa admin" do
-      new_all_casa_admin = subject.seed_all_casa_admin
-
-      expect(new_all_casa_admin).to be_a(AllCasaAdmin)
-    end
-
     it "has randomness derived from the seed" do
       test_single_object_seed_method_seeded("email") do |subject|
         subject.seed_all_casa_admin
       end
+    end
+
+    it "returns the newly created all casa admin" do
+      new_all_casa_admin = subject.seed_all_casa_admin
+
+      expect(new_all_casa_admin).to be_a(AllCasaAdmin)
     end
   end
 
@@ -331,11 +333,9 @@ RSpec.describe RecordCreator do
       }.to change { AllCasaAdmin.count }.from(original_all_casa_admin_count).to(original_all_casa_admin_count + all_casa_admin_seed_count)
     end
 
-    it "returns an array containing the all casa admins created" do
-      subject.seed_all_casa_admins(count: 2).each do |all_casa_admin_id|
-        expect {
-          AllCasaAdmin.find(all_casa_admin_id)
-        }.not_to raise_error
+    it "has randomness derived from the seed" do
+      test_multi_object_seed_method_seeded(AllCasaAdmin, "email") do |subject|
+        subject.seed_all_casa_admins(count: 2)
       end
     end
 
@@ -355,14 +355,16 @@ RSpec.describe RecordCreator do
       end
     end
 
-    it "returns empty array for negative counts" do
-      expect(subject.seed_all_casa_admins(count: -1)).to eq([])
+    it "returns an array containing the all casa admins created" do
+      subject.seed_all_casa_admins(count: 2).each do |all_casa_admin_id|
+        expect {
+          AllCasaAdmin.find(all_casa_admin_id)
+        }.not_to raise_error
+      end
     end
 
-    it "has randomness derived from the seed" do
-      test_multi_object_seed_method_seeded(AllCasaAdmin, "email") do |subject|
-        subject.seed_all_casa_admins(count: 2)
-      end
+    it "returns empty array for negative counts" do
+      expect(subject.seed_all_casa_admins(count: -1)).to eq([])
     end
   end
 
@@ -379,6 +381,15 @@ RSpec.describe RecordCreator do
         }.to change { Banner.count }.from(original_banner_count).to(original_banner_count + 1)
       end
 
+      it "has randomness derived from the seed" do
+        casa_org = create(:casa_org)
+        banner_creator = create(:casa_admin, casa_org:)
+
+        test_single_object_seed_method_seeded("content", "expires_at", "name") do |subject|
+          subject.seed_banner(casa_admin: banner_creator, casa_org:)
+        end
+      end
+
       it "marks all existing active banners as inactive" do
         casa_org = create(:casa_org)
         banner_creator = create(:casa_admin, casa_org:)
@@ -390,13 +401,6 @@ RSpec.describe RecordCreator do
         expect(existing_active_banner.active).to be(true)
       end
 
-      it "sets the new banner as active" do
-        casa_org = create(:casa_org)
-        banner_creator = create(:casa_admin, casa_org:)
-
-        expect(subject.seed_banner(casa_admin: banner_creator, casa_org:).active).to be(true)
-      end
-
       it "returns the newly created banner" do
         casa_org = create(:casa_org)
         banner_creator = create(:casa_admin, casa_org:)
@@ -406,13 +410,11 @@ RSpec.describe RecordCreator do
         expect(new_banner).to be_a(Banner)
       end
 
-      it "has randomness derived from the seed" do
+      it "sets the new banner as active" do
         casa_org = create(:casa_org)
         banner_creator = create(:casa_admin, casa_org:)
 
-        test_single_object_seed_method_seeded("content", "expires_at", "name") do |subject|
-          subject.seed_banner(casa_admin: banner_creator, casa_org:)
-        end
+        expect(subject.seed_banner(casa_admin: banner_creator, casa_org:).active).to be(true)
       end
     end
 
@@ -428,12 +430,6 @@ RSpec.describe RecordCreator do
         }
       end
 
-      it "throws an error when neither casa_admin or casa_admin_id are used" do
-        expect {
-          subject.seed_banner
-        }.to raise_error(ArgumentError, /casa_admin: or casa_admin_id: is required/)
-      end
-
       it "throws an error when both casa_admin and casa_admin_id are used" do
         casa_admin = create(:casa_admin)
 
@@ -442,18 +438,24 @@ RSpec.describe RecordCreator do
         }.to raise_error(ArgumentError, /cannot use casa_admin: and casa_admin_id:/)
       end
 
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_banner(casa_admin_id: 1)
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
-
       it "throws an error when both casa_org and casa_org_id are used" do
         casa_org = create(:casa_org)
 
         expect {
           subject.seed_banner(casa_admin_id: 1, casa_org:, casa_org_id: casa_org.id)
         }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+
+      it "throws an error when neither casa_admin or casa_admin_id are used" do
+        expect {
+          subject.seed_banner
+        }.to raise_error(ArgumentError, /casa_admin: or casa_admin_id: is required/)
+      end
+
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_banner(casa_admin_id: 1)
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
       end
     end
   end
@@ -470,6 +472,15 @@ RSpec.describe RecordCreator do
         expect {
           subject.seed_banners(casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: banner_seed_count)
         }.to change { Banner.count }.from(original_banner_count).to(original_banner_count + banner_seed_count)
+      end
+
+      it "has randomness derived from the seed" do
+        casa_org = create(:casa_org)
+        create(:casa_admin, casa_org:)
+
+        test_multi_object_seed_method_seeded(Banner, "content", "expires_at", "name") do |subject|
+          subject.seed_banners(casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: 2)
+        end
       end
 
       it "returns an array containing the ids of the banners seeded" do
@@ -489,30 +500,9 @@ RSpec.describe RecordCreator do
 
         expect(subject.seed_banners(casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: -2)).to eq([])
       end
-
-      it "has randomness derived from the seed" do
-        casa_org = create(:casa_org)
-        create(:casa_admin, casa_org:)
-
-        test_multi_object_seed_method_seeded(Banner, "content", "expires_at", "name") do |subject|
-          subject.seed_banners(casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: 2)
-        end
-      end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_admins or casa_admin_ids are used" do
-        expect {
-          subject.seed_banners
-        }.to raise_error(ArgumentError, /casa_admins: or casa_admin_ids: is required/)
-      end
-
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1])
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
-      end
-
       it "throws an error when both casa_admins and casa_admin_ids are used" do
         expect {
           subject.seed_banners(casa_admins: CasaAdmin.all, casa_admin_ids: [1, 2])
@@ -525,28 +515,10 @@ RSpec.describe RecordCreator do
         }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
       end
 
-      it "throws an error when casa_admins is not an ActiveRecord::Relation" do
+      it "throws an error when casa_admin_ids is an empty array" do
         expect {
-          subject.seed_banners(casa_admins: 2)
-        }.to raise_error(TypeError, /param casa_admins: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1], casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when casa_admins is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_banners(casa_admins: CasaAdmin.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_admins: must contain at least one casa_admin/)
-      end
-
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1], casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+          subject.seed_banners(casa_admin_ids: [])
+        }.to raise_error(RangeError, /param casa_admin_ids: must contain at least one element/)
       end
 
       it "throws an error when casa_admin_ids is not an array" do
@@ -555,22 +527,52 @@ RSpec.describe RecordCreator do
         }.to raise_error(TypeError, /param casa_admin_ids: must be an array/)
       end
 
-      it "throws an error when casa_org_ids is not an array" do
+      it "throws an error when casa_admins is an empty ActiveRecord::Relation" do
         expect {
-          subject.seed_banners(casa_admin_ids: [1], casa_org_ids: 2)
-        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
+          subject.seed_banners(casa_admins: CasaAdmin.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_admins: must contain at least one casa_admin/)
       end
 
-      it "throws an error when casa_admin_ids is an empty array" do
+      it "throws an error when casa_admins is not an ActiveRecord::Relation" do
         expect {
-          subject.seed_banners(casa_admin_ids: [])
-        }.to raise_error(RangeError, /param casa_admin_ids: must contain at least one element/)
+          subject.seed_banners(casa_admins: 2)
+        }.to raise_error(TypeError, /param casa_admins: must be an ActiveRecord::Relation/)
       end
 
       it "throws an error when casa_org_ids is an empty array" do
         expect {
           subject.seed_banners(casa_admin_ids: [1], casa_org_ids: [])
         }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+      end
+
+      it "throws an error when casa_org_ids is not an array" do
+        expect {
+          subject.seed_banners(casa_admin_ids: [1], casa_org_ids: 2)
+        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
+      end
+
+      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
+        expect {
+          subject.seed_banners(casa_admin_ids: [1], casa_orgs: CasaOrg.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+      end
+
+      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_banners(casa_admin_ids: [1], casa_orgs: 2)
+        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
+      end
+
+      it "throws an error when neither casa_admins or casa_admin_ids are used" do
+        expect {
+          subject.seed_banners
+        }.to raise_error(ArgumentError, /casa_admins: or casa_admin_ids: is required/)
+      end
+
+      it "throws an error when neither casa_orgs or casa_org_ids are used" do
+        expect {
+          subject.seed_banners(casa_admin_ids: [1])
+        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
       end
     end
   end
@@ -585,13 +587,7 @@ RSpec.describe RecordCreator do
         }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + 1)
       end
 
-      it "returns the newly created casa case" do
-        new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
-
-        expect(new_casa_case).to be_a(CasaCase)
-      end
-
-      it "automatically generates values for fields birth_month_year_youth and date_in_care" do
+      it "generates values for fields birth_month_year_youth and date_in_care" do
         new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
 
         expect(new_casa_case.birth_month_year_youth).not_to be_nil
@@ -605,21 +601,27 @@ RSpec.describe RecordCreator do
           subject.seed_casa_case(casa_org: CasaOrg.first)
         end
       end
+
+      it "returns the newly created casa case" do
+        new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
+
+        expect(new_casa_case).to be_a(CasaCase)
+      end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_casa_case
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
-
       it "throws an error when both casa_org and casa_org_id are used" do
         casa_org = create(:casa_org)
 
         expect {
           subject.seed_casa_case(casa_org:, casa_org_id: casa_org.id)
         }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_casa_case
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
       end
     end
   end
@@ -637,13 +639,11 @@ RSpec.describe RecordCreator do
         }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + casa_case_seed_count)
       end
 
-      it "returns an array containing the ids of the casa cases created" do
+      it "has randomness derived from the seed" do
         create(:casa_org)
 
-        subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2).each do |casa_case_id|
-          expect {
-            CasaCase.find(casa_case_id)
-          }.not_to raise_error
+        test_multi_object_seed_method_seeded(CasaCase, "birth_month_year_youth", "case_number", "date_in_care") do |subject|
+          subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
         end
       end
 
@@ -655,42 +655,32 @@ RSpec.describe RecordCreator do
         end
       end
 
-      it "returns empty array for negative counts" do
-        expect(subject.seed_casa_cases(casa_org_ids: [1], count: -1)).to eq([])
-      end
-
-      it "has randomness derived from the seed" do
+      it "returns an array containing the ids of the casa cases created" do
         create(:casa_org)
 
-        test_multi_object_seed_method_seeded(CasaCase, "birth_month_year_youth", "case_number", "date_in_care") do |subject|
-          subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
+        subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2).each do |casa_case_id|
+          expect {
+            CasaCase.find(casa_case_id)
+          }.not_to raise_error
         end
+      end
+
+      it "returns empty array for negative counts" do
+        expect(subject.seed_casa_cases(casa_org_ids: [1], count: -1)).to eq([])
       end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_casa_cases
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
-      end
-
       it "throws an error when both casa_orgs or casa_org_ids are used" do
         expect {
           subject.seed_casa_cases(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
         }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
       end
 
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+      it "throws an error when casa_org_ids is an empty array" do
         expect {
-          subject.seed_casa_cases(casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_casa_cases(casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+          subject.seed_casa_cases(casa_org_ids: [])
+        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
       end
 
       it "throws an error when casa_org_ids is not an array" do
@@ -699,10 +689,22 @@ RSpec.describe RecordCreator do
         }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
       end
 
-      it "throws an error when casa_org_ids is an empty array" do
+      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
         expect {
-          subject.seed_casa_cases(casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+          subject.seed_casa_cases(casa_orgs: CasaOrg.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+      end
+
+      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_casa_cases(casa_orgs: 2)
+        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
+      end
+
+      it "throws an error when neither casa_orgs or casa_org_ids are used" do
+        expect {
+          subject.seed_casa_cases
+        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
       end
     end
   end
@@ -716,16 +718,16 @@ RSpec.describe RecordCreator do
       }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + 1)
     end
 
-    it "returns the newly created casa org" do
-      new_casa_org = subject.seed_casa_org
-
-      expect(new_casa_org).to be_a(CasaOrg)
-    end
-
     it "has randomness derived from the seed" do
       test_single_object_seed_method_seeded("address", "name") do |subject|
         subject.seed_casa_org
       end
+    end
+
+    it "returns the newly created casa org" do
+      new_casa_org = subject.seed_casa_org
+
+      expect(new_casa_org).to be_a(CasaOrg)
     end
   end
 
@@ -739,11 +741,9 @@ RSpec.describe RecordCreator do
       }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + casa_org_seed_count)
     end
 
-    it "returns an array containing the casa orgs created" do
-      subject.seed_casa_orgs(count: 2).each do |casa_org_id|
-        expect {
-          CasaOrg.find(casa_org_id)
-        }.not_to raise_error
+    it "has randomness derived from the seed" do
+      test_multi_object_seed_method_seeded(CasaOrg, "address", "name") do |subject|
+        subject.seed_casa_orgs(count: 2)
       end
     end
 
@@ -762,14 +762,16 @@ RSpec.describe RecordCreator do
       end
     end
 
-    it "returns empty array for negative counts" do
-      expect(subject.seed_casa_orgs(count: -1)).to eq([])
+    it "returns an array containing the casa orgs created" do
+      subject.seed_casa_orgs(count: 2).each do |casa_org_id|
+        expect {
+          CasaOrg.find(casa_org_id)
+        }.not_to raise_error
+      end
     end
 
-    it "has randomness derived from the seed" do
-      test_multi_object_seed_method_seeded(CasaOrg, "address", "name") do |subject|
-        subject.seed_casa_orgs(count: 2)
-      end
+    it "returns empty array for negative counts" do
+      expect(subject.seed_casa_orgs(count: -1)).to eq([])
     end
   end
 
@@ -785,14 +787,6 @@ RSpec.describe RecordCreator do
         }.to change { CaseGroup.count }.from(original_case_group_count).to(original_case_group_count + 1)
       end
 
-      it "returns the newly created case group" do
-        create(:casa_org)
-        create(:casa_case)
-        new_case_group = subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
-
-        expect(new_case_group).to be_a(CaseGroup)
-      end
-
       it "has randomness derived from the seed" do
         create(:casa_org)
         create(:casa_case)
@@ -801,21 +795,29 @@ RSpec.describe RecordCreator do
           subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
         end
       end
+
+      it "returns the newly created case group" do
+        create(:casa_org)
+        create(:casa_case)
+        new_case_group = subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
+
+        expect(new_case_group).to be_a(CaseGroup)
+      end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_case_group
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
-
       it "throws an error when both casa_org and casa_org_id are used" do
         casa_org = create(:casa_org)
 
         expect {
           subject.seed_case_group(casa_org:, casa_org_id: casa_org.id)
         }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_case_group
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
       end
     end
   end
@@ -864,14 +866,12 @@ RSpec.describe RecordCreator do
         expect(case_group_3_casa_cases.size).to be >= 2
       end
 
-      it "returns an array containing the ids of the case groups created" do
+      it "has randomness derived from the seed" do
         create(:casa_case)
         create(:casa_org)
 
-        subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2).each do |case_group_id|
-          expect {
-            CaseGroup.find(case_group_id)
-          }.not_to raise_error
+        test_multi_object_seed_method_seeded(CaseGroup, "name") do |subject|
+          subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2)
         end
       end
 
@@ -883,17 +883,19 @@ RSpec.describe RecordCreator do
         end
       end
 
-      it "returns empty array for negative counts" do
-        expect(subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: [1], count: -1)).to eq([])
-      end
-
-      it "has randomness derived from the seed" do
+      it "returns an array containing the ids of the case groups created" do
         create(:casa_case)
         create(:casa_org)
 
-        test_multi_object_seed_method_seeded(CaseGroup, "name") do |subject|
-          subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2)
+        subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2).each do |case_group_id|
+          expect {
+            CaseGroup.find(case_group_id)
+          }.not_to raise_error
         end
+      end
+
+      it "returns empty array for negative counts" do
+        expect(subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: [1], count: -1)).to eq([])
       end
     end
 
@@ -983,13 +985,6 @@ RSpec.describe RecordCreator do
         }.to change { Language.count }.from(original_language_count).to(original_language_count + 1)
       end
 
-      it "returns the newly created language" do
-        create(:casa_org)
-        new_language = subject.seed_language(casa_org: CasaOrg.first)
-
-        expect(new_language).to be_a(Language)
-      end
-
       it "has randomness derived from the seed" do
         create(:casa_org)
 
@@ -997,21 +992,28 @@ RSpec.describe RecordCreator do
           subject.seed_language(casa_org: CasaOrg.first)
         end
       end
+
+      it "returns the newly created language" do
+        create(:casa_org)
+        new_language = subject.seed_language(casa_org: CasaOrg.first)
+
+        expect(new_language).to be_a(Language)
+      end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_language
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
-
       it "throws an error when both casa_org and casa_org_id are used" do
         casa_org = create(:casa_org)
 
         expect {
           subject.seed_language(casa_org:, casa_org_id: casa_org.id)
         }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_language
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
       end
     end
   end
@@ -1029,13 +1031,11 @@ RSpec.describe RecordCreator do
         }.to change { Language.count }.from(original_language_count).to(original_language_count + language_seed_count)
       end
 
-      it "returns an array containing the ids of the languages created" do
+      it "has randomness derived from the seed" do
         create(:casa_org)
 
-        subject.seed_languages(casa_orgs: CasaOrg.all, count: 2).each do |language_id|
-          expect {
-            Language.find(language_id)
-          }.not_to raise_error
+        test_multi_object_seed_method_seeded(Language, "name") do |subject|
+          subject.seed_languages(casa_orgs: CasaOrg.all, count: 2)
         end
       end
 
@@ -1047,42 +1047,38 @@ RSpec.describe RecordCreator do
         end
       end
 
-      it "returns empty array for negative counts" do
-        expect(subject.seed_languages(casa_org_ids: [1], count: -1)).to eq([])
-      end
-
-      it "has randomness derived from the seed" do
+      it "returns an array containing the ids of the languages created" do
         create(:casa_org)
 
-        test_multi_object_seed_method_seeded(Language, "name") do |subject|
-          subject.seed_languages(casa_orgs: CasaOrg.all, count: 2)
+        subject.seed_languages(casa_orgs: CasaOrg.all, count: 2).each do |language_id|
+          expect {
+            Language.find(language_id)
+          }.not_to raise_error
         end
+      end
+
+      it "returns empty array for negative counts" do
+        expect(subject.seed_languages(casa_org_ids: [1], count: -1)).to eq([])
       end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_languages
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
-      end
-
       it "throws an error when both casa_orgs or casa_org_ids are used" do
         expect {
           subject.seed_languages(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
         }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
       end
 
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+      it "throws an error when neither casa_orgs or casa_org_ids are used" do
         expect {
-          subject.seed_languages(casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
+          subject.seed_languages
+        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
       end
 
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
+      it "throws an error when casa_org_ids is an empty array" do
         expect {
-          subject.seed_languages(casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+          subject.seed_languages(casa_org_ids: [])
+        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
       end
 
       it "throws an error when casa_org_ids is not an array" do
@@ -1091,10 +1087,16 @@ RSpec.describe RecordCreator do
         }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
       end
 
-      it "throws an error when casa_org_ids is an empty array" do
+      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
         expect {
-          subject.seed_languages(casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+          subject.seed_languages(casa_orgs: CasaOrg.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+      end
+
+      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_languages(casa_orgs: 2)
+        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
       end
     end
   end
@@ -1110,20 +1112,13 @@ RSpec.describe RecordCreator do
         }.to change { MileageRate.count }.from(original_mileage_rate_count).to(original_mileage_rate_count + 1)
       end
 
-      it "automatically generates a value for effective_date" do
+      it "generates a value for effective_date" do
         create(:casa_org)
         new_mileage_rate = subject.seed_mileage_rate(casa_org: CasaOrg.first)
 
         expect(new_mileage_rate).to be_a(MileageRate)
 
         expect(new_mileage_rate.effective_date).not_to be_nil
-      end
-
-      it "returns the newly created mileage rate" do
-        create(:casa_org)
-        new_mileage_rate = subject.seed_mileage_rate(casa_org: CasaOrg.first)
-
-        expect(new_mileage_rate).to be_a(MileageRate)
       end
 
       it "has randomness derived from the seed" do
@@ -1133,21 +1128,28 @@ RSpec.describe RecordCreator do
           subject.seed_mileage_rate(casa_org: CasaOrg.first)
         end
       end
+
+      it "returns the newly created mileage rate" do
+        create(:casa_org)
+        new_mileage_rate = subject.seed_mileage_rate(casa_org: CasaOrg.first)
+
+        expect(new_mileage_rate).to be_a(MileageRate)
+      end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_mileage_rate
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
-
       it "throws an error when both casa_org and casa_org_id are used" do
         casa_org = create(:casa_org)
 
         expect {
           subject.seed_mileage_rate(casa_org:, casa_org_id: casa_org.id)
         }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+      end
+
+      it "throws an error when neither casa_org or casa_org_id are used" do
+        expect {
+          subject.seed_mileage_rate
+        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
       end
     end
   end
@@ -1165,13 +1167,11 @@ RSpec.describe RecordCreator do
         }.to change { MileageRate.count }.from(original_mileage_rate_count).to(original_mileage_rate_count + mileage_rate_seed_count)
       end
 
-      it "returns an array containing the ids of the mileage rates created" do
+      it "has randomness derived from the seed" do
         create(:casa_org)
 
-        subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: 2).each do |mileage_rate_id|
-          expect {
-            MileageRate.find(mileage_rate_id)
-          }.not_to raise_error
+        test_multi_object_seed_method_seeded(MileageRate, "amount", "effective_date") do |subject|
+          subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: 2)
         end
       end
 
@@ -1183,42 +1183,38 @@ RSpec.describe RecordCreator do
         end
       end
 
-      it "returns empty array for negative counts" do
-        expect(subject.seed_mileage_rates(casa_org_ids: [1], count: -1)).to eq([])
-      end
-
-      it "has randomness derived from the seed" do
+      it "returns an array containing the ids of the mileage rates created" do
         create(:casa_org)
 
-        test_multi_object_seed_method_seeded(MileageRate, "amount", "effective_date") do |subject|
-          subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: 2)
+        subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: 2).each do |mileage_rate_id|
+          expect {
+            MileageRate.find(mileage_rate_id)
+          }.not_to raise_error
         end
+      end
+
+      it "returns empty array for negative counts" do
+        expect(subject.seed_mileage_rates(casa_org_ids: [1], count: -1)).to eq([])
       end
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_mileage_rates
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
-      end
-
       it "throws an error when both casa_orgs or casa_org_ids are used" do
         expect {
           subject.seed_mileage_rates(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
         }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
       end
 
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+      it "throws an error when neither casa_orgs or casa_org_ids are used" do
         expect {
-          subject.seed_mileage_rates(casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
+          subject.seed_mileage_rates
+        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
       end
 
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
+      it "throws an error when casa_org_ids is an empty array" do
         expect {
-          subject.seed_mileage_rates(casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+          subject.seed_mileage_rates(casa_org_ids: [])
+        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
       end
 
       it "throws an error when casa_org_ids is not an array" do
@@ -1227,10 +1223,16 @@ RSpec.describe RecordCreator do
         }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
       end
 
-      it "throws an error when casa_org_ids is an empty array" do
+      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
         expect {
-          subject.seed_mileage_rates(casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+          subject.seed_mileage_rates(casa_orgs: CasaOrg.where(id: -1))
+        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
+      end
+
+      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
+        expect {
+          subject.seed_mileage_rates(casa_orgs: 2)
+        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
       end
     end
   end

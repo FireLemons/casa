@@ -1,7 +1,7 @@
+alphabetize entire test suite
+
 seed_banner
   check prod for actual chance of banner expiration date being nil
-seed_banners
-  tests
 
 ```
   Failures:

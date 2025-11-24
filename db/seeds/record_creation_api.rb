@@ -456,7 +456,7 @@ class RecordCreator
   end
 
   def random_banner_expiration_date
-    (@random.rand < 0.3) ? nil : Faker::Date.between(
+    (@random.rand < 0.66) ? nil : Faker::Date.between( # chance of being nil measured from prod data Nov 24, 2025
       from: 1.week.from_now,
       to: 6.months.from_now
     )
@@ -502,7 +502,6 @@ class RecordCreator
 end
 
 #
-# banners
 # casa_case_contact_types
 # casa_case_emancipation_categories
 # casa_cases_emancipation_options

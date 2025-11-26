@@ -2,6 +2,14 @@ require "rails_helper"
 require_relative "../../db/seeds/record_creation_api"
 
 RSpec.describe RecordCreator do
+  RSpec.shared_examples "has randomness derived from the seed when generating a model" do
+    # TODO
+  end
+
+  RSpec.shared_examples "has randomness derived from the seed when generating several models" do
+    # TODO
+  end
+
   RSpec.shared_examples "the reference to a required model is present and unambiguous" do |model_param_name:, model_id_param_name:|
     it "throws an error when neither #{model_param_name} or #{model_id_param_name} is used" do
       params = minimal_valid_params.except(*all_model_params.keys)
@@ -14,6 +22,10 @@ RSpec.describe RecordCreator do
 
       expect { subject.public_send(method_name, **params) }.to raise_error(ArgumentError, /cannot use #{model_param_name}: and #{model_id_param_name}:/)
     end
+  end
+
+  RSpec.shared_examples "the reference to a set of required models is present and unambiguous" do |model_collection_param_name:, model_id_array_param_name:|
+    # TODO
   end
 
   subject { RecordCreator.new(RSpec.configuration.seed) }
@@ -40,7 +52,7 @@ RSpec.describe RecordCreator do
     let(:method_name) { :seed_additional_expense }
 
     let(:case_contact) { create(:case_contact) }
-    let(:minimal_valid_params) { {case_contact: case_contact} }
+    let(:minimal_valid_params) { {case_contact:} }
 
     describe "with valid parameters" do
       it "creates an additional expense" do
@@ -67,7 +79,7 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) { {case_contact: case_contact, case_contact_id: case_contact.id} }
+      let(:all_model_params) { {case_contact:, case_contact_id: case_contact.id} }
 
       include_examples("the reference to a required model is present and unambiguous", model_param_name: :case_contact, model_id_param_name: :case_contact_id)
     end
@@ -156,6 +168,11 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_address" do
+    let(:method_name) { :seed_address }
+
+    let(:user) { create(:user) }
+    let(:minimal_valid_params) { {user:} }
+
     describe "with valid parameters" do
       it "creates an address" do
         original_address_count = Address.count
@@ -189,19 +206,9 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both user and user_id are used" do
-        user = create(:user)
+      let(:all_model_params) { {user:, user_id: user.id} }
 
-        expect {
-          subject.seed_address(user:, user_id: user.id)
-        }.to raise_error(ArgumentError, /cannot use user: and user_id:/)
-      end
-
-      it "throws an error when neither user or user_id are used" do
-        expect {
-          subject.seed_address
-        }.to raise_error(ArgumentError, /user: or user_id: is required/)
-      end
+      include_examples("the reference to a required model is present and unambiguous", model_param_name: :user, model_id_param_name: :user_id)
     end
   end
 
@@ -377,6 +384,12 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_banner" do
+    let(:method_name) { :seed_banner }
+
+    let(:casa_admin) { create(:casa_admin) }
+    let(:casa_org) { create(:casa_org) }
+    let(:minimal_valid_params) { {casa_admin:, casa_org:} }
+
     describe "with valid parameters" do
       it "creates a banner" do
         original_banner_count = Banner.count
@@ -427,43 +440,27 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when a user who is not an admin is used" do
-        casa_org = create(:casa_org)
-        banner_creator = create(:supervisor, casa_org:)
+      describe "with invalid casa_admin parameters" do
+        let(:all_model_params) { {casa_admin:, casa_admin_id: casa_admin.id} }
 
-        expect {
-          subject.seed_banner(casa_admin: banner_creator, casa_org:)
-        }.to raise_error { |e|
-          expect(e).to be_a(ArgumentError).or be_a(ActiveRecord::RecordNotFound)
-        }
+        include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_admin, model_id_param_name: :casa_admin_id)
+
+        it "throws an error when a user who is not an admin is used" do
+          casa_org = create(:casa_org)
+          banner_creator = create(:supervisor, casa_org:)
+
+          expect {
+            subject.seed_banner(casa_admin: banner_creator, casa_org:)
+          }.to raise_error { |e|
+            expect(e).to be_a(ArgumentError).or be_a(ActiveRecord::RecordNotFound)
+          }
+        end
       end
 
-      it "throws an error when both casa_admin and casa_admin_id are used" do
-        casa_admin = create(:casa_admin)
+      describe "with invalid casa_org parameters" do
+        let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-        expect {
-          subject.seed_banner(casa_admin:, casa_admin_id: casa_admin.id)
-        }.to raise_error(ArgumentError, /cannot use casa_admin: and casa_admin_id:/)
-      end
-
-      it "throws an error when both casa_org and casa_org_id are used" do
-        casa_org = create(:casa_org)
-
-        expect {
-          subject.seed_banner(casa_admin_id: 1, casa_org:, casa_org_id: casa_org.id)
-        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
-      end
-
-      it "throws an error when neither casa_admin or casa_admin_id are used" do
-        expect {
-          subject.seed_banner
-        }.to raise_error(ArgumentError, /casa_admin: or casa_admin_id: is required/)
-      end
-
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_banner(casa_admin_id: 1)
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
+        include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
       end
     end
   end
@@ -586,6 +583,11 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_casa_case" do
+    let(:method_name) { :seed_casa_case }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:minimal_valid_params) { {casa_org:} }
+
     describe "with valid parameters" do
       it "creates a casa case" do
         original_casa_case_count = CasaCase.count
@@ -618,19 +620,9 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both casa_org and casa_org_id are used" do
-        casa_org = create(:casa_org)
+      let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-        expect {
-          subject.seed_casa_case(casa_org:, casa_org_id: casa_org.id)
-        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
-      end
-
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_casa_case
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
+      include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
     end
   end
 
@@ -784,6 +776,15 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_case_group" do
+    let(:method_name) { :seed_case_group }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:minimal_valid_params) {
+      create(:casa_case)
+
+      {casa_cases: CasaCase.all, casa_org:}
+    }
+
     describe "with valid parameters" do
       it "creates a case group" do
         create(:casa_org)
@@ -814,19 +815,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both casa_org and casa_org_id are used" do
-        casa_org = create(:casa_org)
+      describe "with invalid casa_org parameters" do
+        let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-        expect {
-          subject.seed_case_group(casa_org:, casa_org_id: casa_org.id)
-        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
+        include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
       end
 
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_case_group
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
+      # TODO error check casa cases
     end
   end
 
@@ -983,6 +978,11 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_language" do
+    let(:method_name) { :seed_language }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:minimal_valid_params) { {casa_org:} }
+
     describe "with valid parameters" do
       it "creates a language" do
         create(:casa_org)
@@ -1010,19 +1010,9 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both casa_org and casa_org_id are used" do
-        casa_org = create(:casa_org)
+      let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-        expect {
-          subject.seed_language(casa_org:, casa_org_id: casa_org.id)
-        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
-      end
-
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_language
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
+      include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
     end
   end
 
@@ -1110,6 +1100,11 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_mileage_rate" do
+    let(:method_name) { :seed_mileage_rate }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:minimal_valid_params) { {casa_org:} }
+
     describe "with valid parameters" do
       it "creates a mileage rate" do
         create(:casa_org)
@@ -1146,19 +1141,9 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both casa_org and casa_org_id are used" do
-        casa_org = create(:casa_org)
+      let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-        expect {
-          subject.seed_mileage_rate(casa_org:, casa_org_id: casa_org.id)
-        }.to raise_error(ArgumentError, /cannot use casa_org: and casa_org_id:/)
-      end
-
-      it "throws an error when neither casa_org or casa_org_id are used" do
-        expect {
-          subject.seed_mileage_rate
-        }.to raise_error(ArgumentError, /casa_org: or casa_org_id: is required/)
-      end
+      include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
     end
   end
 

@@ -2,7 +2,20 @@ require "rails_helper"
 require_relative "../../db/seeds/record_creation_api"
 
 RSpec.describe RecordCreator do
-  # RSpec.describe RecordCreator, skip: 'disabled by default because this is a rarely used developer feature' do
+  RSpec.shared_examples "the reference to a required model is present and unambiguous" do |model_param_name:, model_id_param_name:|
+    it "throws an error when neither #{model_param_name} or #{model_id_param_name} is used" do
+      params = minimal_valid_params.except(*all_model_params.keys)
+
+      expect { subject.public_send(method_name, **params) }.to raise_error(ArgumentError, /#{model_param_name}: or #{model_id_param_name}: is required/)
+    end
+
+    it "throws an error when both #{model_param_name} and #{model_id_param_name} are used" do
+      params = minimal_valid_params.merge(all_model_params)
+
+      expect { subject.public_send(method_name, **params) }.to raise_error(ArgumentError, /cannot use #{model_param_name}: and #{model_id_param_name}:/)
+    end
+  end
+
   subject { RecordCreator.new(RSpec.configuration.seed) }
 
   describe "getSeededRecordCounts" do
@@ -24,6 +37,11 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_additional_expense" do
+    let(:method_name) { :seed_additional_expense }
+
+    let(:case_contact) { create(:case_contact) }
+    let(:minimal_valid_params) { {case_contact: case_contact} }
+
     describe "with valid parameters" do
       it "creates an additional expense" do
         original_additional_expense_count = AdditionalExpense.count
@@ -49,19 +67,9 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both case_contact and case_contact_id are used" do
-        case_contact = create(:case_contact)
+      let(:all_model_params) { {case_contact: case_contact, case_contact_id: case_contact.id} }
 
-        expect {
-          subject.seed_additional_expense(case_contact:, case_contact_id: case_contact.id)
-        }.to raise_error(ArgumentError, /cannot use case_contact: and case_contact_id:/)
-      end
-
-      it "throws an error when neither case_contact or case_contact_id are used" do
-        expect {
-          subject.seed_additional_expense
-        }.to raise_error(ArgumentError, /case_contact: or case_contact_id: is required/)
-      end
+      include_examples("the reference to a required model is present and unambiguous", model_param_name: :case_contact, model_id_param_name: :case_contact_id)
     end
   end
 

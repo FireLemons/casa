@@ -37,11 +37,13 @@ RSpec.describe RecordCreator do
       }.to raise_error(ArgumentError, /cannot use #{model_collection_param_name}: and #{model_id_array_param_name}:/)
     end
 
-    # it "throws an error when case_contact_ids is an empty array" do
-    #   expect {
-    #     subject.seed_additional_expenses(case_contact_ids: [])
-    #   }.to raise_error(RangeError, /param case_contact_ids: must contain at least one element/)
-    # end
+    it "throws an error when case_contact_ids is an empty array" do
+      params = minimal_valid_params.except(model_collection_param_name).merge({model_id_array_param_name => []})
+
+      expect {
+        subject.public_send(method_name, **params)
+      }.to raise_error(RangeError, /param #{model_id_array_param_name}: must contain at least one element/)
+    end
 
     # it "throws an error when case_contact_ids is not an array" do
     #   expect {

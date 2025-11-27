@@ -28,7 +28,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "the reference to a nonempty required set of a model is present and unambiguous" do |model_collection_param_name:, model_id_array_param_name:|
+  RSpec.shared_examples "the reference to a nonempty required set of a model is present and unambiguous" do |model_name:, model_collection_param_name:, model_id_array_param_name:|
     it "throws an error when both #{model_collection_param_name} and #{model_id_array_param_name} are used" do
       params = minimal_valid_params.merge(all_model_params)
 
@@ -37,7 +37,7 @@ RSpec.describe RecordCreator do
       }.to raise_error(ArgumentError, /cannot use #{model_collection_param_name}: and #{model_id_array_param_name}:/)
     end
 
-    it "throws an error when case_contact_ids is an empty array" do
+    it "throws an error when #{model_id_array_param_name} is an empty array" do
       params = minimal_valid_params.except(model_collection_param_name).merge({model_id_array_param_name => []})
 
       expect {
@@ -45,29 +45,37 @@ RSpec.describe RecordCreator do
       }.to raise_error(RangeError, /param #{model_id_array_param_name}: must contain at least one element/)
     end
 
-    # it "throws an error when case_contact_ids is not an array" do
-    #   expect {
-    #     subject.seed_additional_expenses(case_contact_ids: 2)
-    #   }.to raise_error(TypeError, /param case_contact_ids: must be an array/)
-    # end
+    it "throws an error when #{model_id_array_param_name} is not an array" do
+      params = minimal_valid_params.except(model_collection_param_name).merge({model_id_array_param_name => 2})
 
-    # it "throws an error when case_contacts is an empty ActiveRecord::Relation" do
-    #   expect {
-    #     subject.seed_additional_expenses(case_contacts: CaseContact.where(id: -1))
-    #   }.to raise_error(ArgumentError, /param case_contacts: must contain at least one case_contact/)
-    # end
+      expect {
+        subject.public_send(method_name, **params)
+      }.to raise_error(TypeError, /param #{model_id_array_param_name}: must be an array/)
+    end
 
-    # it "throws an error when case_contacts is not an ActiveRecord::Relation" do
-    #   expect {
-    #     subject.seed_additional_expenses(case_contacts: 2)
-    #   }.to raise_error(TypeError, /param case_contacts: must be an ActiveRecord::Relation/)
-    # end
+    it "throws an error when #{model_collection_param_name} is an empty ActiveRecord::Relation" do
+      params = minimal_valid_params.except(model_id_array_param_name).merge({model_collection_param_name => all_model_params[model_collection_param_name].none})
 
-    # it "throws an error when neither case_contacts or case_contact_ids are used" do
-    #   expect {
-    #     subject.seed_additional_expenses
-    #   }.to raise_error(ArgumentError, /case_contacts: or case_contact_ids: is required/)
-    # end
+      expect {
+        subject.public_send(method_name, **params)
+      }.to raise_error(ArgumentError, /param #{model_collection_param_name}: must contain at least one #{model_name}/)
+    end
+
+    it "throws an error when #{model_collection_param_name} is not an ActiveRecord::Relation" do
+      params = minimal_valid_params.except(model_id_array_param_name).merge({model_collection_param_name => 2})
+
+      expect {
+        subject.public_send(method_name, **params)
+      }.to raise_error(TypeError, /param #{model_collection_param_name}: must be an ActiveRecord::Relation/)
+    end
+
+    it "throws an error when neither #{model_collection_param_name} or #{model_id_array_param_name} are used" do
+      params = minimal_valid_params.except(*all_model_params.keys)
+
+      expect {
+        subject.public_send(method_name, **params)
+      }.to raise_error(ArgumentError, /#{model_collection_param_name}: or #{model_id_array_param_name}: is required/)
+    end
   end
 
   subject { RecordCreator.new(RSpec.configuration.seed) }
@@ -186,37 +194,7 @@ RSpec.describe RecordCreator do
         {case_contacts: CaseContact.all, case_contact_ids: case_contact.id}
       }
 
-      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_collection_param_name: :case_contacts, model_id_array_param_name: :case_contact_ids)
-
-      it "throws an error when case_contact_ids is an empty array" do
-        expect {
-          subject.seed_additional_expenses(case_contact_ids: [])
-        }.to raise_error(RangeError, /param case_contact_ids: must contain at least one element/)
-      end
-
-      it "throws an error when case_contact_ids is not an array" do
-        expect {
-          subject.seed_additional_expenses(case_contact_ids: 2)
-        }.to raise_error(TypeError, /param case_contact_ids: must be an array/)
-      end
-
-      it "throws an error when case_contacts is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_additional_expenses(case_contacts: CaseContact.where(id: -1))
-        }.to raise_error(ArgumentError, /param case_contacts: must contain at least one case_contact/)
-      end
-
-      it "throws an error when case_contacts is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_additional_expenses(case_contacts: 2)
-        }.to raise_error(TypeError, /param case_contacts: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when neither case_contacts or case_contact_ids are used" do
-        expect {
-          subject.seed_additional_expenses
-        }.to raise_error(ArgumentError, /case_contacts: or case_contact_ids: is required/)
-      end
+      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "case_contact", model_collection_param_name: :case_contacts, model_id_array_param_name: :case_contact_ids)
     end
   end
 

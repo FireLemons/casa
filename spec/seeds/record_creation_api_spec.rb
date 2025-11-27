@@ -14,18 +14,58 @@ RSpec.describe RecordCreator do
     it "throws an error when neither #{model_param_name} or #{model_id_param_name} is used" do
       params = minimal_valid_params.except(*all_model_params.keys)
 
-      expect { subject.public_send(method_name, **params) }.to raise_error(ArgumentError, /#{model_param_name}: or #{model_id_param_name}: is required/)
+      expect {
+        subject.public_send(method_name, **params)
+      }.to raise_error(ArgumentError, /#{model_param_name}: or #{model_id_param_name}: is required/)
     end
 
     it "throws an error when both #{model_param_name} and #{model_id_param_name} are used" do
       params = minimal_valid_params.merge(all_model_params)
 
-      expect { subject.public_send(method_name, **params) }.to raise_error(ArgumentError, /cannot use #{model_param_name}: and #{model_id_param_name}:/)
+      expect {
+        subject.public_send(method_name, **params)
+      }.to raise_error(ArgumentError, /cannot use #{model_param_name}: and #{model_id_param_name}:/)
     end
   end
 
-  RSpec.shared_examples "the reference to a set of required models is present and unambiguous" do |model_collection_param_name:, model_id_array_param_name:|
-    # TODO
+  RSpec.shared_examples "the reference to a nonempty required set of a model is present and unambiguous" do |model_collection_param_name:, model_id_array_param_name:|
+    it "throws an error when both #{model_collection_param_name} and #{model_id_array_param_name} are used" do
+      params = minimal_valid_params.merge(all_model_params)
+
+      expect {
+        subject.public_send(method_name, **params)
+      }.to raise_error(ArgumentError, /cannot use #{model_collection_param_name}: and #{model_id_array_param_name}:/)
+    end
+
+    # it "throws an error when case_contact_ids is an empty array" do
+    #   expect {
+    #     subject.seed_additional_expenses(case_contact_ids: [])
+    #   }.to raise_error(RangeError, /param case_contact_ids: must contain at least one element/)
+    # end
+
+    # it "throws an error when case_contact_ids is not an array" do
+    #   expect {
+    #     subject.seed_additional_expenses(case_contact_ids: 2)
+    #   }.to raise_error(TypeError, /param case_contact_ids: must be an array/)
+    # end
+
+    # it "throws an error when case_contacts is an empty ActiveRecord::Relation" do
+    #   expect {
+    #     subject.seed_additional_expenses(case_contacts: CaseContact.where(id: -1))
+    #   }.to raise_error(ArgumentError, /param case_contacts: must contain at least one case_contact/)
+    # end
+
+    # it "throws an error when case_contacts is not an ActiveRecord::Relation" do
+    #   expect {
+    #     subject.seed_additional_expenses(case_contacts: 2)
+    #   }.to raise_error(TypeError, /param case_contacts: must be an ActiveRecord::Relation/)
+    # end
+
+    # it "throws an error when neither case_contacts or case_contact_ids are used" do
+    #   expect {
+    #     subject.seed_additional_expenses
+    #   }.to raise_error(ArgumentError, /case_contacts: or case_contact_ids: is required/)
+    # end
   end
 
   subject { RecordCreator.new(RSpec.configuration.seed) }
@@ -86,6 +126,15 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_additional_expenses" do
+    let(:method_name) { :seed_additional_expenses }
+
+    let(:case_contact) { create(:case_contact) }
+    let(:minimal_valid_params) {
+      case_contact # triggers lazy load
+
+      {case_contacts: CaseContact.all, count: 2}
+    }
+
     describe "with valid parameters" do
       it "creates the specified number of additional expenses" do
         create(:case_contact)
@@ -129,11 +178,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both case_contacts and case_contact_ids are used" do
-        expect {
-          subject.seed_additional_expenses(case_contacts: CaseContact.all, case_contact_ids: [1, 2])
-        }.to raise_error(ArgumentError, /cannot use case_contacts: and case_contact_ids:/)
-      end
+      let(:all_model_params) {
+        case_contact # triggers lazy load
+
+        {case_contacts: CaseContact.all, case_contact_ids: case_contact.id}
+      }
+
+      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_collection_param_name: :case_contacts, model_id_array_param_name: :case_contact_ids)
 
       it "throws an error when case_contact_ids is an empty array" do
         expect {
@@ -778,9 +829,10 @@ RSpec.describe RecordCreator do
   describe "seed_case_group" do
     let(:method_name) { :seed_case_group }
 
+    let(:casa_case) { create(:casa_case) }
     let(:casa_org) { create(:casa_org) }
     let(:minimal_valid_params) {
-      create(:casa_case)
+      casa_case
 
       {casa_cases: CasaCase.all, casa_org:}
     }

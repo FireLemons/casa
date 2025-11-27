@@ -12,8 +12,17 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "creates the specified number of models" do
-    # TODO
+  RSpec.shared_examples "creates the specified number of models" do |model_class:, model_plural_name:|
+    it "creates the specified number of #{model_plural_name}" do
+      model_generation_count = 2
+      params = minimal_valid_params.merge({count: model_generation_count})
+
+      original_model_count = model_class.count
+
+      expect {
+        subject.public_send(method_name, **params)
+      }.to change { model_class.count }.from(original_model_count).to(original_model_count + model_generation_count)
+    end
   end
 
   RSpec.shared_examples "has randomness derived from the seed when generating a model" do
@@ -162,15 +171,17 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      it "creates the specified number of additional expenses" do
-        create(:case_contact)
-        original_additional_expense_count = AdditionalExpense.count
-        additional_expense_seed_count = 2
+      include_examples("creates the specified number of models", model_class: AdditionalExpense, model_plural_name: "additional expenses")
 
-        expect {
-          subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count)
-        }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + additional_expense_seed_count)
-      end
+      # it "creates the specified number of additional expenses" do
+      #   create(:case_contact)
+      #   original_additional_expense_count = AdditionalExpense.count
+      #   additional_expense_seed_count = 2
+
+      #   expect {
+      #     subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count)
+      #   }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + additional_expense_seed_count)
+      # end
 
       it "has randomness derived from the seed" do
         create(:case_contact)

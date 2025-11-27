@@ -2,11 +2,33 @@ require "rails_helper"
 require_relative "../../db/seeds/record_creation_api"
 
 RSpec.describe RecordCreator do
+  RSpec.shared_examples "creates the model" do |model_class:, model_name:|
+    it "creates one #{model_name}" do
+      original_model_count = model_class.count
+
+      expect {
+        subject.public_send(method_name, **minimal_valid_params)
+      }.to change { model_class.count }.from(original_model_count).to(original_model_count + 1)
+    end
+  end
+
+  RSpec.shared_examples "creates the specified number of models" do
+    # TODO
+  end
+
   RSpec.shared_examples "has randomness derived from the seed when generating a model" do
     # TODO
   end
 
   RSpec.shared_examples "has randomness derived from the seed when generating several models" do
+    # TODO
+  end
+
+  RSpec.shared_examples "returns the generated model" do
+    # TODO
+  end
+
+  RSpec.shared_examples "returns the ids of the generated models" do
     # TODO
   end
 
@@ -105,13 +127,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {case_contact:} }
 
     describe "with valid parameters" do
-      it "creates an additional expense" do
-        original_additional_expense_count = AdditionalExpense.count
-
-        expect {
-          subject.seed_additional_expense(case_contact: create(:case_contact))
-        }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + 1)
-      end
+      include_examples("creates the model", model_class: AdditionalExpense, model_name: "additional_expense")
 
       it "has randomness derived from the seed" do
         create(:case_contact)

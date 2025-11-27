@@ -173,16 +173,6 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the specified number of models", model_class: AdditionalExpense, model_plural_name: "additional expenses")
 
-      # it "creates the specified number of additional expenses" do
-      #   create(:case_contact)
-      #   original_additional_expense_count = AdditionalExpense.count
-      #   additional_expense_seed_count = 2
-
-      #   expect {
-      #     subject.seed_additional_expenses(case_contacts: CaseContact.all, count: additional_expense_seed_count)
-      #   }.to change { AdditionalExpense.count }.from(original_additional_expense_count).to(original_additional_expense_count + additional_expense_seed_count)
-      # end
-
       it "has randomness derived from the seed" do
         create(:case_contact)
 
@@ -267,14 +257,18 @@ RSpec.describe RecordCreator do
   describe "seed_addresses" do
     let(:method_name) { :seed_addresses }
 
-    let(:user) { create(:user) }
+    let(:user_a) { create(:user) }
+    let(:user_b) { create(:user) }
     let(:minimal_valid_params) {
-      user # triggers lazy load
+      user_a # triggers lazy load
+      user_b
 
       {users: User.all, count: 2}
     }
 
     describe "with valid parameters" do
+      include_examples("creates the specified number of models", model_class: Address, model_plural_name: "addresses")
+
       it "associates the new addresses with users without addresses when possible" do
         create(:address, user: create(:user))
         create(:address, user: create(:user))
@@ -288,17 +282,6 @@ RSpec.describe RecordCreator do
         users_without_address_count.times do |i|
           expect(users_without_addresses[i].address).not_to be_nil
         end
-      end
-
-      it "creates the specified number of addresses" do
-        create(:user)
-        create(:user)
-        original_address_count = Address.count
-        address_seed_count = 2
-
-        expect {
-          subject.seed_addresses(users: User.all, count: address_seed_count)
-        }.to change { Address.count }.from(original_address_count).to(original_address_count + address_seed_count)
       end
 
       it "has randomness derived from the seed" do
@@ -340,9 +323,10 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       let(:all_model_params) {
-        user # triggers lazy load
+        user_a # triggers lazy load
+        user_b
 
-        {users: User.all, user_ids: user.id}
+        {users: User.all, user_ids: [user_a.id, user_b.id]}
       }
 
       include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "user", model_collection_param_name: :users, model_id_array_param_name: :user_ids)
@@ -369,14 +353,11 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_all_casa_admins" do
-    it "creates the specified number of all casa admins" do
-      original_all_casa_admin_count = AllCasaAdmin.count
-      all_casa_admin_seed_count = 2
+    let(:method_name) { :seed_all_casa_admins }
 
-      expect {
-        subject.seed_all_casa_admins(count: all_casa_admin_seed_count)
-      }.to change { AllCasaAdmin.count }.from(original_all_casa_admin_count).to(original_all_casa_admin_count + all_casa_admin_seed_count)
-    end
+    let(:minimal_valid_params) { {} }
+
+    include_examples("creates the specified number of models", model_class: AllCasaAdmin, model_plural_name: "all casa admins")
 
     it "has randomness derived from the seed" do
       test_multi_object_seed_method_seeded(AllCasaAdmin, "email") do |subject|
@@ -498,17 +479,7 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      it "creates the specified number of banners" do
-        casa_org = create(:casa_org)
-        create(:casa_admin, casa_org:)
-
-        original_banner_count = Banner.count
-        banner_seed_count = 2
-
-        expect {
-          subject.seed_banners(casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: banner_seed_count)
-        }.to change { Banner.count }.from(original_banner_count).to(original_banner_count + banner_seed_count)
-      end
+      include_examples("creates the specified number of models", model_class: Banner, model_plural_name: "banners")
 
       it "has randomness derived from the seed" do
         casa_org = create(:casa_org)
@@ -610,16 +581,7 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      it "creates the specified number of casa cases" do
-        create(:casa_org)
-
-        original_casa_case_count = CasaCase.count
-        casa_case_seed_count = 2
-
-        expect {
-          subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: casa_case_seed_count)
-        }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + casa_case_seed_count)
-      end
+      include_examples("creates the specified number of models", model_class: CasaCase, model_plural_name: "casa cases")
 
       it "has randomness derived from the seed" do
         create(:casa_org)
@@ -683,14 +645,10 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_casa_orgs" do
-    it "creates the specified number of casa orgs" do
-      original_casa_org_count = CasaOrg.count
-      casa_org_seed_count = 2
+    let(:method_name) { :seed_casa_orgs }
+    let(:minimal_valid_params) { {} }
 
-      expect {
-        subject.seed_casa_orgs(count: casa_org_seed_count)
-      }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + casa_org_seed_count)
-    end
+    include_examples("creates the specified number of models", model_class: CasaOrg, model_plural_name: "casa orgs")
 
     it "has randomness derived from the seed" do
       test_multi_object_seed_method_seeded(CasaOrg, "address", "name") do |subject|
@@ -789,16 +747,7 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      it "creates the specified number of case groups" do
-        create(:casa_case)
-        create(:casa_org)
-        original_case_group_count = CaseGroup.count
-        case_group_seed_count = 2
-
-        expect {
-          subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: case_group_seed_count)
-        }.to change { CaseGroup.count }.from(original_case_group_count).to(original_case_group_count + case_group_seed_count)
-      end
+      include_examples("creates the specified number of models", model_class: CaseGroup, model_plural_name: "case groups")
 
       it "does not add the same case to multiple groups when there are there are enough cases for each group" do
         create(:casa_case)
@@ -930,16 +879,7 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      it "creates the specified number of languages" do
-        create(:casa_org)
-
-        original_language_count = Language.count
-        language_seed_count = 2
-
-        expect {
-          subject.seed_languages(casa_orgs: CasaOrg.all, count: language_seed_count)
-        }.to change { Language.count }.from(original_language_count).to(original_language_count + language_seed_count)
-      end
+      include_examples("creates the specified number of models", model_class: Language, model_plural_name: "languages")
 
       it "has randomness derived from the seed" do
         create(:casa_org)
@@ -1035,16 +975,7 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      it "creates the specified number of mileage rates" do
-        create(:casa_org)
-
-        original_mileage_rate_count = MileageRate.count
-        mileage_rate_seed_count = 2
-
-        expect {
-          subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: mileage_rate_seed_count)
-        }.to change { MileageRate.count }.from(original_mileage_rate_count).to(original_mileage_rate_count + mileage_rate_seed_count)
-      end
+      include_examples("creates the specified number of models", model_class: MileageRate, model_plural_name: "mileage rates")
 
       it "has randomness derived from the seed" do
         create(:casa_org)

@@ -127,7 +127,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {case_contact:} }
 
     describe "with valid parameters" do
-      include_examples("creates the model", model_class: AdditionalExpense, model_name: "additional_expense")
+      include_examples("creates the model", model_class: AdditionalExpense, model_name: "additional expense")
 
       it "has randomness derived from the seed" do
         create(:case_contact)
@@ -221,13 +221,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {user:} }
 
     describe "with valid parameters" do
-      it "creates an address" do
-        original_address_count = Address.count
-
-        expect {
-          subject.seed_address(user: create(:user))
-        }.to change { Address.count }.from(original_address_count).to(original_address_count + 1)
-      end
+      include_examples("creates the model", model_class: Address, model_name: "address")
 
       it "has randomness derived from the seed" do
         create(:user)
@@ -345,13 +339,10 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_all_casa_admin" do
-    it "creates an all casa admin" do
-      original_all_casa_admin_count = AllCasaAdmin.count
+    let(:method_name) { :seed_all_casa_admin }
+    let(:minimal_valid_params) { {} }
 
-      expect {
-        subject.seed_all_casa_admin
-      }.to change { AllCasaAdmin.count }.from(original_all_casa_admin_count).to(original_all_casa_admin_count + 1)
-    end
+    include_examples("creates the model", model_class: AllCasaAdmin, model_name: "all casa admin")
 
     it "has randomness derived from the seed" do
       test_single_object_seed_method_seeded("email") do |subject|
@@ -419,16 +410,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {casa_admin:, casa_org:} }
 
     describe "with valid parameters" do
-      it "creates a banner" do
-        original_banner_count = Banner.count
-
-        casa_org = create(:casa_org)
-        banner_creator = create(:casa_admin, casa_org:)
-
-        expect {
-          subject.seed_banner(casa_admin: banner_creator, casa_org:)
-        }.to change { Banner.count }.from(original_banner_count).to(original_banner_count + 1)
-      end
+      include_examples("creates the model", model_class: Banner, model_name: "banner")
 
       it "has randomness derived from the seed" do
         casa_org = create(:casa_org)
@@ -575,13 +557,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {casa_org:} }
 
     describe "with valid parameters" do
-      it "creates a casa case" do
-        original_casa_case_count = CasaCase.count
-
-        expect {
-          subject.seed_casa_case(casa_org: create(:casa_org))
-        }.to change { CasaCase.count }.from(original_casa_case_count).to(original_casa_case_count + 1)
-      end
+      include_examples("creates the model", model_class: CasaCase, model_name: "casa case")
 
       it "generates values for fields birth_month_year_youth and date_in_care" do
         new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
@@ -677,13 +653,10 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_casa_org" do
-    it "creates a casa org" do
-      original_casa_org_count = CasaOrg.count
+    let(:method_name) { :seed_casa_org }
+    let(:minimal_valid_params) { {} }
 
-      expect {
-        subject.seed_casa_org
-      }.to change { CasaOrg.count }.from(original_casa_org_count).to(original_casa_org_count + 1)
-    end
+    include_examples("creates the model", model_class: CasaOrg, model_name: "casa org")
 
     it "has randomness derived from the seed" do
       test_single_object_seed_method_seeded("address", "name") do |subject|
@@ -754,15 +727,7 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      it "creates a case group" do
-        create(:casa_org)
-        create(:casa_case)
-        original_case_group_count = CaseGroup.count
-
-        expect {
-          subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
-        }.to change { CaseGroup.count }.from(original_case_group_count).to(original_case_group_count + 1)
-      end
+      include_examples("creates the model", model_class: CaseGroup, model_name: "case group")
 
       it "has randomness derived from the seed" do
         create(:casa_org)
@@ -918,14 +883,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {casa_org:} }
 
     describe "with valid parameters" do
-      it "creates a language" do
-        create(:casa_org)
-        original_language_count = Language.count
-
-        expect {
-          subject.seed_language(casa_org: CasaOrg.first)
-        }.to change { Language.count }.from(original_language_count).to(original_language_count + 1)
-      end
+      include_examples("creates the model", model_class: Language, model_name: "language")
 
       it "has randomness derived from the seed" do
         create(:casa_org)
@@ -1021,14 +979,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {casa_org:} }
 
     describe "with valid parameters" do
-      it "creates a mileage rate" do
-        create(:casa_org)
-        original_mileage_rate_count = MileageRate.count
-
-        expect {
-          subject.seed_mileage_rate(casa_org: CasaOrg.first)
-        }.to change { MileageRate.count }.from(original_mileage_rate_count).to(original_mileage_rate_count + 1)
-      end
+      include_examples("creates the model", model_class: MileageRate, model_name: "mileage rate")
 
       it "generates a value for effective_date" do
         create(:casa_org)

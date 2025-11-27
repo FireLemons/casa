@@ -1,6 +1,5 @@
-1326 Lines
+I can cut the `_ids` from `x_ids` to get a singular x
 
-seed_case_group missing tests for casa_cases
 More DRY for test suite
 
 Flake: I think languages just have a high chance to have duplicate names

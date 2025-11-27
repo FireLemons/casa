@@ -244,6 +244,15 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_addresses" do
+    let(:method_name) { :seed_addresses }
+
+    let(:user) { create(:user) }
+    let(:minimal_valid_params) {
+      user # triggers lazy load
+
+      {users: User.all, count: 2}
+    }
+
     describe "with valid parameters" do
       it "associates the new addresses with users without addresses when possible" do
         create(:address, user: create(:user))
@@ -309,41 +318,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both users and user_ids are used" do
-        expect {
-          subject.seed_addresses(users: User.all, user_ids: [1, 2])
-        }.to raise_error(ArgumentError, /cannot use users: and user_ids:/)
-      end
+      let(:all_model_params) {
+        user # triggers lazy load
 
-      it "throws an error when neither users or user_ids are used" do
-        expect {
-          subject.seed_addresses
-        }.to raise_error(ArgumentError, /users: or user_ids: is required/)
-      end
+        {users: User.all, user_ids: user.id}
+      }
 
-      it "throws an error when user_ids is an empty array" do
-        expect {
-          subject.seed_addresses(user_ids: [])
-        }.to raise_error(RangeError, /param user_ids: must contain at least one element/)
-      end
-
-      it "throws an error when user_ids is not an array" do
-        expect {
-          subject.seed_addresses(user_ids: 2)
-        }.to raise_error(TypeError, /param user_ids: must be an array/)
-      end
-
-      it "throws an error when users is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_addresses(users: User.where(id: -1))
-        }.to raise_error(ArgumentError, /param users: must contain at least one user/)
-      end
-
-      it "throws an error when users is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_addresses(users: 2)
-        }.to raise_error(TypeError, /param users: must be an ActiveRecord::Relation/)
-      end
+      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "user", model_collection_param_name: :users, model_id_array_param_name: :user_ids)
     end
   end
 
@@ -497,6 +478,16 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_banners" do
+    let(:method_name) { :seed_banners }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:casa_admin) { create(:casa_admin, casa_org:) }
+    let(:minimal_valid_params) {
+      casa_admin # triggers lazy load
+
+      {casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: 2}
+    }
+
     describe "with valid parameters" do
       it "creates the specified number of banners" do
         casa_org = create(:casa_org)
@@ -539,76 +530,24 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both casa_admins and casa_admin_ids are used" do
-        expect {
-          subject.seed_banners(casa_admins: CasaAdmin.all, casa_admin_ids: [1, 2])
-        }.to raise_error(ArgumentError, /cannot use casa_admins: and casa_admin_ids:/)
+      describe "with invalid parameters for a set of casa_admins" do
+        let(:all_model_params) {
+          casa_admin # triggers lazy load
+
+          {casa_admins: CasaAdmin.all, casa_admin_ids: casa_admin.id}
+        }
+
+        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_admin", model_collection_param_name: :casa_admins, model_id_array_param_name: :casa_admin_ids)
       end
 
-      it "throws an error when both casa_orgs and casa_org_ids are used" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1], casa_orgs: CasaOrg.all, casa_org_ids: [1])
-        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
-      end
+      describe "with invalid parameters for a set of casa_orgs" do
+        let(:all_model_params) {
+          casa_org # triggers lazy load
 
-      it "throws an error when casa_admin_ids is an empty array" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [])
-        }.to raise_error(RangeError, /param casa_admin_ids: must contain at least one element/)
-      end
+          {casa_orgs: CasaOrg.all, casa_org_ids: [casa_org.id]}
+        }
 
-      it "throws an error when casa_admin_ids is not an array" do
-        expect {
-          subject.seed_banners(casa_admin_ids: 2)
-        }.to raise_error(TypeError, /param casa_admin_ids: must be an array/)
-      end
-
-      it "throws an error when casa_admins is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_banners(casa_admins: CasaAdmin.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_admins: must contain at least one casa_admin/)
-      end
-
-      it "throws an error when casa_admins is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_banners(casa_admins: 2)
-        }.to raise_error(TypeError, /param casa_admins: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when casa_org_ids is an empty array" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1], casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
-      end
-
-      it "throws an error when casa_org_ids is not an array" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1], casa_org_ids: 2)
-        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
-      end
-
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1], casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
-      end
-
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1], casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when neither casa_admins or casa_admin_ids are used" do
-        expect {
-          subject.seed_banners
-        }.to raise_error(ArgumentError, /casa_admins: or casa_admin_ids: is required/)
-      end
-
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_banners(casa_admin_ids: [1])
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
+        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
       end
     end
   end
@@ -658,6 +597,15 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_casa_cases" do
+    let(:method_name) { :seed_casa_cases }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:minimal_valid_params) {
+      casa_org # triggers lazy load
+
+      {casa_orgs: CasaOrg.all, count: 2}
+    }
+
     describe "with valid parameters" do
       it "creates the specified number of casa cases" do
         create(:casa_org)
@@ -702,41 +650,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_casa_cases(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
-        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
-      end
+      let(:all_model_params) {
+        casa_org # triggers lazy load
 
-      it "throws an error when casa_org_ids is an empty array" do
-        expect {
-          subject.seed_casa_cases(casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
-      end
+        {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
+      }
 
-      it "throws an error when casa_org_ids is not an array" do
-        expect {
-          subject.seed_casa_cases(casa_org_ids: 2)
-        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
-      end
-
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_casa_cases(casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
-      end
-
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_casa_cases(casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_casa_cases
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
-      end
+      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
     end
   end
 
@@ -853,11 +773,29 @@ RSpec.describe RecordCreator do
         include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
       end
 
-      # TODO error check casa cases
+      describe "with invalid parameters for a set of casa_cases" do
+        let(:all_model_params) {
+          casa_case # triggers lazy load
+
+          {casa_cases: CasaCase.all, casa_case_ids: [casa_case.id]}
+        }
+
+        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_case", model_collection_param_name: :casa_cases, model_id_array_param_name: :casa_case_ids)
+      end
     end
   end
 
   describe "seed_case_groups" do
+    let(:method_name) { :seed_case_groups }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:casa_case) { create(:casa_case, casa_org:) }
+    let(:minimal_valid_params) {
+      casa_case # triggers lazy load
+
+      {casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2}
+    }
+
     describe "with valid parameters" do
       it "creates the specified number of case groups" do
         create(:casa_case)
@@ -935,76 +873,24 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when neither casa_cases or casa_case_ids are used" do
-        expect {
-          subject.seed_case_groups(casa_org_ids: [1])
-        }.to raise_error(ArgumentError, /casa_cases: or casa_case_ids: is required/)
+      describe "with invalid parameters for a set of casa_cases" do
+        let(:all_model_params) {
+          casa_case # triggers lazy load
+
+          {casa_cases: CasaCase.all, casa_case_ids: [casa_case.id]}
+        }
+
+        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_case", model_collection_param_name: :casa_cases, model_id_array_param_name: :casa_case_ids)
       end
 
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_case_groups(casa_case_ids: [1])
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
-      end
+      describe "with invalid parameters for a set of casa_orgs" do
+        let(:all_model_params) {
+          casa_org # triggers lazy load
 
-      it "throws an error when both casa_cases or casa_case_ids are used" do
-        expect {
-          subject.seed_case_groups(casa_cases: CasaCase.all, casa_case_ids: [1, 2])
-        }.to raise_error(ArgumentError, /cannot use casa_cases: and casa_case_ids:/)
-      end
+          {casa_orgs: CasaOrg.all, casa_org_ids: [casa_org.id]}
+        }
 
-      it "throws an error when both casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_case_groups(casa_case_ids: [1], casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
-        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
-      end
-
-      it "throws an error when casa_cases is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_case_groups(casa_cases: 2)
-        }.to raise_error(TypeError, /param casa_cases: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when casa_cases is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_case_groups(casa_cases: CasaCase.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_cases: must contain at least one casa_case/)
-      end
-
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_case_groups(casa_case_ids: [1], casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
-      end
-
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_case_groups(casa_case_ids: [1], casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
-      end
-
-      it "throws an error when casa_case_ids is not an array" do
-        expect {
-          subject.seed_case_groups(casa_case_ids: 2)
-        }.to raise_error(TypeError, /param casa_case_ids: must be an array/)
-      end
-
-      it "throws an error when casa_case_ids is an empty array" do
-        expect {
-          subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
-      end
-
-      it "throws an error when casa_org_ids is not an array" do
-        expect {
-          subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: 2)
-        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
-      end
-
-      it "throws an error when casa_org_ids is an empty array" do
-        expect {
-          subject.seed_case_groups(casa_case_ids: [1], casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
+        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
       end
     end
   end
@@ -1049,6 +935,15 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_languages" do
+    let(:method_name) { :seed_languages }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:minimal_valid_params) {
+      casa_org # triggers lazy load
+
+      {casa_orgs: CasaOrg.all, count: 2}
+    }
+
     describe "with valid parameters" do
       it "creates the specified number of languages" do
         create(:casa_org)
@@ -1093,41 +988,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_languages(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
-        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
-      end
+      let(:all_model_params) {
+        casa_org # triggers lazy load
 
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_languages
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
-      end
+        {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
+      }
 
-      it "throws an error when casa_org_ids is an empty array" do
-        expect {
-          subject.seed_languages(casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
-      end
-
-      it "throws an error when casa_org_ids is not an array" do
-        expect {
-          subject.seed_languages(casa_org_ids: 2)
-        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
-      end
-
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_languages(casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
-      end
-
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_languages(casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
-      end
+      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
     end
   end
 
@@ -1180,6 +1047,15 @@ RSpec.describe RecordCreator do
   end
 
   describe "seed_mileage_rates" do
+    let(:method_name) { :seed_mileage_rates }
+
+    let(:casa_org) { create(:casa_org) }
+    let(:minimal_valid_params) {
+      casa_org # triggers lazy load
+
+      {casa_orgs: CasaOrg.all, count: 2}
+    }
+
     describe "with valid parameters" do
       it "creates the specified number of mileage rates" do
         create(:casa_org)
@@ -1224,41 +1100,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      it "throws an error when both casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_mileage_rates(casa_orgs: CasaOrg.all, casa_org_ids: [1, 2])
-        }.to raise_error(ArgumentError, /cannot use casa_orgs: and casa_org_ids:/)
-      end
+      let(:all_model_params) {
+        casa_org # triggers lazy load
 
-      it "throws an error when neither casa_orgs or casa_org_ids are used" do
-        expect {
-          subject.seed_mileage_rates
-        }.to raise_error(ArgumentError, /casa_orgs: or casa_org_ids: is required/)
-      end
+        {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
+      }
 
-      it "throws an error when casa_org_ids is an empty array" do
-        expect {
-          subject.seed_mileage_rates(casa_org_ids: [])
-        }.to raise_error(RangeError, /param casa_org_ids: must contain at least one element/)
-      end
-
-      it "throws an error when casa_org_ids is not an array" do
-        expect {
-          subject.seed_mileage_rates(casa_org_ids: 2)
-        }.to raise_error(TypeError, /param casa_org_ids: must be an array/)
-      end
-
-      it "throws an error when casa_orgs is an empty ActiveRecord::Relation" do
-        expect {
-          subject.seed_mileage_rates(casa_orgs: CasaOrg.where(id: -1))
-        }.to raise_error(ArgumentError, /param casa_orgs: must contain at least one casa_org/)
-      end
-
-      it "throws an error when casa_orgs is not an ActiveRecord::Relation" do
-        expect {
-          subject.seed_mileage_rates(casa_orgs: 2)
-        }.to raise_error(TypeError, /param casa_orgs: must be an ActiveRecord::Relation/)
-      end
+      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
     end
   end
 

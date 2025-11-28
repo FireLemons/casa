@@ -220,19 +220,20 @@ RSpec.describe RecordCreator do
     let(:method_name) { :seed_address }
 
     let(:user) { create(:user) }
-    let(:minimal_valid_params) { {user:} }
+    let(:minimal_valid_params) { {user_id: user.id} }
 
     describe "with valid parameters" do
       include_examples("creates the model", model_class: Address, model_name: "address")
+      include_examples("has randomness derived from the seed when generating a model", "content")
       include_examples("returns the generated model", model_class: Address, model_name: "address")
 
-      it "has randomness derived from the seed" do
-        create(:user)
+      # it "has randomness derived from the seed" do
+      #   create(:user)
 
-        test_single_object_seed_method_seeded("content") do |subject|
-          subject.seed_address(user: User.first)
-        end
-      end
+      #   test_single_object_seed_method_seeded("content") do |subject|
+      #     subject.seed_address(user: User.first)
+      #   end
+      # end
 
       it "updates an address if the user already has an address" do
         user = create(:user)
@@ -334,13 +335,8 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {} }
 
     include_examples("creates the model", model_class: AllCasaAdmin, model_name: "all casa admin")
+    include_examples("has randomness derived from the seed when generating a model", "email")
     include_examples("returns the generated model", model_class: AllCasaAdmin, model_name: "all casa admin")
-
-    it "has randomness derived from the seed" do
-      test_single_object_seed_method_seeded("email") do |subject|
-        subject.seed_all_casa_admin
-      end
-    end
   end
 
   describe "seed_all_casa_admins" do
@@ -394,16 +390,8 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the model", model_class: Banner, model_name: "banner")
+      include_examples("has randomness derived from the seed when generating a model", "content", "expires_at", "name")
       include_examples("returns the generated model", model_class: Banner, model_name: "banner")
-
-      it "has randomness derived from the seed" do
-        casa_org = create(:casa_org)
-        banner_creator = create(:casa_admin, casa_org:)
-
-        test_single_object_seed_method_seeded("content", "expires_at", "name") do |subject|
-          subject.seed_banner(casa_admin: banner_creator, casa_org:)
-        end
-      end
 
       it "marks all existing active banners as inactive" do
         casa_org = create(:casa_org)
@@ -523,6 +511,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the model", model_class: CasaCase, model_name: "casa case")
+      include_examples("has randomness derived from the seed when generating a model", "birth_month_year_youth", "case_number", "date_in_care")
       include_examples("returns the generated model", model_class: CasaCase, model_name: "casa case")
 
       it "generates values for fields birth_month_year_youth and date_in_care" do
@@ -530,14 +519,6 @@ RSpec.describe RecordCreator do
 
         expect(new_casa_case.birth_month_year_youth).not_to be_nil
         expect(new_casa_case.date_in_care).not_to be_nil
-      end
-
-      it "has randomness derived from the seed" do
-        create(:casa_org)
-
-        test_single_object_seed_method_seeded("birth_month_year_youth", "case_number", "date_in_care") do |subject|
-          subject.seed_casa_case(casa_org: CasaOrg.first)
-        end
       end
     end
 
@@ -608,13 +589,8 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {} }
 
     include_examples("creates the model", model_class: CasaOrg, model_name: "casa org")
+    include_examples("has randomness derived from the seed when generating a model", "address", "name")
     include_examples("returns the generated model", model_class: CasaOrg, model_name: "casa org")
-
-    it "has randomness derived from the seed" do
-      test_single_object_seed_method_seeded("address", "name") do |subject|
-        subject.seed_casa_org
-      end
-    end
   end
 
   describe "seed_casa_orgs" do
@@ -670,16 +646,8 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the model", model_class: CaseGroup, model_name: "case group")
+      include_examples("has randomness derived from the seed when generating a model", "name")
       include_examples("returns the generated model", model_class: CaseGroup, model_name: "case group")
-
-      it "has randomness derived from the seed" do
-        create(:casa_org)
-        create(:casa_case)
-
-        test_single_object_seed_method_seeded("name") do |subject|
-          subject.seed_case_group(casa_cases: CasaCase.all, casa_org: CasaOrg.first)
-        end
-      end
     end
 
     describe "with invalid parameters" do
@@ -810,15 +778,8 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the model", model_class: Language, model_name: "language")
+      include_examples("has randomness derived from the seed when generating a model", "name")
       include_examples("returns the generated model", model_class: Language, model_name: "language")
-
-      it "has randomness derived from the seed" do
-        create(:casa_org)
-
-        test_single_object_seed_method_seeded("name") do |subject|
-          subject.seed_language(casa_org: CasaOrg.first)
-        end
-      end
     end
 
     describe "with invalid parameters" do
@@ -891,6 +852,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the model", model_class: MileageRate, model_name: "mileage rate")
+      include_examples("has randomness derived from the seed when generating a model", "amount", "effective_date")
       include_examples("returns the generated model", model_class: MileageRate, model_name: "mileage rate")
 
       it "generates a value for effective_date" do
@@ -900,14 +862,6 @@ RSpec.describe RecordCreator do
         expect(new_mileage_rate).to be_a(MileageRate)
 
         expect(new_mileage_rate.effective_date).not_to be_nil
-      end
-
-      it "has randomness derived from the seed" do
-        create(:casa_org)
-
-        test_single_object_seed_method_seeded("amount", "effective_date") do |subject|
-          subject.seed_mileage_rate(casa_org: CasaOrg.first)
-        end
       end
     end
 

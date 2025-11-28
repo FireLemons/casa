@@ -25,8 +25,17 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "has randomness derived from the seed when generating a model" do
-    # TODO
+  RSpec.shared_examples "has randomness derived from the seed when generating a model" do |*business_data_field_names|
+    it "has randomness derived from the seed" do
+      model = subject.public_send(method_name, **minimal_valid_params)
+      model.destroy
+
+      reset_seeder = RecordCreator.new(RSpec.configuration.seed)
+
+      reseeded_model = reset_seeder.public_send(method_name, **minimal_valid_params)
+
+      test_models_equal(model, reseeded_model, *business_data_field_names)
+    end
   end
 
   RSpec.shared_examples "has randomness derived from the seed when generating several models" do
@@ -141,15 +150,8 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the model", model_class: AdditionalExpense, model_name: "additional expense")
+      include_examples("has randomness derived from the seed when generating a model", "other_expense_amount", "other_expenses_describe")
       include_examples("returns the generated model", model_class: AdditionalExpense, model_name: "additional expense")
-
-      it "has randomness derived from the seed" do
-        create(:case_contact)
-
-        test_single_object_seed_method_seeded("other_expense_amount", "other_expenses_describe") do |subject|
-          subject.seed_additional_expense(case_contact: CaseContact.first)
-        end
-      end
     end
 
     describe "with invalid parameters" do

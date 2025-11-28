@@ -52,6 +52,7 @@ RSpec.describe RecordCreator do
       reset_subject = RecordCreator.new(RSpec.configuration.seed)
 
       reseeded_model_id_array = reset_subject.public_send(method_name, **minimal_valid_params)
+
       reseeded_model_array = reseeded_model_id_array.map do |id|
         model_class.find(id)
       end
@@ -259,15 +260,11 @@ RSpec.describe RecordCreator do
 
     let(:user_a) { create(:user) }
     let(:user_b) { create(:user) }
-    let(:minimal_valid_params) {
-      user_a # triggers lazy load
-      user_b
-
-      {users: User.all, count: 2}
-    }
+    let(:minimal_valid_params) { {user_ids: [user_a.id, user_b.id], count: 2} }
 
     describe "with valid parameters" do
       include_examples("creates the specified number of models", model_class: Address, model_plural_name: "addresses")
+      include_examples("has randomness derived from the seed when generating several of the same model", "content", model_class: Address)
 
       it "associates the new addresses with users without addresses when possible" do
         create(:address, user: create(:user))
@@ -281,15 +278,6 @@ RSpec.describe RecordCreator do
 
         users_without_address_count.times do |i|
           expect(users_without_addresses[i].address).not_to be_nil
-        end
-      end
-
-      it "has randomness derived from the seed" do
-        create(:user)
-        create(:user)
-
-        test_multi_object_seed_method_seeded(Address, "content") do |subject|
-          subject.seed_addresses(users: User.all, count: 2)
         end
       end
 
@@ -348,12 +336,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {} }
 
     include_examples("creates the specified number of models", model_class: AllCasaAdmin, model_plural_name: "all casa admins")
-
-    it "has randomness derived from the seed" do
-      test_multi_object_seed_method_seeded(AllCasaAdmin, "email") do |subject|
-        subject.seed_all_casa_admins(count: 2)
-      end
-    end
+    include_examples("has randomness derived from the seed when generating several of the same model", "email", model_class: AllCasaAdmin)
 
     it "returns an array containing an error for each all casa admin that could not be created" do
       subject.seed_all_casa_admins(count: 2)
@@ -454,15 +437,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the specified number of models", model_class: Banner, model_plural_name: "banners")
-
-      it "has randomness derived from the seed" do
-        casa_org = create(:casa_org)
-        create(:casa_admin, casa_org:)
-
-        test_multi_object_seed_method_seeded(Banner, "content", "expires_at", "name") do |subject|
-          subject.seed_banners(casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: 2)
-        end
-      end
+      include_examples("has randomness derived from the seed when generating several of the same model", "content", "expires_at", "name", model_class: Banner)
 
       it "returns an array containing the ids of the banners seeded" do
         casa_org = create(:casa_org)
@@ -544,14 +519,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the specified number of models", model_class: CasaCase, model_plural_name: "casa cases")
-
-      it "has randomness derived from the seed" do
-        create(:casa_org)
-
-        test_multi_object_seed_method_seeded(CasaCase, "birth_month_year_youth", "case_number", "date_in_care") do |subject|
-          subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2)
-        end
-      end
+      include_examples("has randomness derived from the seed when generating several of the same model", "birth_month_year_youth", "case_number", "date_in_care", model_class: CasaCase)
 
       it "returns an array containing an error for each casa case that could not be created" do
         error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
@@ -601,12 +569,7 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {} }
 
     include_examples("creates the specified number of models", model_class: CasaOrg, model_plural_name: "casa orgs")
-
-    it "has randomness derived from the seed" do
-      test_multi_object_seed_method_seeded(CasaOrg, "address", "name") do |subject|
-        subject.seed_casa_orgs(count: 2)
-      end
-    end
+    include_examples("has randomness derived from the seed when generating several of the same model", "address", "name", model_class: CasaOrg)
 
     it "returns an array containing an error for each casa org that could not be created" do
       subject.seed_casa_orgs(count: 2)
@@ -685,6 +648,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the specified number of models", model_class: CaseGroup, model_plural_name: "case groups")
+      include_examples("has randomness derived from the seed when generating several of the same model", "name", model_class: CaseGroup)
 
       it "does not add the same case to multiple groups when there are there are enough cases for each group" do
         create(:casa_case)
@@ -715,15 +679,6 @@ RSpec.describe RecordCreator do
         expect(case_group_1_casa_cases.size).to be >= 2
         expect(case_group_2_casa_cases.size).to be >= 2
         expect(case_group_3_casa_cases.size).to be >= 2
-      end
-
-      it "has randomness derived from the seed" do
-        create(:casa_case)
-        create(:casa_org)
-
-        test_multi_object_seed_method_seeded(CaseGroup, "name") do |subject|
-          subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2)
-        end
       end
 
       it "returns an array containing an error for each case group that could not be created" do
@@ -804,14 +759,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the specified number of models", model_class: Language, model_plural_name: "languages")
-
-      it "has randomness derived from the seed" do
-        create(:casa_org)
-
-        test_multi_object_seed_method_seeded(Language, "name") do |subject|
-          subject.seed_languages(casa_orgs: CasaOrg.all, count: 2)
-        end
-      end
+      include_examples("has randomness derived from the seed when generating several of the same model", "name", model_class: Language)
 
       it "returns an array containing an error for each language that could not be created" do
         error_array = subject.seed_languages(casa_org_ids: [-1], count: 2)
@@ -887,14 +835,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the specified number of models", model_class: MileageRate, model_plural_name: "mileage rates")
-
-      it "has randomness derived from the seed" do
-        create(:casa_org)
-
-        test_multi_object_seed_method_seeded(MileageRate, "amount", "effective_date") do |subject|
-          subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: 2)
-        end
-      end
+      include_examples("has randomness derived from the seed when generating several of the same model", "amount", "effective_date", model_class: MileageRate)
 
       it "returns an array containing an error for each mileage rate that could not be created" do
         error_array = subject.seed_mileage_rates(casa_org_ids: [-1], count: 2)

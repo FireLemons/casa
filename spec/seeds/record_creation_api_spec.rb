@@ -33,8 +33,12 @@ RSpec.describe RecordCreator do
     # TODO
   end
 
-  RSpec.shared_examples "returns the generated model" do
-    # TODO
+  RSpec.shared_examples "returns the generated model" do |model_class:, model_name:|
+    it "returns the newly created #{model_name}" do
+      new_record = subject.public_send(method_name, **minimal_valid_params)
+
+      expect(new_record).to be_a(model_class)
+    end
   end
 
   RSpec.shared_examples "returns the ids of the generated models" do
@@ -137,6 +141,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the model", model_class: AdditionalExpense, model_name: "additional expense")
+      include_examples("returns the generated model", model_class: AdditionalExpense, model_name: "additional expense")
 
       it "has randomness derived from the seed" do
         create(:case_contact)
@@ -144,12 +149,6 @@ RSpec.describe RecordCreator do
         test_single_object_seed_method_seeded("other_expense_amount", "other_expenses_describe") do |subject|
           subject.seed_additional_expense(case_contact: CaseContact.first)
         end
-      end
-
-      it "returns the newly created additional expense" do
-        new_additional_expense = subject.seed_additional_expense(case_contact: create(:case_contact))
-
-        expect(new_additional_expense).to be_a(AdditionalExpense)
       end
     end
 

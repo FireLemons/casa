@@ -38,8 +38,26 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "has randomness derived from the seed when generating several models" do
-    # TODO
+  RSpec.shared_examples "has randomness derived from the seed when generating several of the same model" do |*business_data_field_names, model_class:|
+    it "has randomness derived from the seed" do
+      model_id_array = subject.public_send(method_name, **minimal_valid_params)
+      model_array = model_id_array.map do |id|
+        model_class.find(id)
+      end
+
+      model_array.each do |model|
+        model.destroy
+      end
+
+      reset_subject = RecordCreator.new(RSpec.configuration.seed)
+
+      reseeded_model_id_array = reset_subject.public_send(method_name, **minimal_valid_params)
+      reseeded_model_array = reseeded_model_id_array.map do |id|
+        model_class.find(id)
+      end
+
+      test_model_arrays_equal(model_array, reseeded_model_array, *business_data_field_names)
+    end
   end
 
   RSpec.shared_examples "returns the generated model" do |model_class:, model_name:|
@@ -173,14 +191,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the specified number of models", model_class: AdditionalExpense, model_plural_name: "additional expenses")
-
-      it "has randomness derived from the seed" do
-        create(:case_contact)
-
-        test_multi_object_seed_method_seeded(AdditionalExpense, "other_expense_amount", "other_expenses_describe") do |subject|
-          subject.seed_additional_expenses(case_contacts: CaseContact.all, count: 2)
-        end
-      end
+      include_examples("has randomness derived from the seed when generating several of the same model", "other_expense_amount", "other_expenses_describe", model_class: AdditionalExpense)
 
       it "returns an array containing an error for each additional expense that could not be created" do
         error_array = subject.seed_additional_expenses(case_contact_ids: [-1], count: 2)
@@ -226,14 +237,6 @@ RSpec.describe RecordCreator do
       include_examples("creates the model", model_class: Address, model_name: "address")
       include_examples("has randomness derived from the seed when generating a model", "content")
       include_examples("returns the generated model", model_class: Address, model_name: "address")
-
-      # it "has randomness derived from the seed" do
-      #   create(:user)
-
-      #   test_single_object_seed_method_seeded("content") do |subject|
-      #     subject.seed_address(user: User.first)
-      #   end
-      # end
 
       it "updates an address if the user already has an address" do
         user = create(:user)
@@ -999,24 +1002,5 @@ RSpec.describe RecordCreator do
     end
 
     test_model_arrays_equal(model_array, reseeded_model_array, *business_data_field_names)
-  end
-
-  def test_single_object_seed_method_seeded(*business_data_field_names, &seed_expression)
-    unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
-      raise TypeError, "All business_data_field_names must be strings"
-    end
-
-    unless seed_expression
-      raise ArgumentError, "seed_expression is required"
-    end
-
-    model = seed_expression.call(subject)
-    model.destroy
-
-    reset_subject = RecordCreator.new(RSpec.configuration.seed)
-
-    reseeded_model = seed_expression.call(reset_subject)
-
-    test_models_equal(model, reseeded_model, *business_data_field_names)
   end
 end

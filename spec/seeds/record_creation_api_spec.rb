@@ -2,66 +2,66 @@ require "rails_helper"
 require_relative "../../db/seeds/record_creation_api"
 
 RSpec.describe RecordCreator do
-  RSpec.shared_examples "creates the model" do |model_class:, model_name:|
+  RSpec.shared_examples "creates the record" do |model_class:, model_name:|
     it "creates one #{model_name}" do
-      original_model_count = model_class.count
+      original_record_count = model_class.count
 
       expect {
         subject.public_send(method_name, **minimal_valid_params)
-      }.to change { model_class.count }.from(original_model_count).to(original_model_count + 1)
+      }.to change { model_class.count }.from(original_record_count).to(original_record_count + 1)
     end
   end
 
-  RSpec.shared_examples "creates the specified number of models" do |model_class:, model_plural_name:|
+  RSpec.shared_examples "creates the specified number of records" do |model_class:, model_plural_name:|
     it "creates the specified number of #{model_plural_name}" do
-      model_generation_count = 2
-      params = minimal_valid_params.merge({count: model_generation_count})
+      record_generation_count = 2
+      params = minimal_valid_params.merge({count: record_generation_count})
 
-      original_model_count = model_class.count
+      original_record_count = model_class.count
 
       expect {
         subject.public_send(method_name, **params)
-      }.to change { model_class.count }.from(original_model_count).to(original_model_count + model_generation_count)
+      }.to change { model_class.count }.from(original_record_count).to(original_record_count + record_generation_count)
     end
   end
 
-  RSpec.shared_examples "has randomness derived from the seed when generating a model" do |*business_data_field_names|
+  RSpec.shared_examples "has randomness derived from the seed when generating a record" do |*business_data_field_names|
     it "has randomness derived from the seed" do
-      model = subject.public_send(method_name, **minimal_valid_params)
-      model.destroy
+      record = subject.public_send(method_name, **minimal_valid_params)
+      record.destroy
 
       reset_seeder = RecordCreator.new(RSpec.configuration.seed)
 
-      reseeded_model = reset_seeder.public_send(method_name, **minimal_valid_params)
+      reseeded_record = reset_seeder.public_send(method_name, **minimal_valid_params)
 
-      test_models_equal(model, reseeded_model, *business_data_field_names)
+      test_records_equal(record, reseeded_record, *business_data_field_names)
     end
   end
 
-  RSpec.shared_examples "has randomness derived from the seed when generating several of the same model" do |*business_data_field_names, model_class:|
+  RSpec.shared_examples "has randomness derived from the seed when generating several of the same type of record" do |*business_data_field_names, model_class:|
     it "has randomness derived from the seed" do
-      model_id_array = subject.public_send(method_name, **minimal_valid_params)
-      model_array = model_id_array.map do |id|
+      record_id_array = subject.public_send(method_name, **minimal_valid_params)
+      record_array = record_id_array.map do |id|
         model_class.find(id)
       end
 
-      model_array.each do |model|
-        model.destroy
+      record_array.each do |record|
+        record.destroy
       end
 
       reset_subject = RecordCreator.new(RSpec.configuration.seed)
 
-      reseeded_model_id_array = reset_subject.public_send(method_name, **minimal_valid_params)
+      reseeded_record_id_array = reset_subject.public_send(method_name, **minimal_valid_params)
 
-      reseeded_model_array = reseeded_model_id_array.map do |id|
+      reseeded_record_array = reseeded_record_id_array.map do |id|
         model_class.find(id)
       end
 
-      test_model_arrays_equal(model_array, reseeded_model_array, *business_data_field_names)
+      test_record_arrays_equal(record_array, reseeded_record_array, *business_data_field_names)
     end
   end
 
-  RSpec.shared_examples "returns the generated model" do |model_class:, model_name:|
+  RSpec.shared_examples "returns the generated record" do |model_class:, model_name:|
     it "returns the newly created #{model_name}" do
       new_record = subject.public_send(method_name, **minimal_valid_params)
 
@@ -69,82 +69,86 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "returns the ids of the generated models" do
+  RSpec.shared_examples "returns the ids of the generated records" do
     # TODO
   end
 
-  RSpec.shared_examples "the reference to a required model is present and unambiguous" do |model_param_name:, model_id_param_name:|
-    it "throws an error when neither #{model_param_name} or #{model_id_param_name} is used" do
-      params = minimal_valid_params.except(*all_model_params.keys)
+  RSpec.shared_examples "returns an Exception for each record that failed to generate" do
+    # TODO
+  end
+
+  RSpec.shared_examples "the reference to a required record is present and unambiguous" do |record_param_name:, record_id_param_name:|
+    it "throws an error when neither #{record_param_name} or #{record_id_param_name} is used" do
+      params = minimal_valid_params.except(*all_record_params.keys)
 
       expect {
         subject.public_send(method_name, **params)
-      }.to raise_error(ArgumentError, /#{model_param_name}: or #{model_id_param_name}: is required/)
+      }.to raise_error(ArgumentError, /#{record_param_name}: or #{record_id_param_name}: is required/)
     end
 
-    it "throws an error when both #{model_param_name} and #{model_id_param_name} are used" do
-      params = minimal_valid_params.merge(all_model_params)
+    it "throws an error when both #{record_param_name} and #{record_id_param_name} are used" do
+      params = minimal_valid_params.merge(all_record_params)
 
       expect {
         subject.public_send(method_name, **params)
-      }.to raise_error(ArgumentError, /cannot use #{model_param_name}: and #{model_id_param_name}:/)
+      }.to raise_error(ArgumentError, /cannot use #{record_param_name}: and #{record_id_param_name}:/)
     end
   end
 
-  RSpec.shared_examples "the reference to a nonempty required set of a model is present and unambiguous" do |model_name:, model_collection_param_name:, model_id_array_param_name:|
-    it "throws an error when both #{model_collection_param_name} and #{model_id_array_param_name} are used" do
-      params = minimal_valid_params.merge(all_model_params)
+  RSpec.shared_examples "the reference to a required set of records is present and unambiguous" do |model_name:, records_param_name:, record_id_array_param_name:|
+    it "throws an error when both #{records_param_name} and #{record_id_array_param_name} are used" do
+      params = minimal_valid_params.merge(all_record_params)
 
       expect {
         subject.public_send(method_name, **params)
-      }.to raise_error(ArgumentError, /cannot use #{model_collection_param_name}: and #{model_id_array_param_name}:/)
+      }.to raise_error(ArgumentError, /cannot use #{records_param_name}: and #{record_id_array_param_name}:/)
     end
 
-    it "throws an error when #{model_id_array_param_name} is an empty array" do
-      params = minimal_valid_params.except(model_collection_param_name).merge({model_id_array_param_name => []})
+    it "throws an error when #{record_id_array_param_name} is an empty array" do
+      params = minimal_valid_params.except(records_param_name).merge({record_id_array_param_name => []})
 
       expect {
         subject.public_send(method_name, **params)
-      }.to raise_error(RangeError, /param #{model_id_array_param_name}: must contain at least one element/)
+      }.to raise_error(RangeError, /param #{record_id_array_param_name}: must contain at least one element/)
     end
 
-    it "throws an error when #{model_id_array_param_name} is not an array" do
-      params = minimal_valid_params.except(model_collection_param_name).merge({model_id_array_param_name => 2})
+    it "throws an error when #{record_id_array_param_name} is not an array" do
+      params = minimal_valid_params.except(records_param_name).merge({record_id_array_param_name => 2})
 
       expect {
         subject.public_send(method_name, **params)
-      }.to raise_error(TypeError, /param #{model_id_array_param_name}: must be an array/)
+      }.to raise_error(TypeError, /param #{record_id_array_param_name}: must be an array/)
     end
 
-    it "throws an error when #{model_collection_param_name} is an empty ActiveRecord::Relation" do
-      params = minimal_valid_params.except(model_id_array_param_name).merge({model_collection_param_name => all_model_params[model_collection_param_name].none})
+    it "throws an error when #{records_param_name} is an empty ActiveRecord::Relation" do
+      params = minimal_valid_params.except(record_id_array_param_name).merge({records_param_name => all_record_params[records_param_name].none})
 
       expect {
         subject.public_send(method_name, **params)
-      }.to raise_error(ArgumentError, /param #{model_collection_param_name}: must contain at least one #{model_name}/)
+      }.to raise_error(ArgumentError, /param #{records_param_name}: must contain at least one #{model_name}/)
     end
 
-    it "throws an error when #{model_collection_param_name} is not an ActiveRecord::Relation" do
-      params = minimal_valid_params.except(model_id_array_param_name).merge({model_collection_param_name => 2})
+    it "throws an error when #{records_param_name} is not an ActiveRecord::Relation" do
+      params = minimal_valid_params.except(record_id_array_param_name).merge({records_param_name => 2})
 
       expect {
         subject.public_send(method_name, **params)
-      }.to raise_error(TypeError, /param #{model_collection_param_name}: must be an ActiveRecord::Relation/)
+      }.to raise_error(TypeError, /param #{records_param_name}: must be an ActiveRecord::Relation/)
     end
 
-    it "throws an error when neither #{model_collection_param_name} or #{model_id_array_param_name} are used" do
-      params = minimal_valid_params.except(*all_model_params.keys)
+    it "throws an error when neither #{records_param_name} or #{record_id_array_param_name} are used" do
+      params = minimal_valid_params.except(*all_record_params.keys)
 
       expect {
         subject.public_send(method_name, **params)
-      }.to raise_error(ArgumentError, /#{model_collection_param_name}: or #{model_id_array_param_name}: is required/)
+      }.to raise_error(ArgumentError, /#{records_param_name}: or #{record_id_array_param_name}: is required/)
     end
   end
 
   subject { RecordCreator.new(RSpec.configuration.seed) }
 
   describe "getSeededRecordCounts" do
-    it "includes the counts of all models created since the RecordCreator's initialization" do
+    it "includes the counts of all records created since the RecordCreator's initialization" do
       # trigger lazy init
       subject
 
@@ -168,15 +172,15 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {case_contact:} }
 
     describe "with valid parameters" do
-      include_examples("creates the model", model_class: AdditionalExpense, model_name: "additional expense")
-      include_examples("has randomness derived from the seed when generating a model", "other_expense_amount", "other_expenses_describe")
-      include_examples("returns the generated model", model_class: AdditionalExpense, model_name: "additional expense")
+      include_examples("creates the record", model_class: AdditionalExpense, model_name: "additional expense")
+      include_examples("has randomness derived from the seed when generating a record", "other_expense_amount", "other_expenses_describe")
+      include_examples("returns the generated record", model_class: AdditionalExpense, model_name: "additional expense")
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) { {case_contact:, case_contact_id: case_contact.id} }
+      let(:all_record_params) { {case_contact:, case_contact_id: case_contact.id} }
 
-      include_examples("the reference to a required model is present and unambiguous", model_param_name: :case_contact, model_id_param_name: :case_contact_id)
+      include_examples("the reference to a required record is present and unambiguous", record_param_name: :case_contact, record_id_param_name: :case_contact_id)
     end
   end
 
@@ -191,8 +195,8 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      include_examples("creates the specified number of models", model_class: AdditionalExpense, model_plural_name: "additional expenses")
-      include_examples("has randomness derived from the seed when generating several of the same model", "other_expense_amount", "other_expenses_describe", model_class: AdditionalExpense)
+      include_examples("creates the specified number of records", model_class: AdditionalExpense, model_plural_name: "additional expenses")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "other_expense_amount", "other_expenses_describe", model_class: AdditionalExpense)
 
       it "returns an array containing an error for each additional expense that could not be created" do
         error_array = subject.seed_additional_expenses(case_contact_ids: [-1], count: 2)
@@ -218,13 +222,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) {
+      let(:all_record_params) {
         case_contact # triggers lazy load
 
         {case_contacts: CaseContact.all, case_contact_ids: case_contact.id}
       }
 
-      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "case_contact", model_collection_param_name: :case_contacts, model_id_array_param_name: :case_contact_ids)
+      include_examples("the reference to a required set of records is present and unambiguous", model_name: "case_contact", records_param_name: :case_contacts, record_id_array_param_name: :case_contact_ids)
     end
   end
 
@@ -235,9 +239,9 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {user_id: user.id} }
 
     describe "with valid parameters" do
-      include_examples("creates the model", model_class: Address, model_name: "address")
-      include_examples("has randomness derived from the seed when generating a model", "content")
-      include_examples("returns the generated model", model_class: Address, model_name: "address")
+      include_examples("creates the record", model_class: Address, model_name: "address")
+      include_examples("has randomness derived from the seed when generating a record", "content")
+      include_examples("returns the generated record", model_class: Address, model_name: "address")
 
       it "updates an address if the user already has an address" do
         user = create(:user)
@@ -249,9 +253,9 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) { {user:, user_id: user.id} }
+      let(:all_record_params) { {user:, user_id: user.id} }
 
-      include_examples("the reference to a required model is present and unambiguous", model_param_name: :user, model_id_param_name: :user_id)
+      include_examples("the reference to a required record is present and unambiguous", record_param_name: :user, record_id_param_name: :user_id)
     end
   end
 
@@ -263,8 +267,8 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {user_ids: [user_a.id, user_b.id], count: 2} }
 
     describe "with valid parameters" do
-      include_examples("creates the specified number of models", model_class: Address, model_plural_name: "addresses")
-      include_examples("has randomness derived from the seed when generating several of the same model", "content", model_class: Address)
+      include_examples("creates the specified number of records", model_class: Address, model_plural_name: "addresses")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "content", model_class: Address)
 
       it "associates the new addresses with users without addresses when possible" do
         create(:address, user: create(:user))
@@ -310,14 +314,14 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) {
+      let(:all_record_params) {
         user_a # triggers lazy load
         user_b
 
         {users: User.all, user_ids: [user_a.id, user_b.id]}
       }
 
-      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "user", model_collection_param_name: :users, model_id_array_param_name: :user_ids)
+      include_examples("the reference to a required set of records is present and unambiguous", model_name: "user", records_param_name: :users, record_id_array_param_name: :user_ids)
     end
   end
 
@@ -325,9 +329,9 @@ RSpec.describe RecordCreator do
     let(:method_name) { :seed_all_casa_admin }
     let(:minimal_valid_params) { {} }
 
-    include_examples("creates the model", model_class: AllCasaAdmin, model_name: "all casa admin")
-    include_examples("has randomness derived from the seed when generating a model", "email")
-    include_examples("returns the generated model", model_class: AllCasaAdmin, model_name: "all casa admin")
+    include_examples("creates the record", model_class: AllCasaAdmin, model_name: "all casa admin")
+    include_examples("has randomness derived from the seed when generating a record", "email")
+    include_examples("returns the generated record", model_class: AllCasaAdmin, model_name: "all casa admin")
   end
 
   describe "seed_all_casa_admins" do
@@ -335,8 +339,8 @@ RSpec.describe RecordCreator do
 
     let(:minimal_valid_params) { {} }
 
-    include_examples("creates the specified number of models", model_class: AllCasaAdmin, model_plural_name: "all casa admins")
-    include_examples("has randomness derived from the seed when generating several of the same model", "email", model_class: AllCasaAdmin)
+    include_examples("creates the specified number of records", model_class: AllCasaAdmin, model_plural_name: "all casa admins")
+    include_examples("has randomness derived from the seed when generating several of the same type of record", "email", model_class: AllCasaAdmin)
 
     it "returns an array containing an error for each all casa admin that could not be created" do
       subject.seed_all_casa_admins(count: 2)
@@ -375,9 +379,9 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {casa_admin:, casa_org:} }
 
     describe "with valid parameters" do
-      include_examples("creates the model", model_class: Banner, model_name: "banner")
-      include_examples("has randomness derived from the seed when generating a model", "content", "expires_at", "name")
-      include_examples("returns the generated model", model_class: Banner, model_name: "banner")
+      include_examples("creates the record", model_class: Banner, model_name: "banner")
+      include_examples("has randomness derived from the seed when generating a record", "content", "expires_at", "name")
+      include_examples("returns the generated record", model_class: Banner, model_name: "banner")
 
       it "marks all existing active banners as inactive" do
         casa_org = create(:casa_org)
@@ -400,9 +404,9 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       describe "with invalid casa_admin parameters" do
-        let(:all_model_params) { {casa_admin:, casa_admin_id: casa_admin.id} }
+        let(:all_record_params) { {casa_admin:, casa_admin_id: casa_admin.id} }
 
-        include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_admin, model_id_param_name: :casa_admin_id)
+        include_examples("the reference to a required record is present and unambiguous", record_param_name: :casa_admin, record_id_param_name: :casa_admin_id)
 
         it "throws an error when a user who is not an admin is used" do
           casa_org = create(:casa_org)
@@ -417,9 +421,9 @@ RSpec.describe RecordCreator do
       end
 
       describe "with invalid casa_org parameters" do
-        let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
+        let(:all_record_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-        include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
+        include_examples("the reference to a required record is present and unambiguous", record_param_name: :casa_org, record_id_param_name: :casa_org_id)
       end
     end
   end
@@ -436,8 +440,8 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      include_examples("creates the specified number of models", model_class: Banner, model_plural_name: "banners")
-      include_examples("has randomness derived from the seed when generating several of the same model", "content", "expires_at", "name", model_class: Banner)
+      include_examples("creates the specified number of records", model_class: Banner, model_plural_name: "banners")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "content", "expires_at", "name", model_class: Banner)
 
       it "returns an array containing the ids of the banners seeded" do
         casa_org = create(:casa_org)
@@ -460,23 +464,23 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       describe "with invalid parameters for a set of casa_admins" do
-        let(:all_model_params) {
+        let(:all_record_params) {
           casa_admin # triggers lazy load
 
           {casa_admins: CasaAdmin.all, casa_admin_ids: casa_admin.id}
         }
 
-        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_admin", model_collection_param_name: :casa_admins, model_id_array_param_name: :casa_admin_ids)
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_admin", records_param_name: :casa_admins, record_id_array_param_name: :casa_admin_ids)
       end
 
       describe "with invalid parameters for a set of casa_orgs" do
-        let(:all_model_params) {
+        let(:all_record_params) {
           casa_org # triggers lazy load
 
           {casa_orgs: CasaOrg.all, casa_org_ids: [casa_org.id]}
         }
 
-        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_org", records_param_name: :casa_orgs, record_id_array_param_name: :casa_org_ids)
       end
     end
   end
@@ -488,9 +492,9 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {casa_org:} }
 
     describe "with valid parameters" do
-      include_examples("creates the model", model_class: CasaCase, model_name: "casa case")
-      include_examples("has randomness derived from the seed when generating a model", "birth_month_year_youth", "case_number", "date_in_care")
-      include_examples("returns the generated model", model_class: CasaCase, model_name: "casa case")
+      include_examples("creates the record", model_class: CasaCase, model_name: "casa case")
+      include_examples("has randomness derived from the seed when generating a record", "birth_month_year_youth", "case_number", "date_in_care")
+      include_examples("returns the generated record", model_class: CasaCase, model_name: "casa case")
 
       it "generates values for fields birth_month_year_youth and date_in_care" do
         new_casa_case = subject.seed_casa_case(casa_org: create(:casa_org))
@@ -501,9 +505,9 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
+      let(:all_record_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-      include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
+      include_examples("the reference to a required record is present and unambiguous", record_param_name: :casa_org, record_id_param_name: :casa_org_id)
     end
   end
 
@@ -518,8 +522,8 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      include_examples("creates the specified number of models", model_class: CasaCase, model_plural_name: "casa cases")
-      include_examples("has randomness derived from the seed when generating several of the same model", "birth_month_year_youth", "case_number", "date_in_care", model_class: CasaCase)
+      include_examples("creates the specified number of records", model_class: CasaCase, model_plural_name: "casa cases")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "birth_month_year_youth", "case_number", "date_in_care", model_class: CasaCase)
 
       it "returns an array containing an error for each casa case that could not be created" do
         error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
@@ -545,13 +549,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) {
+      let(:all_record_params) {
         casa_org # triggers lazy load
 
         {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
       }
 
-      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
+      include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_org", records_param_name: :casa_orgs, record_id_array_param_name: :casa_org_ids)
     end
   end
 
@@ -559,17 +563,17 @@ RSpec.describe RecordCreator do
     let(:method_name) { :seed_casa_org }
     let(:minimal_valid_params) { {} }
 
-    include_examples("creates the model", model_class: CasaOrg, model_name: "casa org")
-    include_examples("has randomness derived from the seed when generating a model", "address", "name")
-    include_examples("returns the generated model", model_class: CasaOrg, model_name: "casa org")
+    include_examples("creates the record", model_class: CasaOrg, model_name: "casa org")
+    include_examples("has randomness derived from the seed when generating a record", "address", "name")
+    include_examples("returns the generated record", model_class: CasaOrg, model_name: "casa org")
   end
 
   describe "seed_casa_orgs" do
     let(:method_name) { :seed_casa_orgs }
     let(:minimal_valid_params) { {} }
 
-    include_examples("creates the specified number of models", model_class: CasaOrg, model_plural_name: "casa orgs")
-    include_examples("has randomness derived from the seed when generating several of the same model", "address", "name", model_class: CasaOrg)
+    include_examples("creates the specified number of records", model_class: CasaOrg, model_plural_name: "casa orgs")
+    include_examples("has randomness derived from the seed when generating several of the same type of record", "address", "name", model_class: CasaOrg)
 
     it "returns an array containing an error for each casa org that could not be created" do
       subject.seed_casa_orgs(count: 2)
@@ -611,26 +615,26 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      include_examples("creates the model", model_class: CaseGroup, model_name: "case group")
-      include_examples("has randomness derived from the seed when generating a model", "name")
-      include_examples("returns the generated model", model_class: CaseGroup, model_name: "case group")
+      include_examples("creates the record", model_class: CaseGroup, model_name: "case group")
+      include_examples("has randomness derived from the seed when generating a record", "name")
+      include_examples("returns the generated record", model_class: CaseGroup, model_name: "case group")
     end
 
     describe "with invalid parameters" do
       describe "with invalid casa_org parameters" do
-        let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
+        let(:all_record_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-        include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
+        include_examples("the reference to a required record is present and unambiguous", record_param_name: :casa_org, record_id_param_name: :casa_org_id)
       end
 
       describe "with invalid parameters for a set of casa_cases" do
-        let(:all_model_params) {
+        let(:all_record_params) {
           casa_case # triggers lazy load
 
           {casa_cases: CasaCase.all, casa_case_ids: [casa_case.id]}
         }
 
-        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_case", model_collection_param_name: :casa_cases, model_id_array_param_name: :casa_case_ids)
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_case", records_param_name: :casa_cases, record_id_array_param_name: :casa_case_ids)
       end
     end
   end
@@ -647,8 +651,8 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      include_examples("creates the specified number of models", model_class: CaseGroup, model_plural_name: "case groups")
-      include_examples("has randomness derived from the seed when generating several of the same model", "name", model_class: CaseGroup)
+      include_examples("creates the specified number of records", model_class: CaseGroup, model_plural_name: "case groups")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "name", model_class: CaseGroup)
 
       it "does not add the same case to multiple groups when there are there are enough cases for each group" do
         create(:casa_case)
@@ -707,23 +711,23 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       describe "with invalid parameters for a set of casa_cases" do
-        let(:all_model_params) {
+        let(:all_record_params) {
           casa_case # triggers lazy load
 
           {casa_cases: CasaCase.all, casa_case_ids: [casa_case.id]}
         }
 
-        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_case", model_collection_param_name: :casa_cases, model_id_array_param_name: :casa_case_ids)
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_case", records_param_name: :casa_cases, record_id_array_param_name: :casa_case_ids)
       end
 
       describe "with invalid parameters for a set of casa_orgs" do
-        let(:all_model_params) {
+        let(:all_record_params) {
           casa_org # triggers lazy load
 
           {casa_orgs: CasaOrg.all, casa_org_ids: [casa_org.id]}
         }
 
-        include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_org", records_param_name: :casa_orgs, record_id_array_param_name: :casa_org_ids)
       end
     end
   end
@@ -735,15 +739,15 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {casa_org:} }
 
     describe "with valid parameters" do
-      include_examples("creates the model", model_class: Language, model_name: "language")
-      include_examples("has randomness derived from the seed when generating a model", "name")
-      include_examples("returns the generated model", model_class: Language, model_name: "language")
+      include_examples("creates the record", model_class: Language, model_name: "language")
+      include_examples("has randomness derived from the seed when generating a record", "name")
+      include_examples("returns the generated record", model_class: Language, model_name: "language")
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
+      let(:all_record_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-      include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
+      include_examples("the reference to a required record is present and unambiguous", record_param_name: :casa_org, record_id_param_name: :casa_org_id)
     end
   end
 
@@ -758,8 +762,8 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      include_examples("creates the specified number of models", model_class: Language, model_plural_name: "languages")
-      include_examples("has randomness derived from the seed when generating several of the same model", "name", model_class: Language)
+      include_examples("creates the specified number of records", model_class: Language, model_plural_name: "languages")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "name", model_class: Language)
 
       it "returns an array containing an error for each language that could not be created" do
         error_array = subject.seed_languages(casa_org_ids: [-1], count: 2)
@@ -785,13 +789,13 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) {
+      let(:all_record_params) {
         casa_org # triggers lazy load
 
         {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
       }
 
-      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
+      include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_org", records_param_name: :casa_orgs, record_id_array_param_name: :casa_org_ids)
     end
   end
 
@@ -802,9 +806,9 @@ RSpec.describe RecordCreator do
     let(:minimal_valid_params) { {casa_org:} }
 
     describe "with valid parameters" do
-      include_examples("creates the model", model_class: MileageRate, model_name: "mileage rate")
-      include_examples("has randomness derived from the seed when generating a model", "amount", "effective_date")
-      include_examples("returns the generated model", model_class: MileageRate, model_name: "mileage rate")
+      include_examples("creates the record", model_class: MileageRate, model_name: "mileage rate")
+      include_examples("has randomness derived from the seed when generating a record", "amount", "effective_date")
+      include_examples("returns the generated record", model_class: MileageRate, model_name: "mileage rate")
 
       it "generates a value for effective_date" do
         create(:casa_org)
@@ -817,9 +821,9 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) { {casa_org:, casa_org_id: casa_org.id} }
+      let(:all_record_params) { {casa_org:, casa_org_id: casa_org.id} }
 
-      include_examples("the reference to a required model is present and unambiguous", model_param_name: :casa_org, model_id_param_name: :casa_org_id)
+      include_examples("the reference to a required record is present and unambiguous", record_param_name: :casa_org, record_id_param_name: :casa_org_id)
     end
   end
 
@@ -834,8 +838,8 @@ RSpec.describe RecordCreator do
     }
 
     describe "with valid parameters" do
-      include_examples("creates the specified number of models", model_class: MileageRate, model_plural_name: "mileage rates")
-      include_examples("has randomness derived from the seed when generating several of the same model", "amount", "effective_date", model_class: MileageRate)
+      include_examples("creates the specified number of records", model_class: MileageRate, model_plural_name: "mileage rates")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "amount", "effective_date", model_class: MileageRate)
 
       it "returns an array containing an error for each mileage rate that could not be created" do
         error_array = subject.seed_mileage_rates(casa_org_ids: [-1], count: 2)
@@ -861,87 +865,55 @@ RSpec.describe RecordCreator do
     end
 
     describe "with invalid parameters" do
-      let(:all_model_params) {
+      let(:all_record_params) {
         casa_org # triggers lazy load
 
         {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
       }
 
-      include_examples("the reference to a nonempty required set of a model is present and unambiguous", model_name: "casa_org", model_collection_param_name: :casa_orgs, model_id_array_param_name: :casa_org_ids)
+      include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_org", records_param_name: :casa_orgs, record_id_array_param_name: :casa_org_ids)
     end
   end
 
   # Helper Methods
 
-  def test_models_equal(model1, model2, *business_data_field_names)
-    if model1.is_a?(Class) && model1 < ActiveRecord::Base
-      raise TypeError.new("param model1 must be an ActiveRecord object")
+  def test_records_equal(record1, record2, *business_data_field_names)
+    if record1.is_a?(Class) && record1 < ActiveRecord::Base
+      raise TypeError.new("param record1 must be an ActiveRecord object")
     end
 
-    if model2.is_a?(Class) && model2 < ActiveRecord::Base
-      raise TypeError.new("param model2 must be an ActiveRecord object")
+    if record2.is_a?(Class) && record2 < ActiveRecord::Base
+      raise TypeError.new("param record2 must be an ActiveRecord object")
     end
 
     unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
       raise TypeError, "All business_data_field_names must be strings"
     end
 
-    expect(model1.attributes.slice(*business_data_field_names)).to eq(model2.attributes.slice(*business_data_field_names))
+    expect(record1.attributes.slice(*business_data_field_names)).to eq(record2.attributes.slice(*business_data_field_names))
   end
 
-  def test_model_arrays_equal(model_array_1, model_array_2, *business_data_field_names)
-    unless model_array_1.is_a?(Array)
-      raise TypeError.new("param model_id_array_1 must be an array")
+  def test_record_arrays_equal(record_array_1, record_array_2, *business_data_field_names)
+    unless record_array_1.is_a?(Array)
+      raise TypeError.new("param record_id_array_1 must be an array")
     end
 
-    unless model_array_2.is_a?(Array)
-      raise TypeError.new("param model_id_array_2 must be an array")
-    end
-
-    unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
-      raise TypeError, "All business_data_field_names must be strings"
-    end
-
-    model_array_1_as_hash_array = model_array_1.map do |model|
-      model.attributes.slice(*business_data_field_names)
-    end
-
-    model_array_2_as_hash_array = model_array_2.map do |model|
-      model.attributes.slice(*business_data_field_names)
-    end
-
-    expect(model_array_1_as_hash_array).to eq(model_array_2_as_hash_array)
-  end
-
-  def test_multi_object_seed_method_seeded(object_class, *business_data_field_names, &seed_expression)
-    unless object_class.is_a?(Class) && object_class < ActiveRecord::Base
-      raise TypeError, "Param object_class must be a active record class"
+    unless record_array_2.is_a?(Array)
+      raise TypeError.new("param record_id_array_2 must be an array")
     end
 
     unless business_data_field_names.all? { |field_name| field_name.is_a?(String) }
       raise TypeError, "All business_data_field_names must be strings"
     end
 
-    unless seed_expression
-      raise ArgumentError, "seed_expression is required"
+    record_array_1_as_hash_array = record_array_1.map do |record|
+      record.attributes.slice(*business_data_field_names)
     end
 
-    model_id_array = seed_expression.call(subject)
-    model_array = model_id_array.map do |id|
-      object_class.find(id)
+    record_array_2_as_hash_array = record_array_2.map do |record|
+      record.attributes.slice(*business_data_field_names)
     end
 
-    model_array.each do |model|
-      model.destroy
-    end
-
-    reset_subject = RecordCreator.new(RSpec.configuration.seed)
-
-    reseeded_model_id_array = seed_expression.call(reset_subject)
-    reseeded_model_array = reseeded_model_id_array.map do |id|
-      object_class.find(id)
-    end
-
-    test_model_arrays_equal(model_array, reseeded_model_array, *business_data_field_names)
+    expect(record_array_1_as_hash_array).to eq(record_array_2_as_hash_array)
   end
 end

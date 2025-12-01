@@ -266,6 +266,7 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the specified number of records", model_class: Address, model_plural_name: "addresses")
       include_examples("has randomness derived from the seed when generating several of the same type of record", "content", model_class: Address)
+      include_examples("returns the ids of the generated records", model_class: Address, model_plural_name: "addresses")
 
       it "associates the new addresses with users without addresses when possible" do
         create(:address, user: create(:user))
@@ -291,17 +292,6 @@ RSpec.describe RecordCreator do
         overridden_address.reload
 
         expect(overridden_address.content).not_to eq("")
-      end
-
-      it "returns an array containing the ids of the addresses seeded" do
-        create(:user)
-        create(:user)
-
-        subject.seed_addresses(users: User.all, count: 2).each do |address_id|
-          expect {
-            Address.find(address_id)
-          }.not_to raise_error
-        end
       end
 
       it "returns empty array for negative counts" do
@@ -338,6 +328,7 @@ RSpec.describe RecordCreator do
 
     include_examples("creates the specified number of records", model_class: AllCasaAdmin, model_plural_name: "all casa admins")
     include_examples("has randomness derived from the seed when generating several of the same type of record", "email", model_class: AllCasaAdmin)
+    include_examples("returns the ids of the generated records", model_class: AllCasaAdmin, model_plural_name: "all casa admins")
 
     it "returns an array containing an error for each all casa admin that could not be created" do
       subject.seed_all_casa_admins(count: 2)
@@ -352,14 +343,6 @@ RSpec.describe RecordCreator do
 
       error_array.each do |error|
         expect(error).to be_a(Exception)
-      end
-    end
-
-    it "returns an array containing the all casa admins created" do
-      subject.seed_all_casa_admins(count: 2).each do |all_casa_admin_id|
-        expect {
-          AllCasaAdmin.find(all_casa_admin_id)
-        }.not_to raise_error
       end
     end
 
@@ -439,17 +422,7 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the specified number of records", model_class: Banner, model_plural_name: "banners")
       include_examples("has randomness derived from the seed when generating several of the same type of record", "content", "expires_at", "name", model_class: Banner)
-
-      it "returns an array containing the ids of the banners seeded" do
-        casa_org = create(:casa_org)
-        create(:casa_admin, casa_org:)
-
-        subject.seed_banners(casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: 2).each do |banner_id|
-          expect {
-            Banner.find(banner_id)
-          }.not_to raise_error
-        end
-      end
+      include_examples("returns the ids of the generated records", model_class: Banner, model_plural_name: "banners")
 
       it "returns empty array for negative counts" do
         casa_org = create(:casa_org)
@@ -521,22 +494,13 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the specified number of records", model_class: CasaCase, model_plural_name: "casa cases")
       include_examples("has randomness derived from the seed when generating several of the same type of record", "birth_month_year_youth", "case_number", "date_in_care", model_class: CasaCase)
+      include_examples("returns the ids of the generated records", model_class: CasaCase, model_plural_name: "banners")
 
       it "returns an array containing an error for each casa case that could not be created" do
         error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
 
         error_array.each do |error|
           expect(error).to be_a(Exception)
-        end
-      end
-
-      it "returns an array containing the ids of the casa cases created" do
-        create(:casa_org)
-
-        subject.seed_casa_cases(casa_orgs: CasaOrg.all, count: 2).each do |casa_case_id|
-          expect {
-            CasaCase.find(casa_case_id)
-          }.not_to raise_error
         end
       end
 
@@ -571,6 +535,7 @@ RSpec.describe RecordCreator do
 
     include_examples("creates the specified number of records", model_class: CasaOrg, model_plural_name: "casa orgs")
     include_examples("has randomness derived from the seed when generating several of the same type of record", "address", "name", model_class: CasaOrg)
+    include_examples("returns the ids of the generated records", model_class: CasaOrg, model_plural_name: "casa orgs")
 
     it "returns an array containing an error for each casa org that could not be created" do
       subject.seed_casa_orgs(count: 2)
@@ -584,14 +549,6 @@ RSpec.describe RecordCreator do
 
       error_array.each do |error|
         expect(error).to be_a(Exception)
-      end
-    end
-
-    it "returns an array containing the casa orgs created" do
-      subject.seed_casa_orgs(count: 2).each do |casa_org_id|
-        expect {
-          CasaOrg.find(casa_org_id)
-        }.not_to raise_error
       end
     end
 
@@ -650,6 +607,7 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the specified number of records", model_class: CaseGroup, model_plural_name: "case groups")
       include_examples("has randomness derived from the seed when generating several of the same type of record", "name", model_class: CaseGroup)
+      include_examples("returns the ids of the generated records", model_class: CaseGroup, model_plural_name: "case groups")
 
       it "does not add the same case to multiple groups when there are there are enough cases for each group" do
         create(:casa_case)
@@ -687,17 +645,6 @@ RSpec.describe RecordCreator do
 
         error_array.each do |error|
           expect(error).to be_a(Exception)
-        end
-      end
-
-      it "returns an array containing the ids of the case groups created" do
-        create(:casa_case)
-        create(:casa_org)
-
-        subject.seed_case_groups(casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2).each do |case_group_id|
-          expect {
-            CaseGroup.find(case_group_id)
-          }.not_to raise_error
         end
       end
 
@@ -761,6 +708,7 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the specified number of records", model_class: Language, model_plural_name: "languages")
       include_examples("has randomness derived from the seed when generating several of the same type of record", "name", model_class: Language)
+      include_examples("returns the ids of the generated records", model_class: Language, model_plural_name: "languages")
 
       it "returns an array containing an error for each language that could not be created" do
         error_array = subject.seed_languages(casa_org_ids: [-1], count: 2)
@@ -837,22 +785,13 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the specified number of records", model_class: MileageRate, model_plural_name: "mileage rates")
       include_examples("has randomness derived from the seed when generating several of the same type of record", "amount", "effective_date", model_class: MileageRate)
+      include_examples("returns the ids of the generated records", model_class: MileageRate, model_plural_name: "mileage rates")
 
       it "returns an array containing an error for each mileage rate that could not be created" do
         error_array = subject.seed_mileage_rates(casa_org_ids: [-1], count: 2)
 
         error_array.each do |error|
           expect(error).to be_a(Exception)
-        end
-      end
-
-      it "returns an array containing the ids of the mileage rates created" do
-        create(:casa_org)
-
-        subject.seed_mileage_rates(casa_orgs: CasaOrg.all, count: 2).each do |mileage_rate_id|
-          expect {
-            MileageRate.find(mileage_rate_id)
-          }.not_to raise_error
         end
       end
 

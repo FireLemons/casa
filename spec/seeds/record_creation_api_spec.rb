@@ -69,8 +69,14 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "returns the ids of the generated records" do
-    # TODO
+  RSpec.shared_examples "returns the ids of the generated records" do |model_class:, model_plural_name:|
+    it "returns an array containing the ids of the #{model_plural_name} created" do
+      subject.public_send(method_name, **minimal_valid_params).each do |record_id|
+        expect {
+          model_class.find(record_id)
+        }.not_to raise_error
+      end
+    end
   end
 
   RSpec.shared_examples "returns an Exception for each record that failed to generate" do
@@ -197,22 +203,13 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the specified number of records", model_class: AdditionalExpense, model_plural_name: "additional expenses")
       include_examples("has randomness derived from the seed when generating several of the same type of record", "other_expense_amount", "other_expenses_describe", model_class: AdditionalExpense)
+      include_examples("returns the ids of the generated records", model_class: AdditionalExpense, model_plural_name: "additional expenses")
 
       it "returns an array containing an error for each additional expense that could not be created" do
         error_array = subject.seed_additional_expenses(case_contact_ids: [-1], count: 2)
 
         error_array.each do |error|
           expect(error).to be_a(StandardError)
-        end
-      end
-
-      it "returns an array containing the ids of the additional expenses created" do
-        create(:case_contact)
-
-        subject.seed_additional_expenses(case_contacts: CaseContact.all, count: 2).each do |additional_expense_id|
-          expect {
-            AdditionalExpense.find(additional_expense_id)
-          }.not_to raise_error
         end
       end
 

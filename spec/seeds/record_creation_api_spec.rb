@@ -225,8 +225,6 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       let(:all_record_params) {
-        case_contact # triggers lazy load
-
         {case_contacts: CaseContact.all, case_contact_ids: case_contact.id}
       }
 
@@ -303,9 +301,6 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       let(:all_record_params) {
-        user_a # triggers lazy load
-        user_b
-
         {users: User.all, user_ids: [user_a.id, user_b.id]}
       }
 
@@ -427,8 +422,6 @@ RSpec.describe RecordCreator do
     describe "with invalid parameters" do
       describe "with invalid parameters for a set of casa_admins" do
         let(:all_record_params) {
-          casa_admin # triggers lazy load
-
           {casa_admins: CasaAdmin.all, casa_admin_ids: casa_admin.id}
         }
 
@@ -437,8 +430,6 @@ RSpec.describe RecordCreator do
 
       describe "with invalid parameters for a set of casa_orgs" do
         let(:all_record_params) {
-          casa_org # triggers lazy load
-
           {casa_orgs: CasaOrg.all, casa_org_ids: [casa_org.id]}
         }
 
@@ -500,8 +491,6 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       let(:all_record_params) {
-        casa_org # triggers lazy load
-
         {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
       }
 
@@ -569,8 +558,6 @@ RSpec.describe RecordCreator do
 
       describe "with invalid parameters for a set of casa_cases" do
         let(:all_record_params) {
-          casa_case # triggers lazy load
-
           {casa_cases: CasaCase.all, casa_case_ids: [casa_case.id]}
         }
 
@@ -639,8 +626,6 @@ RSpec.describe RecordCreator do
     describe "with invalid parameters" do
       describe "with invalid parameters for a set of casa_cases" do
         let(:all_record_params) {
-          casa_case # triggers lazy load
-
           {casa_cases: CasaCase.all, casa_case_ids: [casa_case.id]}
         }
 
@@ -649,8 +634,6 @@ RSpec.describe RecordCreator do
 
       describe "with invalid parameters for a set of casa_orgs" do
         let(:all_record_params) {
-          casa_org # triggers lazy load
-
           {casa_orgs: CasaOrg.all, casa_org_ids: [casa_org.id]}
         }
 
@@ -705,8 +688,6 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       let(:all_record_params) {
-        casa_org # triggers lazy load
-
         {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
       }
 
@@ -769,8 +750,6 @@ RSpec.describe RecordCreator do
 
     describe "with invalid parameters" do
       let(:all_record_params) {
-        casa_org # triggers lazy load
-
         {casa_orgs: CasaOrg.all, casa_org_ids: casa_org.id}
       }
 

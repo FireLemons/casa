@@ -45,7 +45,7 @@ class RecordCreator
     other_expenses_describe = Faker::Commerce.product_name
 
     if !case_contact.nil?
-      AdditionalExpense.create!(other_expense_amount:, other_expenses_describe:, case_contact:)
+      AdditionalExpense.create!(other_expense_amount:, other_expenses_describe:, case_contact_id: case_contact.id)
     else
       AdditionalExpense.create!(other_expense_amount:, other_expenses_describe:, case_contact_id:)
     end
@@ -145,8 +145,8 @@ class RecordCreator
     validate_seed_single_record_required_model_params("casa_admin", casa_admin, casa_admin_id)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
-    if casa_org.nil?
-      casa_org = CasaOrg.find(casa_org_id)
+    if casa_org_id.nil?
+      casa_org_id = casa_org.id
     end
 
     if casa_admin.nil?
@@ -163,7 +163,7 @@ class RecordCreator
     existing_active_banner.update_all(active: false)
 
     begin
-      new_banner = Banner.create!(active: true, casa_org:, content: banner_message, expires_at: banner_expiration_date, name: banner_name, user: casa_admin)
+      new_banner = Banner.create!(active: true, casa_org_id:, content: banner_message, expires_at: banner_expiration_date, name: banner_name, user: casa_admin)
     rescue => exception
       existing_active_banner.update_all(active: true)
       raise exception
@@ -199,11 +199,11 @@ class RecordCreator
 
     Faker::Address.full_address
 
-    if casa_org.nil?
-      casa_org = CasaOrg.find(casa_org_id)
+    if casa_org_id.nil?
+      casa_org_id = casa_org.id
     end
 
-    CasaCase.create!(birth_month_year_youth: birth_month, casa_org:, case_number:, date_in_care:)
+    CasaCase.create!(birth_month_year_youth: birth_month, case_number:, casa_org_id:, date_in_care:)
   end
 
   def seed_casa_cases(casa_orgs: nil, casa_org_ids: nil, count: 0)
@@ -220,6 +220,11 @@ class RecordCreator
     end
 
     casa_case_seed_results
+  end
+
+  def seed_casa_case_contact_type(casa_case: nil, casa_case_id: nil, contact_type: nil, contact_type_id: nil)
+    validate_seed_single_record_required_model_params("casa_case", casa_case, casa_case_id)
+    validate_seed_single_record_required_model_params("contact_type", contact_type, contact_type_id)
   end
 
   def seed_casa_org
@@ -251,11 +256,11 @@ class RecordCreator
 
     name = "The #{Faker::Name.last_name} Siblings"
 
-    if casa_org.nil?
-      casa_org = CasaOrg.find(casa_org_id)
+    if casa_org_id.nil?
+      casa_org_id = casa_org.id
     end
 
-    new_case_group = CaseGroup.new(casa_org:, name:)
+    new_case_group = CaseGroup.new(casa_org_id:, name:)
 
     new_case_group.casa_cases << validated_casa_cases
     new_case_group.save!
@@ -286,11 +291,11 @@ class RecordCreator
   def seed_language(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
-    if casa_org.nil?
-      casa_org = CasaOrg.find(casa_org_id)
+    if casa_org_id.nil?
+      casa_org_id = casa_org.id
     end
 
-    Language.create!(name: Faker::Nation.language, casa_org:)
+    Language.create!(name: Faker::Nation.language, casa_org_id:)
   end
 
   def seed_languages(casa_orgs: nil, casa_org_ids: nil, count: 0)
@@ -312,11 +317,11 @@ class RecordCreator
   def seed_mileage_rate(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
-    if casa_org.nil?
-      casa_org = CasaOrg.find(casa_org_id)
+    if casa_org_id.nil?
+      casa_org_id = casa_org.id
     end
 
-    MileageRate.create!(amount: random_change_amount, casa_org:, effective_date: Faker::Date.backward)
+    MileageRate.create!(amount: random_change_amount, casa_org_id:, effective_date: Faker::Date.backward)
   end
 
   def seed_mileage_rates(casa_orgs: nil, casa_org_ids: nil, count: 0)
@@ -502,7 +507,6 @@ class RecordCreator
 end
 
 #
-# casa_case_contact_types
 # casa_case_emancipation_categories
 # casa_cases_emancipation_options
 # case_assignments

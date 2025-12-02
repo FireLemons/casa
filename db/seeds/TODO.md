@@ -1,6 +1,7 @@
 I can cut the `_ids` from `x_ids` to get a singular x
 
-More DRY for test suite
+Using the record to create a record is more expensive than using the id. I should use the ids instead of the models
+  more tests are now eligible for returned exceptions
 
 Flake: I think languages just have a high chance to have duplicate names
 ```

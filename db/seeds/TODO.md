@@ -1,7 +1,4 @@
-I can cut the `_ids` from `x_ids` to get a singular x
-
-Using the record to create a record is more expensive than using the id. I should use the ids instead of the models
-  more tests are now eligible for returned exceptions
+tests for seed_casa_case_contact_type
 
 Flake: I think languages just have a high chance to have duplicate names
 ```

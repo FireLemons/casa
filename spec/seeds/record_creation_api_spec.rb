@@ -417,6 +417,15 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "content", "expires_at", "name", model_class: Banner)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: Banner, model_plural_name: "banners")
+
+      
+      it "returns an array containing an error for each banner that could not be created" do
+        error_array = subject.seed_banners(casa_admin_ids: [-1], casa_org_ids: [-1], count: 2)
+
+        error_array.each do |error|
+          expect(error).to be_a(StandardError)
+        end
+      end
     end
 
     describe "with invalid parameters" do

@@ -225,6 +225,16 @@ class RecordCreator
   def seed_casa_case_contact_type(casa_case: nil, casa_case_id: nil, contact_type: nil, contact_type_id: nil)
     validate_seed_single_record_required_model_params("casa_case", casa_case, casa_case_id)
     validate_seed_single_record_required_model_params("contact_type", contact_type, contact_type_id)
+
+    if casa_case_id.nil?
+      casa_case_id = casa_case.id
+    end
+
+    if contact_type_id.nil?
+      contact_type_id = contact_type.id
+    end
+
+    CasaCaseContactType.create!(casa_case_id:, contact_type_id:)
   end
 
   def seed_casa_org

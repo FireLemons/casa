@@ -418,7 +418,6 @@ RSpec.describe RecordCreator do
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: Banner, model_plural_name: "banners")
 
-      
       it "returns an array containing an error for each banner that could not be created" do
         error_array = subject.seed_banners(casa_admin_ids: [-1], casa_org_ids: [-1], count: 2)
 
@@ -504,6 +503,33 @@ RSpec.describe RecordCreator do
       }
 
       include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_org", records_param_name: :casa_orgs, record_id_array_param_name: :casa_org_ids)
+    end
+  end
+
+  describe "seed_casa_case_contact_type" do
+    let(:method_name) { :seed_casa_case_contact_type }
+
+    let(:casa_case) { create(:casa_case) }
+    let(:contact_type) { create(:contact_type) }
+    let(:minimal_valid_params) { {casa_case:, contact_type:} }
+
+    describe "with valid parameters" do
+      include_examples("creates the record", model_class: CasaCaseContactType, model_name: "casa_case_contact_type")
+      include_examples("returns the generated record", model_class: CasaCaseContactType, model_name: "casa casa_case_contact_type")
+    end
+
+    describe "with invalid parameters" do
+      describe "with invalid casa case parameters" do
+        let(:all_record_params) { {casa_case:, casa_case_id: casa_case.id} }
+
+        include_examples("the reference to a required record is present and unambiguous", record_param_name: :casa_case, record_id_param_name: :casa_case_id)
+      end
+
+      describe "with invalid contact type parameters" do
+        let(:all_record_params) { {contact_type:, contact_type_id: contact_type.id} }
+
+        include_examples("the reference to a required record is present and unambiguous", record_param_name: :contact_type, record_id_param_name: :contact_type_id)
+      end
     end
   end
 

@@ -42,3 +42,6 @@ Display logins
   Org header
     logins
   Password info
+
+for multi seed functions,
+  retry seeding up to MAX_RETRIES on failure

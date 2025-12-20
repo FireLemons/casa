@@ -58,10 +58,11 @@ class RecordCreator
     additional_expense_seed_results = []
 
     count.times do
-      new_additional_expense = seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array))
-      additional_expense_seed_results.push(new_additional_expense.id)
-    rescue => exception
-      additional_expense_seed_results.push(exception)
+      additional_expense_seed_result = new_record_or_error do
+        seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array))
+      end
+
+      additional_expense_seed_results.push(additional_expense_seed_result)
     end
 
     additional_expense_seed_results
@@ -455,6 +456,19 @@ class RecordCreator
       model_collection.clone.map do |model_id|
         model_class.find(model_id)
       end
+    end
+  end
+
+  def new_record_or_error (&seed_expression)
+    unless seed_expression
+      raise ArgumentError.new("seed expression is required") 
+    end
+
+    begin
+      new_record = seed_expression.call
+      new_record.id
+    rescue => exception
+      exception
     end
   end
 

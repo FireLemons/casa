@@ -55,17 +55,9 @@ class RecordCreator
     validated_case_contacts = validate_seed_n_records_required_model_params("case_contact", "case_contacts", case_contacts, case_contact_ids)
     validated_case_contacts_as_id_array = model_collection_as_id_array(validated_case_contacts)
 
-    additional_expense_seed_results = []
-
-    count.times do
-      additional_expense_seed_result = new_record_or_error do
-        seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array))
-      end
-
-      additional_expense_seed_results.push(additional_expense_seed_result)
+    try_seed_many(count) do
+      seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array))
     end
-
-    additional_expense_seed_results
   end
 
   def seed_address(user: nil, user_id: nil)
@@ -459,19 +451,6 @@ class RecordCreator
     end
   end
 
-  def new_record_or_error (&seed_expression)
-    unless seed_expression
-      raise ArgumentError.new("seed expression is required") 
-    end
-
-    begin
-      new_record = seed_expression.call
-      new_record.id
-    rescue => exception
-      exception
-    end
-  end
-
   def pick_random_element(arr)
     arr.sample(random: @random)
   end
@@ -497,6 +476,19 @@ class RecordCreator
 
   def random_youth_birth_month
     (@random.rand(20) < 1) ? Faker::Date.birthday(min_age: 18, max_age: 21) : Faker::Date.birthday(min_age: 0, max_age: 18)
+  end
+
+  def try_seed_many(count, &seed_expression)
+    seed_results = []
+
+    count.times do
+      new_record = seed_expression.call
+      seed_results.push(new_record.id)
+    rescue => exception
+      seed_results.push(exception)
+    end
+
+    seed_results
   end
 
   def validate_seed_single_record_required_model_params(model_lowercase_name, model_param_object, model_param_id)

@@ -122,16 +122,9 @@ class RecordCreator
   end
 
   def seed_all_casa_admins(count: 0)
-    all_casa_admin_seed_results = []
-
-    count.times do
-      new_all_casa_admin = seed_all_casa_admin
-      all_casa_admin_seed_results.push(new_all_casa_admin.id)
-    rescue => exception
-      all_casa_admin_seed_results.push(exception)
+    try_seed_many(count) do
+      seed_all_casa_admin
     end
-
-    all_casa_admin_seed_results
   end
 
   def seed_banner(casa_org: nil, casa_org_id: nil, casa_admin: nil, casa_admin_id: nil)
@@ -171,16 +164,9 @@ class RecordCreator
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
-    banner_seed_results = []
-
-    count.times do
-      new_banner = seed_banner(casa_admin_id: pick_random_element(validated_casa_admins_as_id_array), casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
-      banner_seed_results.push(new_banner.id)
-    rescue => exception
-      banner_seed_results.push(exception)
+    try_seed_many(count) do
+      seed_banner(casa_admin_id: pick_random_element(validated_casa_admins_as_id_array), casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
     end
-
-    banner_seed_results
   end
 
   def seed_casa_case(casa_org: nil, casa_org_id: nil)
@@ -203,16 +189,9 @@ class RecordCreator
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
-    casa_case_seed_results = []
-
-    count.times do
-      new_casa_case = seed_casa_case(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
-      casa_case_seed_results.push(new_casa_case.id)
-    rescue => exception
-      casa_case_seed_results.push(exception)
+    try_seed_many(count) do
+      seed_casa_case(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
     end
-
-    casa_case_seed_results
   end
 
   def seed_casa_case_contact_type(casa_case: nil, casa_case_id: nil, contact_type: nil, contact_type_id: nil)
@@ -237,16 +216,9 @@ class RecordCreator
   end
 
   def seed_casa_orgs(count: 0)
-    casa_org_seed_results = []
-
-    count.times do
-      new_org = seed_casa_org
-      casa_org_seed_results.push(new_org.id)
-    rescue => exception
-      casa_org_seed_results.push(exception)
+    try_seed_many(count) do
+      seed_casa_org
     end
-
-    casa_org_seed_results
   end
 
   def seed_case_group(casa_cases: nil, casa_case_ids: nil, casa_org: nil, casa_org_id: nil)
@@ -277,18 +249,11 @@ class RecordCreator
     validated_casa_cases_as_id_array = model_collection_as_id_array(validated_casa_cases)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
-    case_group_seed_results = []
-
     grouped_casa_case_ids = form_case_groups(validated_casa_cases_as_id_array, count)
 
-    count.times do |i|
-      new_case_group = seed_case_group(casa_case_ids: grouped_casa_case_ids[i], casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
-      case_group_seed_results.push(new_case_group.id)
-    rescue => exception
-      case_group_seed_results.push(exception)
+    try_seed_many(count) do |i|
+      seed_case_group(casa_case_ids: grouped_casa_case_ids[i], casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
     end
-
-    case_group_seed_results
   end
 
   def seed_language(casa_org: nil, casa_org_id: nil)
@@ -305,16 +270,9 @@ class RecordCreator
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
-    language_seed_results = []
-
-    count.times do
-      new_language = seed_language(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
-      language_seed_results.push(new_language.id)
-    rescue => exception
-      language_seed_results.push(exception)
+    try_seed_many(count) do
+      seed_language(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
     end
-
-    language_seed_results
   end
 
   def seed_mileage_rate(casa_org: nil, casa_org_id: nil)
@@ -331,16 +289,9 @@ class RecordCreator
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
-    mileage_rate_seed_results = []
-
-    count.times do
-      new_mileage_rate = seed_mileage_rate(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
-      mileage_rate_seed_results.push(new_mileage_rate.id)
-    rescue => exception
-      mileage_rate_seed_results.push(exception)
+    try_seed_many(count) do
+      seed_mileage_rate(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
     end
-
-    mileage_rate_seed_results
   end
 
   private
@@ -481,8 +432,8 @@ class RecordCreator
   def try_seed_many(count, &seed_expression)
     seed_results = []
 
-    count.times do
-      new_record = seed_expression.call
+    count.times do |i|
+      new_record = seed_expression.call(i)
       seed_results.push(new_record.id)
     rescue => exception
       seed_results.push(exception)

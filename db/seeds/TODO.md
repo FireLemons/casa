@@ -1,6 +1,7 @@
 for multi seed functions,
-  apply new_record_or_error
   retry seeding up to MAX_RETRIES on failure
+  seed_addresses
+    different expression for selecting user to user to be able to use helper muti seeder
 
 tests for seed_casa_case_contact_type
 

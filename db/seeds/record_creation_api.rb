@@ -326,7 +326,7 @@ class RecordCreator
 
   def form_case_groups_divide(casa_case_ids, group_count)
     case_groups = []
-    shuffled_casa_cases = casa_case_ids.shuffle(random: @random)
+    shuffled_casa_cases = seeded_random_shuffle(casa_case_ids)
 
     unconsumed_casa_case_ids_starting_index = 0
 
@@ -423,6 +423,14 @@ class RecordCreator
 
   def seeded_random_sample(arr)
     arr.sample(random: @random)
+  end
+
+  def seeded_random_shuffle(arr)
+    arr.shuffle(random: @random)
+  end
+
+  def seeded_random_shuffle!(arr)
+    arr.shuffle!(random: @random)
   end
 
   def seeded_random_youth_birth_month

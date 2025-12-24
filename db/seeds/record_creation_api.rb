@@ -84,37 +84,11 @@ class RecordCreator
     users_with_addresses = []
     users_without_addresses = []
 
-    validated_users_as_model_array.each do |user|
-      if user.address.nil?
-        users_without_addresses.push(user)
-      else
-        users_with_addresses.push(user)
-      end
+    ordered_users = order_users_for_address_seeding(validated_users_as_model_array)
+
+    try_seed_many(count) do |i|
+      seed_address(user: ordered_users[i % ordered_users.size])
     end
-
-    address_seed_results = []
-
-    while count > 0 && users_without_addresses.size > 0
-      begin
-        count -= 1
-        new_address = seed_address(user: seeded_random_pop(users_without_addresses))
-        address_seed_results.push(new_address.id)
-      rescue => exception
-        address_seed_results.push(exception)
-      end
-    end
-
-    while count > 0 && users_with_addresses.size > 0
-      begin
-        count -= 1
-        new_address = seed_address(user: seeded_random_pop(users_with_addresses))
-        address_seed_results.push(new_address.id)
-      rescue => exception
-        address_seed_results.push(exception)
-      end
-    end
-
-    address_seed_results
   end
 
   def seed_all_casa_admin
@@ -400,6 +374,21 @@ class RecordCreator
         model_class.find(model_id)
       end
     end
+  end
+
+  def order_users_for_address_seeding(users)
+    users_with_addresses = []
+    users_without_addresses = []
+
+    users.each do |user|
+      if user.address.nil?
+        users_without_addresses.push(user)
+      else
+        users_with_addresses.push(user)
+      end
+    end
+
+    seeded_random_shuffle!(users_without_addresses) + seeded_random_shuffle!(users_with_addresses)
   end
 
   def seeded_random_banner_expiration_date

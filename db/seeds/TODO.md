@@ -3,7 +3,7 @@ for multi seed functions,
   seed_addresses
     different expression for selecting user to user to be able to use helper muti seeder
 
-tests for seed_casa_case_contact_type
+seed_casa_case_contact_types
 
 Flake: I think languages just have a high chance to have duplicate names
 ```

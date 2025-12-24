@@ -56,7 +56,7 @@ class RecordCreator
     validated_case_contacts_as_id_array = model_collection_as_id_array(validated_case_contacts)
 
     try_seed_many(count) do
-      seed_additional_expense(case_contact_id: pick_random_element(validated_case_contacts_as_id_array))
+      seed_additional_expense(case_contact_id: seeded_random_sample(validated_case_contacts_as_id_array))
     end
   end
 
@@ -97,7 +97,7 @@ class RecordCreator
     while count > 0 && users_without_addresses.size > 0
       begin
         count -= 1
-        new_address = seed_address(user: pop_random(users_without_addresses))
+        new_address = seed_address(user: seeded_random_pop(users_without_addresses))
         address_seed_results.push(new_address.id)
       rescue => exception
         address_seed_results.push(exception)
@@ -107,7 +107,7 @@ class RecordCreator
     while count > 0 && users_with_addresses.size > 0
       begin
         count -= 1
-        new_address = seed_address(user: pop_random(users_with_addresses))
+        new_address = seed_address(user: seeded_random_pop(users_with_addresses))
         address_seed_results.push(new_address.id)
       rescue => exception
         address_seed_results.push(exception)
@@ -143,7 +143,7 @@ class RecordCreator
 
     banner_name = Faker::Lorem.words(number: 2)
     banner_message = Faker::Lorem.sentence
-    banner_expiration_date = random_banner_expiration_date
+    banner_expiration_date = seeded_random_banner_expiration_date
 
     existing_active_banner = Banner.where(active: true)
     existing_active_banner.update_all(active: false)
@@ -165,15 +165,15 @@ class RecordCreator
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
-      seed_banner(casa_admin_id: pick_random_element(validated_casa_admins_as_id_array), casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      seed_banner(casa_admin_id: seeded_random_sample(validated_casa_admins_as_id_array), casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
     end
   end
 
   def seed_casa_case(casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
 
-    birth_month = random_youth_birth_month
-    case_number = random_casa_case_number
+    birth_month = seeded_random_youth_birth_month
+    case_number = seeded_random_casa_case_number
     date_in_care = Faker::Date.between(from: birth_month, to: Time.zone.today)
 
     Faker::Address.full_address
@@ -190,7 +190,7 @@ class RecordCreator
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
-      seed_casa_case(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      seed_casa_case(casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
     end
   end
 
@@ -252,7 +252,7 @@ class RecordCreator
     grouped_casa_case_ids = form_case_groups(validated_casa_cases_as_id_array, count)
 
     try_seed_many(count) do |i|
-      seed_case_group(casa_case_ids: grouped_casa_case_ids[i], casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      seed_case_group(casa_case_ids: grouped_casa_case_ids[i], casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
     end
   end
 
@@ -271,7 +271,7 @@ class RecordCreator
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
-      seed_language(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      seed_language(casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
     end
   end
 
@@ -282,7 +282,7 @@ class RecordCreator
       casa_org_id = casa_org.id
     end
 
-    MileageRate.create!(amount: random_change_amount, casa_org_id:, effective_date: Faker::Date.backward)
+    MileageRate.create!(amount: seeded_random_change_amount, casa_org_id:, effective_date: Faker::Date.backward)
   end
 
   def seed_mileage_rates(casa_orgs: nil, casa_org_ids: nil, count: 0)
@@ -290,7 +290,7 @@ class RecordCreator
     validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
-      seed_mileage_rate(casa_org_id: pick_random_element(validated_casa_orgs_as_id_array))
+      seed_mileage_rate(casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
     end
   end
 
@@ -402,30 +402,30 @@ class RecordCreator
     end
   end
 
-  def pick_random_element(arr)
-    arr.sample(random: @random)
-  end
-
-  def pop_random(arr)
-    arr.delete_at(@random.rand(arr.size))
-  end
-
-  def random_casa_case_number
-    "#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}"
-  end
-
-  def random_banner_expiration_date
+  def seeded_random_banner_expiration_date
     (@random.rand < 0.66) ? nil : Faker::Date.between( # chance of being nil measured from prod data Nov 24, 2025
       from: 1.week.from_now,
       to: 6.months.from_now
     )
   end
 
-  def random_change_amount
+  def seeded_random_casa_case_number
+    "#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}-#{Faker::Alphanumeric.alphanumeric(number: 4).upcase}"
+  end
+
+  def seeded_random_change_amount
     @random.rand(100) * 0.01
   end
 
-  def random_youth_birth_month
+  def seeded_random_pop(arr)
+    arr.delete_at(@random.rand(arr.size))
+  end
+
+  def seeded_random_sample(arr)
+    arr.sample(random: @random)
+  end
+
+  def seeded_random_youth_birth_month
     (@random.rand(20) < 1) ? Faker::Date.birthday(min_age: 18, max_age: 21) : Faker::Date.birthday(min_age: 0, max_age: 18)
   end
 

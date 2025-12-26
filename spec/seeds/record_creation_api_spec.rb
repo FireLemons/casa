@@ -30,7 +30,7 @@ RSpec.describe RecordCreator do
       record = subject.public_send(method_name, **minimal_valid_params)
       record.destroy
 
-      reset_seeder = RecordCreator.new(RSpec.configuration.seed)
+      reset_seeder = RecordCreator.new(seed: RSpec.configuration.seed)
 
       reseeded_record = reset_seeder.public_send(method_name, **minimal_valid_params)
 
@@ -49,7 +49,7 @@ RSpec.describe RecordCreator do
         record.destroy
       end
 
-      reset_subject = RecordCreator.new(RSpec.configuration.seed)
+      reset_subject = RecordCreator.new(seed: RSpec.configuration.seed)
 
       reseeded_record_id_array = reset_subject.public_send(method_name, **minimal_valid_params)
 
@@ -159,7 +159,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  subject { RecordCreator.new(RSpec.configuration.seed) }
+  subject { RecordCreator.new(seed: RSpec.configuration.seed) }
 
   describe "getSeededRecordCounts" do
     it "includes the counts of all records created since the RecordCreator's initialization" do
@@ -330,7 +330,7 @@ RSpec.describe RecordCreator do
     it "returns an array containing an error for each all casa admin that could not be created" do
       subject.seed_all_casa_admins(count: 2)
 
-      subject = RecordCreator.new(RSpec.configuration.seed)
+      subject = RecordCreator.new(seed: RSpec.configuration.seed)
 
       # Resetting the RecordCreator with the same seed
       # should result in all casa admins with duplicate emails
@@ -553,7 +553,7 @@ RSpec.describe RecordCreator do
 
     it "returns an array containing an error for each casa org that could not be created" do
       subject.seed_casa_orgs(count: 2)
-      subject = RecordCreator.new(RSpec.configuration.seed)
+      subject = RecordCreator.new(seed: RSpec.configuration.seed)
 
       # Resetting the RecordCreator with the same seed
       # should result in casa orgs with duplicate names

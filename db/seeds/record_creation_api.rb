@@ -19,8 +19,15 @@
 class RecordCreator
   DEFAULT_PASSWORD = "12345678"
 
-  def initialize(seed = nil)
+  def initialize(seed: nil, max_retry_count: 0)
+    if ! max_retry_count.is_a? Integer
+      raise TypeError.new("param max_retry_count: must be an integer")
+    elsif max_retry_count < 0
+      raise RangeError.new("param max_retry_count: must be positive")
+    end
+
     Rails.application.eager_load!
+    @MAX_RETRY_COUNT = max_retry_count
     @pre_seeding_record_count = get_record_counts
     @random = seed.nil? ? Random.new : Random.new(seed)
     Faker::Config.random = @random
@@ -429,11 +436,19 @@ class RecordCreator
   def try_seed_many(count, &seed_expression)
     seed_results = []
 
-    count.times do |i|
-      new_record = seed_expression.call(i)
-      seed_results.push(new_record.id)
-    rescue => exception
-      seed_results.push(exception)
+    loop_count = 0
+    successful_seed_count = 0
+
+    while loop_count < count + @MAX_RETRY_COUNT && successful_seed_count < count
+      begin
+        new_record = seed_expression.call(loop_count)
+        seed_results.push(new_record.id)
+        successful_seed_count += 1
+      rescue => exception
+        seed_results.push(exception)
+      end
+
+      loop_count += 1
     end
 
     seed_results

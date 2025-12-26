@@ -20,14 +20,14 @@ class RecordCreator
   DEFAULT_PASSWORD = "12345678"
 
   def initialize(seed: nil, extra_try_count: 0)
-    if ! max_retry_count.is_a? Integer
+    if !extra_try_count.is_a? Integer
       raise TypeError.new("param extra_try_count: must be an integer")
-    elsif max_retry_count < 0
+    elsif extra_try_count < 0
       raise RangeError.new("param extra_try_count: must be positive")
     end
 
     Rails.application.eager_load!
-    @MAX_RETRY_COUNT = max_retry_count
+    @extra_try_count = extra_try_count
     @pre_seeding_record_count = get_record_counts
     @random = seed.nil? ? Random.new : Random.new(seed)
     Faker::Config.random = @random
@@ -87,9 +87,6 @@ class RecordCreator
   def seed_addresses(users: nil, user_ids: nil, count: 0)
     validated_users = validate_seed_n_records_required_model_params("user", "users", users, user_ids)
     validated_users_as_model_array = model_collection_as_model_array(validated_users, User)
-
-    users_with_addresses = []
-    users_without_addresses = []
 
     ordered_users = order_users_for_address_seeding(validated_users_as_model_array)
 
@@ -439,7 +436,7 @@ class RecordCreator
     loop_count = 0
     successful_seed_count = 0
 
-    while loop_count < count + @MAX_RETRY_COUNT && successful_seed_count < count
+    while loop_count < count + @extra_try_count && successful_seed_count < count
       begin
         new_record = seed_expression.call(loop_count)
         seed_results.push(new_record.id)

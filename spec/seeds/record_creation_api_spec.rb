@@ -164,6 +164,16 @@ RSpec.describe RecordCreator do
   describe "constructor" do
     describe "the seed: parameter" do
       it "sets the seed for randomness" do
+        record_creator = RecordCreator.new(seed: 1)
+
+        record = record_creator.seed_all_casa_admin
+        record.destroy
+
+        reset_seeder = RecordCreator.new(seed: 2)
+
+        record_generated_with_different_seed = reset_seeder.seed_all_casa_admin
+
+        expect(record.attributes.slice("email")).to_not eq(record_generated_with_different_seed.attributes.slice("email"))
       end
     end
 

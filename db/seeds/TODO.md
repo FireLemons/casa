@@ -1,6 +1,8 @@
 for multi seed functions,
   retry seeding up to MAX_RETRIES on failure
-    settable in record creator constructor
+    test constructor error checking
+    fix flake
+    test retries
 
 seed_casa_case_contact_types
 

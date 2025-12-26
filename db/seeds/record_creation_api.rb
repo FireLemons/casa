@@ -19,11 +19,11 @@
 class RecordCreator
   DEFAULT_PASSWORD = "12345678"
 
-  def initialize(seed: nil, max_retry_count: 0)
+  def initialize(seed: nil, extra_try_count: 0)
     if ! max_retry_count.is_a? Integer
-      raise TypeError.new("param max_retry_count: must be an integer")
+      raise TypeError.new("param extra_try_count: must be an integer")
     elsif max_retry_count < 0
-      raise RangeError.new("param max_retry_count: must be positive")
+      raise RangeError.new("param extra_try_count: must be positive")
     end
 
     Rails.application.eager_load!

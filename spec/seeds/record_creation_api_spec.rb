@@ -161,6 +161,24 @@ RSpec.describe RecordCreator do
 
   subject { RecordCreator.new(seed: RSpec.configuration.seed) }
 
+  describe "constructor" do
+    describe "the seed: parameter" do
+      it "sets the seed for randomness" do
+      end
+    end
+
+    describe "the extra_try_count: parameter" do
+      it "sets the extra try count for multi-record creation functions" do
+      end
+
+      it "throws an error if the argument is not an integer" do
+      end
+
+      it "throws an error if the argument is negative" do
+      end
+    end
+  end
+
   describe "getSeededRecordCounts" do
     it "includes the counts of all records created since the RecordCreator's initialization" do
       # trigger lazy init

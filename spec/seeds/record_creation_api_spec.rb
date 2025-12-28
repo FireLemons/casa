@@ -179,12 +179,26 @@ RSpec.describe RecordCreator do
 
     describe "the extra_try_count: parameter" do
       it "sets the extra try count for multi-record creation functions" do
+        extra_try_count = 3
+        record_creation_count = 4
+
+        record_creator = RecordCreator.new(extra_try_count:)
+
+        record_creation_results = record_creator.seed_additional_expenses(case_contact_ids: [-1], count: record_creation_count)
+
+        expect(record_creation_results.size).to eq(record_creation_count + extra_try_count)
       end
 
       it "throws an error if the argument is not an integer" do
+        expect {
+          RecordCreator.new(extra_try_count: "a")
+        }.to raise_error(TypeError, /param extra_try_count: must be an integer/)
       end
 
       it "throws an error if the argument is negative" do
+        expect {
+          RecordCreator.new(extra_try_count: -1)
+        }.to raise_error(RangeError, /param extra_try_count: must be positive/)
       end
     end
   end

@@ -127,7 +127,7 @@ class RecordCreator
     existing_active_banner.update_all(active: false)
 
     begin
-      new_banner = Banner.create!(active: true, casa_org_id:, content: banner_message, expires_at: banner_expiration_date, name: banner_name, user: casa_admin)
+      new_banner = Banner.create!(active: true, casa_org_id:, content: banner_message, expires_at: banner_expiration_date, name: banner_name, user_id: casa_admin.id)
     rescue => exception
       existing_active_banner.update_all(active: true)
       raise exception
@@ -414,8 +414,13 @@ class RecordCreator
     arr.delete_at(@random.rand(arr.size))
   end
 
-  def seeded_random_sample(arr)
-    arr.sample(random: @random)
+  def seeded_random_sample(arr, n: 1)
+
+    if (n === 1)
+      arr.sample(random: @random)
+    else
+      arr.sample(n, random: @random)
+    end
   end
 
   def seeded_random_shuffle(arr)

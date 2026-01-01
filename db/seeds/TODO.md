@@ -1,6 +1,5 @@
-ensure flat distributions for muti seed records
-
 seed_casa_case_contact_types
+  tests
 
 check if activerecord arg is persisted
   default throws null reference error

@@ -187,6 +187,21 @@ class RecordCreator
     CasaCaseContactType.create!(casa_case_id:, contact_type_id:)
   end
 
+  def seed_casa_case_contact_types(casa_cases: nil, casa_case_ids: nil, contact_types: nil, contact_type_ids: nil, count: 0)
+    validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
+    validated_contact_types = validate_seed_n_records_required_model_params("contact_type", "contact_types", contact_types, contact_type_ids)
+    validated_casa_cases_as_id_array = model_collection_as_id_array(validated_casa_cases)
+    validated_contact_types_as_id_array = model_collection_as_id_array(validated_contact_types)
+
+    generated_association_id_random_ordering = form_random_order_for_casa_case_contact_type_id_pairs (validated_casa_cases_as_id_array, validated_contact_types_as_id_array)
+
+    try_seed_many(count)
+      casa_case_id, contact_type_id = consume_id_pair_from_casa_case_contact_type_ordering(generated_association_id_random_ordering)
+
+      seed_case_group(casa_case_id:, contact_type_id:)
+    end
+  end
+
   def seed_casa_org
     county = "#{Faker::Name.neutral_first_name} County"
 
@@ -274,6 +289,23 @@ class RecordCreator
 
   private
 
+  def consume_id_pair_from_casa_case_contact_type_ordering(ordering_structure)
+    if (ordering_structure.size <= 0)
+      return nil
+    end
+
+    casa_case_id = ordering_structure[0][0]
+    contact_type_id = ordering_structure[0][1].pop()
+
+    if (ordering_structure[0][1].size > 0)
+      ordering_structure.rotate!()
+    else
+      ordering_structure.pop()
+    end
+
+    [casa_case_id, contact_type_id]
+  end
+
   def count_cases_available_to_form_groups_with_3_or_more_members(casa_case_array_cursor, casa_case_array_size, unformed_group_count)
     available_cases_for_groups_count = casa_case_array_size - casa_case_array_cursor
 
@@ -339,6 +371,16 @@ class RecordCreator
     end
 
     case_groups
+  end
+
+  def form_random_order_for_casa_case_contact_type_id_pairs (casa_case_ids, contact_type_ids)
+    ordering = []
+
+    seeded_random_shuffle(casa_case_ids).each_with_index do |casa_case_id, i|
+      ordering.push([casa_case_id, seeded_random_shuffle(contact_type_ids)])
+    end
+
+    ordering
   end
 
   def get_record_counts
@@ -414,13 +456,8 @@ class RecordCreator
     arr.delete_at(@random.rand(arr.size))
   end
 
-  def seeded_random_sample(arr, n: 1)
-
-    if (n === 1)
-      arr.sample(random: @random)
-    else
-      arr.sample(n, random: @random)
-    end
+  def seeded_random_sample(arr)
+    arr.sample(random: @random)
   end
 
   def seeded_random_shuffle(arr)

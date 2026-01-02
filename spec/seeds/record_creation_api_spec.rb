@@ -599,7 +599,15 @@ RSpec.describe RecordCreator do
       end
 
       it "does not count attempting to create an existing association as a failure" do
-        # TODO
+        record_id_array = subject.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
+
+        expect(record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
+
+        reset_seeder = RecordCreator.new(seed: RSpec.configuration.seed)
+
+        reseeded_record_id_array = reset_seeder.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
+
+        expect(reseeded_record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
       end
     end
 

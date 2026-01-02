@@ -196,9 +196,27 @@ class RecordCreator
     generated_association_id_random_ordering = form_random_order_for_casa_case_contact_type_id_pairs(validated_casa_cases_as_id_array, validated_contact_types_as_id_array)
 
     try_seed_many(count) do
-      casa_case_id, contact_type_id = consume_id_pair_from_casa_case_contact_type_ordering(generated_association_id_random_ordering)
+      seed_result = nil
 
-      seed_casa_case_contact_type(casa_case_id:, contact_type_id:)
+      while (seed_result.nil?) do
+        begin
+          casa_case_id, contact_type_id = consume_id_pair_from_casa_case_contact_type_ordering(generated_association_id_random_ordering)
+
+          if (casa_case_id.nil?)
+            raise StandardError.new("There are no more casa case and contact type id combinations available to make more casa_case_contact_types")
+          end
+
+          seed_result = seed_casa_case_contact_type(casa_case_id:, contact_type_id:)
+        rescue ActiveRecord::RecordInvalid => e
+          if e.message == "Validation failed: Casa case has already been taken"
+            seed_result = nil
+          else
+            raise
+          end
+        end
+      end
+
+      seed_result
     end
   end
 

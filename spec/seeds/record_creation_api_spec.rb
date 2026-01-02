@@ -578,7 +578,7 @@ RSpec.describe RecordCreator do
   describe "seed_casa_case_contact_types" do
     let(:method_name) { :seed_casa_case_contact_types }
 
-    let(:casa_cases) { create_list(:casa_case, 4) }
+    let(:casa_cases) { create_list(:casa_case, 3) }
     let(:contact_types) { create_list(:contact_type, 4) }
     let(:minimal_valid_params) {
       {casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2}
@@ -608,6 +608,12 @@ RSpec.describe RecordCreator do
         reseeded_record_id_array = reset_seeder.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
 
         expect(reseeded_record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
+      end
+
+      it "adds a special exception to the results when no more casa case contact type combinations are available" do
+        seed_results = subject.seed_casa_case_contact_types(casa_case_ids: [casa_cases[0].id], contact_type_ids: [contact_types[0].id], count: 2)
+
+        expect(seed_results).to include(have_attributes(message: "There are no more casa case and contact type id combinations available to make more casa_case_contact_types"))
       end
     end
 

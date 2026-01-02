@@ -198,11 +198,11 @@ class RecordCreator
     try_seed_many(count) do
       seed_result = nil
 
-      while (seed_result.nil?) do
+      while seed_result.nil?
         begin
           casa_case_id, contact_type_id = consume_id_pair_from_casa_case_contact_type_ordering(generated_association_id_random_ordering)
 
-          if (casa_case_id.nil?)
+          if casa_case_id.nil?
             raise StandardError.new("There are no more casa case and contact type id combinations available to make more casa_case_contact_types")
           end
 
@@ -308,17 +308,17 @@ class RecordCreator
   private
 
   def consume_id_pair_from_casa_case_contact_type_ordering(ordering_structure)
-    if (ordering_structure.size <= 0)
+    if ordering_structure.size <= 0
       return nil
     end
 
     casa_case_id = ordering_structure[0][0]
-    contact_type_id = ordering_structure[0][1].pop()
+    contact_type_id = ordering_structure[0][1].pop
 
-    if (ordering_structure[0][1].size > 0)
-      ordering_structure.rotate!()
+    if ordering_structure[0][1].size > 0
+      ordering_structure.rotate!
     else
-      ordering_structure.shift()
+      ordering_structure.shift
     end
 
     [casa_case_id, contact_type_id]
@@ -391,7 +391,7 @@ class RecordCreator
     case_groups
   end
 
-  def form_random_order_for_casa_case_contact_type_id_pairs (casa_case_ids, contact_type_ids)
+  def form_random_order_for_casa_case_contact_type_id_pairs(casa_case_ids, contact_type_ids)
     ordering = []
 
     seeded_random_shuffle(casa_case_ids).each_with_index do |casa_case_id, i|

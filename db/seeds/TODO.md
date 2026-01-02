@@ -1,5 +1,7 @@
 seed_casa_case_contact_types
   tests
+    it "does not count attempting to create an existing association as a failure" do
+    end
 
 check if activerecord arg is persisted
   default throws null reference error

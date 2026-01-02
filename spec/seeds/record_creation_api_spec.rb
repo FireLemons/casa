@@ -575,6 +575,53 @@ RSpec.describe RecordCreator do
     end
   end
 
+  describe "seed_casa_case_contact_types" do
+    let(:method_name) { :seed_casa_case_contact_types }
+
+    let(:casa_cases) { create_list(:casa_case, 4) }
+    let(:contact_types) { create_list(:contact_type, 4) }
+    let(:minimal_valid_params) {
+      {casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2}
+    }
+
+    describe "with valid parameters" do
+      include_examples("creates the specified number of records", model_class: CasaCaseContactType, model_plural_name: "casa case contact types")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "casa_case_id", "contact_type_id", model_class: CasaCaseContactType)
+      include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
+      include_examples("returns the ids of the generated records", model_class: CasaCaseContactType, model_plural_name: "casa case contact types")
+
+      it "returns an array containing an error for each casa case contact type that could not be created" do
+        error_array = subject.seed_casa_case_contact_types(casa_case_ids: [-1], contact_type_ids: [-1], count: 2)
+
+        error_array.each do |error|
+          expect(error).to be_a(Exception)
+        end
+      end
+
+      it "does not count attempting to create an existing association as a failure" do
+        # TODO
+      end
+    end
+
+    describe "with invalid parameters" do
+      describe "with invalid parameters for a set of casa_cases" do
+        let(:all_record_params) {
+          {casa_cases: CasaCase.all, casa_case_ids: casa_cases.map(&:id)}
+        }
+
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_case", records_param_name: :casa_cases, record_id_array_param_name: :casa_case_ids)
+      end
+
+      describe "with invalid parameters for a set of contact_types" do
+        let(:all_record_params) {
+          {contact_types: ContactType.all, contact_type_ids: contact_types.map(&:id)}
+        }
+
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "contact_type", records_param_name: :contact_types, record_id_array_param_name: :contact_type_ids)
+      end
+    end
+  end
+
   describe "seed_casa_org" do
     let(:method_name) { :seed_casa_org }
     let(:minimal_valid_params) { {} }

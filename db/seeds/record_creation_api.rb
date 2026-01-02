@@ -193,12 +193,12 @@ class RecordCreator
     validated_casa_cases_as_id_array = model_collection_as_id_array(validated_casa_cases)
     validated_contact_types_as_id_array = model_collection_as_id_array(validated_contact_types)
 
-    generated_association_id_random_ordering = form_random_order_for_casa_case_contact_type_id_pairs (validated_casa_cases_as_id_array, validated_contact_types_as_id_array)
+    generated_association_id_random_ordering = form_random_order_for_casa_case_contact_type_id_pairs(validated_casa_cases_as_id_array, validated_contact_types_as_id_array)
 
-    try_seed_many(count)
+    try_seed_many(count) do
       casa_case_id, contact_type_id = consume_id_pair_from_casa_case_contact_type_ordering(generated_association_id_random_ordering)
 
-      seed_case_group(casa_case_id:, contact_type_id:)
+      seed_casa_case_contact_type(casa_case_id:, contact_type_id:)
     end
   end
 
@@ -300,7 +300,7 @@ class RecordCreator
     if (ordering_structure[0][1].size > 0)
       ordering_structure.rotate!()
     else
-      ordering_structure.pop()
+      ordering_structure.shift()
     end
 
     [casa_case_id, contact_type_id]

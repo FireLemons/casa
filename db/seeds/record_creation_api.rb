@@ -220,6 +220,21 @@ class RecordCreator
     end
   end
 
+  def seed_casa_case_emancipation_categories(casa_case: nil, casa_case_id: nil, emancipation_category: nil, emancipation_category_id: nil)
+    validate_seed_single_record_required_model_params("casa_case", casa_case, casa_case_id)
+    validate_seed_single_record_required_model_params("emancipation_category", emancipation_category, emancipation_category_id)
+
+    if casa_case_id.nil?
+      casa_case_id = casa_case.id
+    end
+
+    if emancipation_category_id.nil?
+      emancipation_category_id = emancipation_category.id
+    end
+
+    CasaCaseEmancipationCategory.create!(casa_case_id:, emancipation_category_id:)
+  end
+
   def seed_casa_org
     county = "#{Faker::Name.neutral_first_name} County"
 

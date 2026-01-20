@@ -557,7 +557,7 @@ RSpec.describe RecordCreator do
 
     describe "with valid parameters" do
       include_examples("creates the record", model_class: CasaCaseContactType, model_name: "casa_case_contact_type")
-      include_examples("returns the generated record", model_class: CasaCaseContactType, model_name: "casa casa_case_contact_type")
+      include_examples("returns the generated record", model_class: CasaCaseContactType, model_name: "casa_case_contact_type")
     end
 
     describe "with invalid parameters" do
@@ -632,6 +632,33 @@ RSpec.describe RecordCreator do
         }
 
         include_examples("the reference to a required set of records is present and unambiguous", model_name: "contact_type", records_param_name: :contact_types, record_id_array_param_name: :contact_type_ids)
+      end
+    end
+  end
+
+  describe "seed_casa_case_emancipation_categories" do
+    let(:method_name) { :seed_casa_case_emancipation_categories }
+
+    let(:casa_case) { create(:casa_case) }
+    let(:emancipation_category) { create(:emancipation_category) }
+    let(:minimal_valid_params) { {casa_case:, emancipation_category:} }
+
+    describe "with valid parameters" do
+      include_examples("creates the record", model_class: CasaCaseEmancipationCategory, model_name: "casa_case_emancipation_category")
+      include_examples("returns the generated record", model_class: CasaCaseEmancipationCategory, model_name: "casa_case_emancipation_category")
+    end
+
+    describe "with invalid parameters" do
+      describe "with invalid casa case parameters" do
+        let(:all_record_params) { {casa_case:, casa_case_id: casa_case.id} }
+
+        include_examples("the reference to a required record is present and unambiguous", record_param_name: :casa_case, record_id_param_name: :casa_case_id)
+      end
+
+      describe "with invalid contact type parameters" do
+        let(:all_record_params) { {emancipation_category:, emancipation_category_id: emancipation_category.id} }
+
+        include_examples("the reference to a required record is present and unambiguous", record_param_name: :emancipation_category, record_id_param_name: :emancipation_category_id)
       end
     end
   end

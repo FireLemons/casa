@@ -34,8 +34,8 @@ class RecordCreator
     Faker::Config.locale = "en-US" # only allow US phone numbers
   end
 
-  def getSeededRecordCounts
-    seeded_record_count_diff = diffSeededRecordCounts(get_record_counts)
+  def get_record_creation_counts_since_initialization
+    seeded_record_count_diff = diff_record_counts_since_init(get_record_counts)
 
     seeded_record_count_diff.each do |record_type_name, record_count|
       if record_count == 0
@@ -349,7 +349,7 @@ class RecordCreator
     available_cases_for_groups_count - (2 * unformed_group_count)
   end
 
-  def diffSeededRecordCounts(updated_record_counts)
+  def diff_record_counts_since_init(updated_record_counts)
     seeded_record_counts = {}
 
     updated_record_counts.each do |record_type_name, new_record_count|

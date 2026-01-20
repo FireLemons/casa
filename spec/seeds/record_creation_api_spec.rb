@@ -203,7 +203,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  describe "getSeededRecordCounts" do
+  describe "get_record_creation_counts_since_initialization" do
     it "includes the counts of all records created since the RecordCreator's initialization" do
       # trigger lazy init
       subject
@@ -213,7 +213,7 @@ RSpec.describe RecordCreator do
       create(:casa_org)
       create(:casa_admin)
 
-      seeded_record_counts = subject.getSeededRecordCounts
+      seeded_record_counts = subject.get_record_creation_counts_since_initialization
 
       expect(seeded_record_counts[CasaOrg.name]).to eq 3
       expect(seeded_record_counts[User.name]).to eq 1

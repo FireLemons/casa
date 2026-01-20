@@ -636,8 +636,8 @@ RSpec.describe RecordCreator do
     end
   end
 
-  describe "seed_casa_case_emancipation_categories" do
-    let(:method_name) { :seed_casa_case_emancipation_categories }
+  describe "seed_casa_case_emancipation_category" do
+    let(:method_name) { :seed_casa_case_emancipation_category }
 
     let(:casa_case) { create(:casa_case) }
     let(:emancipation_category) { create(:emancipation_category) }
@@ -646,6 +646,14 @@ RSpec.describe RecordCreator do
     describe "with valid parameters" do
       include_examples("creates the record", model_class: CasaCaseEmancipationCategory, model_name: "casa_case_emancipation_category")
       include_examples("returns the generated record", model_class: CasaCaseEmancipationCategory, model_name: "casa_case_emancipation_category")
+
+      it "raises an error when the casa_case is not of transition age" do
+        casa_case = create(:casa_case, :pre_transition)
+
+        expect {
+          subject.seed_casa_case_emancipation_category(casa_case:, emancipation_category:)
+        }.to raise_error(RangeError, /Casa cases under the transition age should not be associated with emancipation categories/)
+      end
     end
 
     describe "with invalid parameters" do

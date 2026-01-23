@@ -193,7 +193,7 @@ class RecordCreator
     validated_casa_cases_as_id_array = model_collection_as_id_array(validated_casa_cases)
     validated_contact_types_as_id_array = model_collection_as_id_array(validated_contact_types)
 
-    generated_association_id_random_ordering = form_random_order_for_casa_case_contact_type_id_pairs(validated_casa_cases_as_id_array, validated_contact_types_as_id_array)
+    generated_association_id_random_ordering = form_randomly_ordered_id_pair_pool(validated_casa_cases_as_id_array, validated_contact_types_as_id_array)
 
     try_seed_many(count) do
       seed_result = nil
@@ -237,6 +237,17 @@ class RecordCreator
     end
 
     CasaCaseEmancipationCategory.create!(casa_case:, emancipation_category_id:)
+  end
+
+  def seed_casa_case_emancipation_categories(casa_cases: nil, casa_case_ids: nil, emancipation_categories: nil, emancipation_category_ids: nil)
+    validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
+    validated_emancipation_categories = validate_seed_n_records_required_model_params("emancipation_category", "emancipation_categories", emancipation_categories, emancipation_category_ids)
+    validated_casa_cases_as_model_array = model_collection_as_model_array(validated_casa_cases)
+    model_collection_as_id_array(validated_emancipation_categories)
+
+    validated_casa_cases_as_model_array.each do |casa_case|
+      # TODO
+    end
   end
 
   def seed_casa_org
@@ -410,11 +421,11 @@ class RecordCreator
     case_groups
   end
 
-  def form_random_order_for_casa_case_contact_type_id_pairs(casa_case_ids, contact_type_ids)
+  def form_randomly_ordered_id_pair_pool(model_a_ids, model_b_ids)
     ordering = []
 
-    seeded_random_shuffle(casa_case_ids).each_with_index do |casa_case_id, i|
-      ordering.push([casa_case_id, seeded_random_shuffle(contact_type_ids)])
+    seeded_random_shuffle(model_a_ids).each_with_index do |id, i|
+      ordering.push([id, seeded_random_shuffle(model_b_ids)])
     end
 
     ordering

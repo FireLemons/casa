@@ -239,10 +239,10 @@ class RecordCreator
     CasaCaseEmancipationCategory.create!(casa_case:, emancipation_category_id:)
   end
 
-  def seed_casa_case_emancipation_categories(casa_cases: nil, casa_case_ids: nil, emancipation_categories: nil, emancipation_category_ids: nil)
+  def seed_casa_case_emancipation_categories(casa_cases: nil, casa_case_ids: nil, emancipation_categories: nil, emancipation_category_ids: nil, count: 0)
     validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
     validated_emancipation_categories = validate_seed_n_records_required_model_params("emancipation_category", "emancipation_categories", emancipation_categories, emancipation_category_ids)
-    validated_casa_cases_as_model_array = model_collection_as_model_array(validated_casa_cases)
+    validated_casa_cases_as_model_array = model_collection_as_model_array(validated_casa_cases, CasaCase)
     validated_emancipation_categories_as_id_array = model_collection_as_id_array(validated_emancipation_categories)
 
     valid_case_ids, invalid_case_errors = filter_out_non_transitioning_casa_cases(validated_casa_cases_as_model_array)
@@ -374,11 +374,11 @@ class RecordCreator
 
     id_a_index = seeded_random_array_index(ordering_structure)
 
-    id_a = ordering_structure[id_a_chosen_index][0]
-    id_b = seeded_random_pop(ordering_structure[id_a_chosen_index][1])
+    id_a = ordering_structure[id_a_index][0]
+    id_b = seeded_random_pop(ordering_structure[id_a_index][1])
 
-    if ordering_structure[id_a_chosen_index][1].empty?
-      ordering_structure.delete_at(id_a_chosen_index)
+    if ordering_structure[id_a_index][1].empty?
+      ordering_structure.delete_at(id_a_index)
     end
 
     [id_a, id_b]

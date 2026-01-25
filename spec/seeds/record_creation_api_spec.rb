@@ -671,6 +671,67 @@ RSpec.describe RecordCreator do
     end
   end
 
+  describe "seed_casa_case_emancipation_categories" do
+    let(:method_name) { :seed_casa_case_emancipation_categories }
+
+    let(:casa_cases) { create_list(:casa_case, 3) }
+    let(:emancipation_categories) { create_list(:emancipation_category, 4) }
+    let(:minimal_valid_params) {
+      {casa_case_ids: casa_cases.map(&:id), emancipation_category_ids: emancipation_categories.map(&:id), count: 2}
+    }
+
+    describe "with valid parameters" do
+      include_examples("creates the specified number of records", model_class: CasaCaseEmancipationCategory, model_plural_name: "casa case emancipation categories")
+      include_examples("has randomness derived from the seed when generating several of the same type of record", "casa_case_id", "emancipation_category_id", model_class: CasaCaseEmancipationCategory)
+      include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
+      include_examples("returns the ids of the generated records", model_class: CasaCaseEmancipationCategory, model_plural_name: "casa case emancipation categories")
+
+    #   it "returns an array containing an error for each casa case contact type that could not be created" do
+    #     error_array = subject.seed_casa_case_contact_types(casa_case_ids: [-1], contact_type_ids: [-1], count: 2)
+
+    #     error_array.each do |error|
+    #       expect(error).to be_a(Exception)
+    #     end
+    #   end
+
+    #   it "does not count attempting to create an existing association as a failure" do
+    #     record_id_array = subject.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
+
+    #     expect(record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
+
+    #     reset_seeder = RecordCreator.new(seed: RSpec.configuration.seed)
+
+    #     reseeded_record_id_array = reset_seeder.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
+
+    #     expect(reseeded_record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
+    #   end
+
+    #   it "adds a special exception to the results when no more casa case contact type combinations are available" do
+    #     seed_results = subject.seed_casa_case_contact_types(casa_case_ids: [casa_cases[0].id], contact_type_ids: [contact_types[0].id], count: 2)
+
+    #     expect(seed_results).to include(have_attributes(message: "There are no more casa case and contact type id combinations available to make more casa_case_contact_types"))
+    #   end
+    end
+
+    describe "with invalid parameters" do
+      describe "with invalid parameters for a set of casa_cases" do
+        let(:all_record_params) {
+          {casa_cases: CasaCase.all, casa_case_ids: casa_cases.map(&:id)}
+        }
+
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "casa_case", records_param_name: :casa_cases, record_id_array_param_name: :casa_case_ids)
+      end
+
+      describe "with invalid parameters for a set of emancipation_categories" do
+        let(:all_record_params) {
+          {emancipation_categories: EmancipationCategory.all, emancipation_category_ids: emancipation_categories.map(&:id)}
+        }
+
+        include_examples("the reference to a required set of records is present and unambiguous", model_name: "emancipation_category", records_param_name: :emancipation_categories, record_id_array_param_name: :emancipation_category_ids)
+      end
+    end
+  end
+
   describe "seed_casa_org" do
     let(:method_name) { :seed_casa_org }
     let(:minimal_valid_params) { {} }

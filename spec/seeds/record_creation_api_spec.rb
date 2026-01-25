@@ -686,31 +686,40 @@ RSpec.describe RecordCreator do
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: CasaCaseEmancipationCategory, model_plural_name: "casa case emancipation categories")
 
-    #   it "returns an array containing an error for each casa case contact type that could not be created" do
-    #     error_array = subject.seed_casa_case_contact_types(casa_case_ids: [-1], contact_type_ids: [-1], count: 2)
+      it "returns an array containing an error for each casa case emancipation category that could not be created" do
+        #     error_array = subject.seed_casa_case_contact_types(casa_case_ids: [-1], contact_type_ids: [-1], count: 2)
 
-    #     error_array.each do |error|
-    #       expect(error).to be_a(Exception)
-    #     end
-    #   end
+        #     error_array.each do |error|
+        #       expect(error).to be_a(Exception)
+        #     end
+      end
 
-    #   it "does not count attempting to create an existing association as a failure" do
-    #     record_id_array = subject.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
+      it "adds a special exception to the results when no more casa case contact type combinations are available" do
+        #     seed_results = subject.seed_casa_case_contact_types(casa_case_ids: [casa_cases[0].id], contact_type_ids: [contact_types[0].id], count: 2)
 
-    #     expect(record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
+        #     expect(seed_results).to include(have_attributes(message: "There are no more casa case and contact type id combinations available to make more casa_case_contact_types"))
+      end
 
-    #     reset_seeder = RecordCreator.new(seed: RSpec.configuration.seed)
+      it "adds an error to the results for each non transitioning casa case" do
+      end
 
-    #     reseeded_record_id_array = reset_seeder.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
+      it "adds a unique error to the results when there are no available tranitioning cases" do
+      end
 
-    #     expect(reseeded_record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
-    #   end
+      it "does not count attempting to create an existing association as a failure" do
+        #     record_id_array = subject.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
 
-    #   it "adds a special exception to the results when no more casa case contact type combinations are available" do
-    #     seed_results = subject.seed_casa_case_contact_types(casa_case_ids: [casa_cases[0].id], contact_type_ids: [contact_types[0].id], count: 2)
+        #     expect(record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
 
-    #     expect(seed_results).to include(have_attributes(message: "There are no more casa case and contact type id combinations available to make more casa_case_contact_types"))
-    #   end
+        #     reset_seeder = RecordCreator.new(seed: RSpec.configuration.seed)
+
+        #     reseeded_record_id_array = reset_seeder.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
+
+        #     expect(reseeded_record_id_array.count { |seed_result| seed_result.is_a?(Integer) }).to be >= 2
+      end
+
+      it "only uses transitioning casa cases" do
+      end
     end
 
     describe "with invalid parameters" do

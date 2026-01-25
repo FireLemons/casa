@@ -1,6 +1,5 @@
 seed_casa_case_emancipation_categories
-  throw out non transition cases
-  purely random distribution
+  tests
 
 check if activerecord arg is persisted
   default throws null reference error

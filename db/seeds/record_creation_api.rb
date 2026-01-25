@@ -200,7 +200,7 @@ class RecordCreator
 
       while seed_result.nil?
         begin
-          casa_case_id, contact_type_id = consume_id_pair_from_casa_case_contact_type_ordering(generated_association_id_random_ordering)
+          casa_case_id, contact_type_id = consume_id_pair_from_casa_case_contact_type_ordering_round_robin(generated_association_id_random_ordering)
 
           if casa_case_id.nil?
             raise StandardError.new("There are no more casa case and contact type id combinations available to make more casa_case_contact_types")
@@ -243,11 +243,41 @@ class RecordCreator
     validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
     validated_emancipation_categories = validate_seed_n_records_required_model_params("emancipation_category", "emancipation_categories", emancipation_categories, emancipation_category_ids)
     validated_casa_cases_as_model_array = model_collection_as_model_array(validated_casa_cases)
-    model_collection_as_id_array(validated_emancipation_categories)
+    validated_emancipation_categories_as_id_array = model_collection_as_id_array(validated_emancipation_categories)
 
-    validated_casa_cases_as_model_array.each do |casa_case|
-      # TODO
+    valid_case_ids, invalid_case_errors = filter_out_non_transitioning_casa_cases(validated_casa_cases_as_model_array)
+
+    if valid_case_ids.empty?
+      return invalid_case_errors
     end
+
+    generated_association_id_random_ordering = form_randomly_ordered_id_pair_pool(valid_case_ids, validated_emancipation_categories_as_id_array)
+
+    seed_results = try_seed_many(count) do
+      seed_result = nil
+
+      while seed_result.nil?
+        begin
+          casa_case_id, emancipation_category_id = consume_id_pair_from_casa_case_contact_type_ordering_random(generated_association_id_random_ordering)
+
+          if casa_case_id.nil?
+            raise StandardError.new("There are no more casa case and contact type id combinations available to make more casa_case_contact_types")
+          end
+
+          seed_result = seed_casa_case_emancipation_category(casa_case_id:, emancipation_category_id:)
+        rescue ActiveRecord::RecordInvalid => e
+          if e.message == "Validation failed: Casa case has already been taken"
+            seed_result = nil
+          else
+            raise
+          end
+        end
+      end
+
+      seed_result
+    end
+
+    seed_results.concat(invalid_case_errors)
   end
 
   def seed_casa_org
@@ -337,18 +367,35 @@ class RecordCreator
 
   private
 
-  def consume_id_pair_from_casa_case_contact_type_ordering(ordering_structure)
-    if ordering_structure.size <= 0
+  def consume_id_pair_from_casa_case_contact_type_ordering_random(ordering_structure)
+    if ordering_structure.empty?
+      return nil
+    end
+
+    id_a_index = seeded_random_array_index(ordering_structure)
+
+    id_a = ordering_structure[id_a_chosen_index][0]
+    id_b = seeded_random_pop(ordering_structure[id_a_chosen_index][1])
+
+    if ordering_structure[id_a_chosen_index][1].empty?
+      ordering_structure.delete_at(id_a_chosen_index)
+    end
+
+    [id_a, id_b]
+  end
+
+  def consume_id_pair_from_casa_case_contact_type_ordering_round_robin(ordering_structure)
+    if ordering_structure.empty?
       return nil
     end
 
     casa_case_id = ordering_structure[0][0]
     contact_type_id = ordering_structure[0][1].pop
 
-    if ordering_structure[0][1].size > 0
-      ordering_structure.rotate!
-    else
+    if ordering_structure[0][1].empty?
       ordering_structure.shift
+    else
+      ordering_structure.rotate!
     end
 
     [casa_case_id, contact_type_id]
@@ -372,6 +419,21 @@ class RecordCreator
     end
 
     seeded_record_counts
+  end
+
+  def filter_out_non_transitioning_casa_cases(casa_cases)
+    invalid_case_errors = []
+    valid_case_ids = []
+
+    casa_cases.each do |casa_case|
+      if casa_case.in_transition_age?
+        valid_case_ids.push(casa_case.id)
+      else
+        invalid_case_errors.push(RangeError.new("Casa case with id=#{casa_case.id} is not in transition age and will not be used for seeding"))
+      end
+    end
+
+    [valid_case_ids, invalid_case_errors]
   end
 
   def form_case_groups(casa_case_ids, group_count)
@@ -483,6 +545,10 @@ class RecordCreator
     end
 
     seeded_random_shuffle!(users_without_addresses) + seeded_random_shuffle!(users_with_addresses)
+  end
+
+  def seeded_random_array_index(arr)
+    @random.rand(arr.size)
   end
 
   def seeded_random_banner_expiration_date

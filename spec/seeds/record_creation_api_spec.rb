@@ -87,8 +87,21 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "returns an Exception for each record that failed to generate" do
-    # TODO
+  RSpec.shared_examples "returns an Exception for each record that failed to generate" do |record_param_name:|
+    it "returns an array containing an error for each #{record_param_name} that could not be created" do
+      nonexistant_id_params = minimal_valid_params
+
+      if nonexistant_id_params.key?(:count) && nonexistant_id_params.size == 1
+      else
+        nonexistant_id_params.transform_values! { [-1] }
+        nonexistant_id_params[:count] = 2
+        error_array = subject.public_send(method_name, **nonexistant_id_params)
+
+        error_array.each do |error|
+          expect(error).to be_a(Exception)
+        end
+      end
+    end
   end
 
   RSpec.shared_examples "the reference to a required record is present and unambiguous" do |record_param_name:, record_id_param_name:|
@@ -685,17 +698,10 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "casa_case_id", "emancipation_category_id", model_class: CasaCaseEmancipationCategory)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: CasaCaseEmancipationCategory, model_plural_name: "casa case emancipation categories")
-
-      it "returns an array containing an error for each casa case emancipation category that could not be created" do
-        #     error_array = subject.seed_casa_case_contact_types(casa_case_ids: [-1], contact_type_ids: [-1], count: 2)
-
-        #     error_array.each do |error|
-        #       expect(error).to be_a(Exception)
-        #     end
-      end
+      include_examples("returns an Exception for each record that failed to generate", record_param_name: "casa case emancipation category")
 
       it "adds a special exception to the results when no more casa case contact type combinations are available" do
-        #     seed_results = subject.seed_casa_case_contact_types(casa_case_ids: [casa_cases[0].id], contact_type_ids: [contact_types[0].id], count: 2)
+        #     seed_results = subject.seed_casa_case_contact_types(casa_case_ids: [casa_cases[0].id], contact_type_ids: [emancipation_categories[0].id], count: 2)
 
         #     expect(seed_results).to include(have_attributes(message: "There are no more casa case and contact type id combinations available to make more casa_case_contact_types"))
       end

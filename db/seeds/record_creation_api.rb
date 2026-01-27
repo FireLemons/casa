@@ -86,13 +86,19 @@ class RecordCreator
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)
     validated_users = validate_seed_n_records_required_model_params("user", "users", users, user_ids)
-    validated_users_as_model_array = model_collection_as_model_array(validated_users, User)
+    validated_users_as_model_array, validation_failures = model_collection_as_model_array(validated_users, User)
+
+    if validated_users_as_model_array.empty?
+      return validation_failures
+    end
 
     ordered_users = order_users_for_address_seeding(validated_users_as_model_array)
 
-    try_seed_many(count) do |i|
+    seed_results = try_seed_many(count) do |i|
       seed_address(user: ordered_users[i % ordered_users.size])
     end
+
+    seed_results.concat(validation_failures)
   end
 
   def seed_all_casa_admin
@@ -242,8 +248,12 @@ class RecordCreator
   def seed_casa_case_emancipation_categories(casa_cases: nil, casa_case_ids: nil, emancipation_categories: nil, emancipation_category_ids: nil, count: 0)
     validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
     validated_emancipation_categories = validate_seed_n_records_required_model_params("emancipation_category", "emancipation_categories", emancipation_categories, emancipation_category_ids)
-    validated_casa_cases_as_model_array = model_collection_as_model_array(validated_casa_cases, CasaCase)
+    validated_casa_cases_as_model_array, casa_case_validation_failures = model_collection_as_model_array(validated_casa_cases, CasaCase)
     validated_emancipation_categories_as_id_array = model_collection_as_id_array(validated_emancipation_categories)
+
+    if validated_casa_cases_as_model_array.empty?
+      return casa_case_validation_failures
+    end
 
     valid_case_ids, invalid_case_errors = filter_out_non_transitioning_casa_cases(validated_casa_cases_as_model_array)
 
@@ -277,7 +287,7 @@ class RecordCreator
       seed_result
     end
 
-    seed_results.concat(invalid_case_errors)
+    seed_results.concat(invalid_case_errors).concat(casa_case_validation_failures)
   end
 
   def seed_casa_org
@@ -520,15 +530,23 @@ class RecordCreator
 
   def model_collection_as_model_array(model_collection, model_class = nil)
     if model_collection.is_a?(ActiveRecord::Relation)
-      model_collection.to_a
+      [model_collection.to_a, []]
     else
+      valid_models = []
+      model_conversion_errors = []
+
       if model_class.nil?
         raise ArgumentError.new("param model_class is required when passing an array of ids")
       end
 
-      model_collection.clone.map do |model_id|
-        model_class.find(model_id)
+      model_collection.each do |model_id|
+        model = model_class.find(model_id)
+        valid_models.push(model)
+      rescue => exception
+        model_conversion_errors.push(exception)
       end
+
+      [valid_models, model_conversion_errors]
     end
   end
 

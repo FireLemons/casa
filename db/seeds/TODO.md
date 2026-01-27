@@ -1,4 +1,3 @@
-updating model_collection_as_model_array to return tuple
 model language as opposed to new record language in provate methods
 When making a model array, if a record cannot be found by id, try with the remainder anyways and return a tuple
 

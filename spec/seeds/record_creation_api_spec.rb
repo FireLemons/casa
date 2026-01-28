@@ -92,6 +92,18 @@ RSpec.describe RecordCreator do
       nonexistant_id_params = minimal_valid_params
 
       if nonexistant_id_params.key?(:count) && nonexistant_id_params.size == 1
+        subject.public_send(method_name, **minimal_valid_params)
+
+        subject = RecordCreator.new(seed: RSpec.configuration.seed)
+
+        # Resetting the RecordCreator with the same seed
+        # usually results in invalid duplicate records
+        # thus causing the errors
+        error_array = subject.public_send(method_name, **minimal_valid_params)
+
+        error_array.each do |error|
+          expect(error).to be_a(Exception)
+        end
       else
         nonexistant_id_params.transform_values! { [-1] }
         nonexistant_id_params[:count] = 2

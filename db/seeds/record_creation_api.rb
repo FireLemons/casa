@@ -46,7 +46,7 @@ class RecordCreator
   end
 
   def seed_additional_expense(case_contact: nil, case_contact_id: nil)
-    validate_seed_single_record_required_model_params("case_contact", case_contact, case_contact_id)
+    validate_single_required_record_present_in_flexible_params("case_contact", case_contact, case_contact_id)
 
     other_expense_amount = @random.rand(1..40) + @random.rand.round(2)
     other_expenses_describe = Faker::Commerce.product_name
@@ -68,7 +68,7 @@ class RecordCreator
   end
 
   def seed_address(user: nil, user_id: nil)
-    validate_seed_single_record_required_model_params("user", user, user_id)
+    validate_single_required_record_present_in_flexible_params("user", user, user_id)
 
     address = Faker::Address.full_address
 
@@ -112,8 +112,8 @@ class RecordCreator
   end
 
   def seed_banner(casa_org: nil, casa_org_id: nil, casa_admin: nil, casa_admin_id: nil)
-    validate_seed_single_record_required_model_params("casa_admin", casa_admin, casa_admin_id)
-    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+    validate_single_required_record_present_in_flexible_params("casa_admin", casa_admin, casa_admin_id)
+    validate_single_required_record_present_in_flexible_params("casa_org", casa_org, casa_org_id)
 
     if casa_org_id.nil?
       casa_org_id = casa_org.id
@@ -154,7 +154,7 @@ class RecordCreator
   end
 
   def seed_casa_case(casa_org: nil, casa_org_id: nil)
-    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+    validate_single_required_record_present_in_flexible_params("casa_org", casa_org, casa_org_id)
 
     birth_month = seeded_random_youth_birth_month
     case_number = seeded_random_casa_case_number
@@ -179,8 +179,8 @@ class RecordCreator
   end
 
   def seed_casa_case_contact_type(casa_case: nil, casa_case_id: nil, contact_type: nil, contact_type_id: nil)
-    validate_seed_single_record_required_model_params("casa_case", casa_case, casa_case_id)
-    validate_seed_single_record_required_model_params("contact_type", contact_type, contact_type_id)
+    validate_single_required_record_present_in_flexible_params("casa_case", casa_case, casa_case_id)
+    validate_single_required_record_present_in_flexible_params("contact_type", contact_type, contact_type_id)
 
     if casa_case_id.nil?
       casa_case_id = casa_case.id
@@ -227,8 +227,8 @@ class RecordCreator
   end
 
   def seed_casa_case_emancipation_category(casa_case: nil, casa_case_id: nil, emancipation_category: nil, emancipation_category_id: nil)
-    validate_seed_single_record_required_model_params("casa_case", casa_case, casa_case_id)
-    validate_seed_single_record_required_model_params("emancipation_category", emancipation_category, emancipation_category_id)
+    validate_single_required_record_present_in_flexible_params("casa_case", casa_case, casa_case_id)
+    validate_single_required_record_present_in_flexible_params("emancipation_category", emancipation_category, emancipation_category_id)
 
     if casa_case.nil?
       casa_case = CasaCase.find(casa_case_id)
@@ -303,7 +303,7 @@ class RecordCreator
   end
 
   def seed_case_group(casa_cases: nil, casa_case_ids: nil, casa_org: nil, casa_org_id: nil)
-    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+    validate_single_required_record_present_in_flexible_params("casa_org", casa_org, casa_org_id)
     validated_casa_cases = validate_required_record_collection_present_in_flexible_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
 
     unless validated_casa_cases.is_a?(ActiveRecord::Relation)
@@ -338,7 +338,7 @@ class RecordCreator
   end
 
   def seed_language(casa_org: nil, casa_org_id: nil)
-    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+    validate_single_required_record_present_in_flexible_params("casa_org", casa_org, casa_org_id)
 
     if casa_org_id.nil?
       casa_org_id = casa_org.id
@@ -357,7 +357,7 @@ class RecordCreator
   end
 
   def seed_mileage_rate(casa_org: nil, casa_org_id: nil)
-    validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
+    validate_single_required_record_present_in_flexible_params("casa_org", casa_org, casa_org_id)
 
     if casa_org_id.nil?
       casa_org_id = casa_org.id
@@ -625,10 +625,10 @@ class RecordCreator
     seed_results
   end
 
-  def validate_seed_single_record_required_model_params(model_lowercase_name, model_param_object, model_param_id)
-    if model_param_object.nil? && model_param_id.nil?
+  def validate_single_required_record_present_in_flexible_params(model_lowercase_name, record_param_value, record_id_param_value)
+    if record_param_value.nil? && record_id_param_value.nil?
       raise ArgumentError.new("#{model_lowercase_name}: or #{model_lowercase_name}_id: is required")
-    elsif !model_param_object.nil? && !model_param_id.nil?
+    elsif !record_param_value.nil? && !record_id_param_value.nil?
       raise ArgumentError.new("cannot use #{model_lowercase_name}: and #{model_lowercase_name}_id:")
     end
   end

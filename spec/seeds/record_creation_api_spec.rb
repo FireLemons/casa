@@ -2,7 +2,7 @@ require "rails_helper"
 require_relative "../../db/seeds/record_creation_api"
 
 RSpec.describe RecordCreator do
-  RSpec.shared_examples "creates the record" do |model_class:, model_name:|
+  shared_examples "creates the record" do |model_class:, model_name:|
     it "creates one #{model_name}" do
       original_record_count = model_class.count
 
@@ -12,7 +12,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "creates the specified number of records" do |model_class:, model_plural_name:|
+  shared_examples "creates the specified number of records" do |model_class:, model_plural_name:|
     it "creates the specified number of #{model_plural_name}" do
       record_generation_count = 2
       params = minimal_valid_params.merge({count: record_generation_count})
@@ -25,7 +25,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "has randomness derived from the seed when generating a record" do |*business_data_field_names|
+  shared_examples "has randomness derived from the seed when generating a record" do |*business_data_field_names|
     it "has randomness derived from the seed" do
       record = subject.public_send(method_name, **minimal_valid_params)
       record.destroy
@@ -38,7 +38,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "has randomness derived from the seed when generating several of the same type of record" do |*business_data_field_names, model_class:|
+  shared_examples "has randomness derived from the seed when generating several of the same type of record" do |*business_data_field_names, model_class:|
     it "has randomness derived from the seed" do
       record_id_array = subject.public_send(method_name, **minimal_valid_params)
       record_array = record_id_array.map do |id|
@@ -61,7 +61,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "multi-record generation returns empty list when requesting to generate a negative number of records" do
+  shared_examples "multi-record generation returns empty list when requesting to generate a negative number of records" do
     it "returns empty array for negative counts" do
       params = minimal_valid_params.merge({count: -1})
 
@@ -69,7 +69,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "returns the generated record" do |model_class:, model_name:|
+  shared_examples "returns the generated record" do |model_class:, model_name:|
     it "returns the newly created #{model_name}" do
       new_record = subject.public_send(method_name, **minimal_valid_params)
 
@@ -77,7 +77,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "returns the ids of the generated records" do |model_class:, model_plural_name:|
+  shared_examples "returns the ids of the generated records" do |model_class:, model_plural_name:|
     it "returns an array containing the ids of the #{model_plural_name} created" do
       subject.public_send(method_name, **minimal_valid_params).each do |record_id|
         expect {
@@ -87,7 +87,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "returns an Exception for each record that failed to generate" do |record_param_name:|
+  shared_examples "returns an Exception for each record that failed to generate" do |record_param_name:|
     it "returns an array containing an error for each #{record_param_name} that could not be created" do
       nonexistant_id_params = minimal_valid_params
 
@@ -104,7 +104,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "the reference to a required record is present and unambiguous" do |record_param_name:, record_id_param_name:|
+  shared_examples "the reference to a required record is present and unambiguous" do |record_param_name:, record_id_param_name:|
     it "throws an error when neither #{record_param_name} or #{record_id_param_name} is used" do
       params = minimal_valid_params.except(*all_record_params.keys)
 
@@ -122,7 +122,7 @@ RSpec.describe RecordCreator do
     end
   end
 
-  RSpec.shared_examples "the reference to a required set of records is present and unambiguous" do |model_name:, records_param_name:, record_id_array_param_name:|
+  shared_examples "the reference to a required set of records is present and unambiguous" do |model_name:, records_param_name:, record_id_array_param_name:|
     it "throws an error when both #{records_param_name} and #{record_id_array_param_name} are used" do
       params = minimal_valid_params.merge(all_record_params)
 

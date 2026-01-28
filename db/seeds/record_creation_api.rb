@@ -59,7 +59,7 @@ class RecordCreator
   end
 
   def seed_additional_expenses(case_contacts: nil, case_contact_ids: nil, count: 0)
-    validated_case_contacts = validate_seed_n_records_required_model_params("case_contact", "case_contacts", case_contacts, case_contact_ids)
+    validated_case_contacts = validate_required_record_collection_present_in_flexible_params("case_contact", "case_contacts", case_contacts, case_contact_ids)
     validated_case_contacts_as_id_array = records_as_id_array(validated_case_contacts)
 
     try_seed_many(count) do
@@ -85,7 +85,7 @@ class RecordCreator
   end
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)
-    validated_users = validate_seed_n_records_required_model_params("user", "users", users, user_ids)
+    validated_users = validate_required_record_collection_present_in_flexible_params("user", "users", users, user_ids)
     validated_users_as_model_array, validation_failures = records_to_array(validated_users, User)
 
     if validated_users_as_model_array.empty?
@@ -143,9 +143,9 @@ class RecordCreator
   end
 
   def seed_banners(casa_orgs: nil, casa_org_ids: nil, casa_admins: nil, casa_admin_ids: nil, count: 0)
-    validated_casa_admins = validate_seed_n_records_required_model_params("casa_admin", "casa_admins", casa_admins, casa_admin_ids)
+    validated_casa_admins = validate_required_record_collection_present_in_flexible_params("casa_admin", "casa_admins", casa_admins, casa_admin_ids)
     validated_casa_admins_as_id_array = records_as_id_array(validated_casa_admins)
-    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_orgs = validate_required_record_collection_present_in_flexible_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
@@ -170,7 +170,7 @@ class RecordCreator
   end
 
   def seed_casa_cases(casa_orgs: nil, casa_org_ids: nil, count: 0)
-    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_orgs = validate_required_record_collection_present_in_flexible_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
@@ -194,8 +194,8 @@ class RecordCreator
   end
 
   def seed_casa_case_contact_types(casa_cases: nil, casa_case_ids: nil, contact_types: nil, contact_type_ids: nil, count: 0)
-    validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
-    validated_contact_types = validate_seed_n_records_required_model_params("contact_type", "contact_types", contact_types, contact_type_ids)
+    validated_casa_cases = validate_required_record_collection_present_in_flexible_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
+    validated_contact_types = validate_required_record_collection_present_in_flexible_params("contact_type", "contact_types", contact_types, contact_type_ids)
     validated_casa_cases_as_id_array = records_as_id_array(validated_casa_cases)
     validated_contact_types_as_id_array = records_as_id_array(validated_contact_types)
 
@@ -246,8 +246,8 @@ class RecordCreator
   end
 
   def seed_casa_case_emancipation_categories(casa_cases: nil, casa_case_ids: nil, emancipation_categories: nil, emancipation_category_ids: nil, count: 0)
-    validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
-    validated_emancipation_categories = validate_seed_n_records_required_model_params("emancipation_category", "emancipation_categories", emancipation_categories, emancipation_category_ids)
+    validated_casa_cases = validate_required_record_collection_present_in_flexible_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
+    validated_emancipation_categories = validate_required_record_collection_present_in_flexible_params("emancipation_category", "emancipation_categories", emancipation_categories, emancipation_category_ids)
     validated_casa_cases_as_record_array, casa_case_validation_failures = records_to_array(validated_casa_cases, CasaCase)
     validated_emancipation_categories_as_id_array = records_as_id_array(validated_emancipation_categories)
 
@@ -304,7 +304,7 @@ class RecordCreator
 
   def seed_case_group(casa_cases: nil, casa_case_ids: nil, casa_org: nil, casa_org_id: nil)
     validate_seed_single_record_required_model_params("casa_org", casa_org, casa_org_id)
-    validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
+    validated_casa_cases = validate_required_record_collection_present_in_flexible_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
 
     unless validated_casa_cases.is_a?(ActiveRecord::Relation)
       validated_casa_cases = CasaCase.find(validated_casa_cases)
@@ -325,8 +325,8 @@ class RecordCreator
   end
 
   def seed_case_groups(casa_cases: nil, casa_case_ids: nil, casa_orgs: nil, casa_org_ids: nil, count: 0)
-    validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
-    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_cases = validate_required_record_collection_present_in_flexible_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
+    validated_casa_orgs = validate_required_record_collection_present_in_flexible_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_cases_as_id_array = records_as_id_array(validated_casa_cases)
     validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
@@ -348,7 +348,7 @@ class RecordCreator
   end
 
   def seed_languages(casa_orgs: nil, casa_org_ids: nil, count: 0)
-    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_orgs = validate_required_record_collection_present_in_flexible_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
@@ -367,7 +367,7 @@ class RecordCreator
   end
 
   def seed_mileage_rates(casa_orgs: nil, casa_org_ids: nil, count: 0)
-    validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
+    validated_casa_orgs = validate_required_record_collection_present_in_flexible_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
     validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
@@ -633,25 +633,25 @@ class RecordCreator
     end
   end
 
-  def validate_seed_n_records_required_model_params(model_lowercase_name, model_lowercase_plural_name, model_param_object_collection, model_param_id_array)
-    if model_param_object_collection.nil? && model_param_id_array.nil?
+  def validate_required_record_collection_present_in_flexible_params(model_lowercase_name, model_lowercase_plural_name, record_as_activerecord_relation_param_value, record_id_array_param_value)
+    if record_as_activerecord_relation_param_value.nil? && record_id_array_param_value.nil?
       raise ArgumentError.new("#{model_lowercase_plural_name}: or #{model_lowercase_name}_ids: is required")
-    elsif !model_param_object_collection.nil? && !model_param_id_array.nil?
+    elsif !record_as_activerecord_relation_param_value.nil? && !record_id_array_param_value.nil?
       raise ArgumentError.new("cannot use #{model_lowercase_plural_name}: and #{model_lowercase_name}_ids:")
-    elsif !model_param_object_collection.nil?
-      if !model_param_object_collection.is_a?(ActiveRecord::Relation)
+    elsif !record_as_activerecord_relation_param_value.nil?
+      if !record_as_activerecord_relation_param_value.is_a?(ActiveRecord::Relation)
         raise TypeError.new("param #{model_lowercase_plural_name}: must be an ActiveRecord::Relation")
-      elsif model_param_object_collection.empty?
+      elsif record_as_activerecord_relation_param_value.empty?
         raise ArgumentError.new("param #{model_lowercase_plural_name}: must contain at least one #{model_lowercase_name}")
       else
-        model_param_object_collection
+        record_as_activerecord_relation_param_value
       end
-    elsif !model_param_id_array.is_a?(Array)
+    elsif !record_id_array_param_value.is_a?(Array)
       raise TypeError.new("param #{model_lowercase_name}_ids: must be an array")
-    elsif model_param_id_array.length === 0
+    elsif record_id_array_param_value.length === 0
       raise RangeError.new("param #{model_lowercase_name}_ids: must contain at least one element")
     else
-      model_param_id_array
+      record_id_array_param_value
     end
   end
 end

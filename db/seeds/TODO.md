@@ -1,4 +1,5 @@
 model language as opposed to new record language in provate methods
+  records_to_array function body
 When making a model array, if a record cannot be found by id, try with the remainder anyways and return a tuple
 
 seed_casa_case_emancipation_categories

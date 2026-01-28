@@ -60,7 +60,7 @@ class RecordCreator
 
   def seed_additional_expenses(case_contacts: nil, case_contact_ids: nil, count: 0)
     validated_case_contacts = validate_seed_n_records_required_model_params("case_contact", "case_contacts", case_contacts, case_contact_ids)
-    validated_case_contacts_as_id_array = model_collection_as_id_array(validated_case_contacts)
+    validated_case_contacts_as_id_array = records_as_id_array(validated_case_contacts)
 
     try_seed_many(count) do
       seed_additional_expense(case_contact_id: seeded_random_sample(validated_case_contacts_as_id_array))
@@ -86,7 +86,7 @@ class RecordCreator
 
   def seed_addresses(users: nil, user_ids: nil, count: 0)
     validated_users = validate_seed_n_records_required_model_params("user", "users", users, user_ids)
-    validated_users_as_model_array, validation_failures = model_collection_as_model_array(validated_users, User)
+    validated_users_as_model_array, validation_failures = records_to_array(validated_users, User)
 
     if validated_users_as_model_array.empty?
       return validation_failures
@@ -144,9 +144,9 @@ class RecordCreator
 
   def seed_banners(casa_orgs: nil, casa_org_ids: nil, casa_admins: nil, casa_admin_ids: nil, count: 0)
     validated_casa_admins = validate_seed_n_records_required_model_params("casa_admin", "casa_admins", casa_admins, casa_admin_ids)
-    validated_casa_admins_as_id_array = model_collection_as_id_array(validated_casa_admins)
+    validated_casa_admins_as_id_array = records_as_id_array(validated_casa_admins)
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
-    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+    validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
       seed_banner(casa_admin_id: seeded_random_sample(validated_casa_admins_as_id_array), casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
@@ -171,7 +171,7 @@ class RecordCreator
 
   def seed_casa_cases(casa_orgs: nil, casa_org_ids: nil, count: 0)
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
-    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+    validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
       seed_casa_case(casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
@@ -196,8 +196,8 @@ class RecordCreator
   def seed_casa_case_contact_types(casa_cases: nil, casa_case_ids: nil, contact_types: nil, contact_type_ids: nil, count: 0)
     validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
     validated_contact_types = validate_seed_n_records_required_model_params("contact_type", "contact_types", contact_types, contact_type_ids)
-    validated_casa_cases_as_id_array = model_collection_as_id_array(validated_casa_cases)
-    validated_contact_types_as_id_array = model_collection_as_id_array(validated_contact_types)
+    validated_casa_cases_as_id_array = records_as_id_array(validated_casa_cases)
+    validated_contact_types_as_id_array = records_as_id_array(validated_contact_types)
 
     generated_association_id_random_ordering = form_randomly_ordered_id_pair_pool(validated_casa_cases_as_id_array, validated_contact_types_as_id_array)
 
@@ -248,14 +248,14 @@ class RecordCreator
   def seed_casa_case_emancipation_categories(casa_cases: nil, casa_case_ids: nil, emancipation_categories: nil, emancipation_category_ids: nil, count: 0)
     validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
     validated_emancipation_categories = validate_seed_n_records_required_model_params("emancipation_category", "emancipation_categories", emancipation_categories, emancipation_category_ids)
-    validated_casa_cases_as_model_array, casa_case_validation_failures = model_collection_as_model_array(validated_casa_cases, CasaCase)
-    validated_emancipation_categories_as_id_array = model_collection_as_id_array(validated_emancipation_categories)
+    validated_casa_cases_as_record_array, casa_case_validation_failures = records_to_array(validated_casa_cases, CasaCase)
+    validated_emancipation_categories_as_id_array = records_as_id_array(validated_emancipation_categories)
 
-    if validated_casa_cases_as_model_array.empty?
+    if validated_casa_cases_as_record_array.empty?
       return casa_case_validation_failures
     end
 
-    valid_case_ids, invalid_case_errors = filter_out_non_transitioning_casa_cases(validated_casa_cases_as_model_array)
+    valid_case_ids, invalid_case_errors = filter_out_non_transitioning_casa_cases(validated_casa_cases_as_record_array)
 
     if valid_case_ids.empty?
       return invalid_case_errors
@@ -327,8 +327,8 @@ class RecordCreator
   def seed_case_groups(casa_cases: nil, casa_case_ids: nil, casa_orgs: nil, casa_org_ids: nil, count: 0)
     validated_casa_cases = validate_seed_n_records_required_model_params("casa_case", "casa_cases", casa_cases, casa_case_ids)
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
-    validated_casa_cases_as_id_array = model_collection_as_id_array(validated_casa_cases)
-    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+    validated_casa_cases_as_id_array = records_as_id_array(validated_casa_cases)
+    validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     grouped_casa_case_ids = form_case_groups(validated_casa_cases_as_id_array, count)
 
@@ -349,7 +349,7 @@ class RecordCreator
 
   def seed_languages(casa_orgs: nil, casa_org_ids: nil, count: 0)
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
-    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+    validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
       seed_language(casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
@@ -368,7 +368,7 @@ class RecordCreator
 
   def seed_mileage_rates(casa_orgs: nil, casa_org_ids: nil, count: 0)
     validated_casa_orgs = validate_seed_n_records_required_model_params("casa_org", "casa_orgs", casa_orgs, casa_org_ids)
-    validated_casa_orgs_as_id_array = model_collection_as_id_array(validated_casa_orgs)
+    validated_casa_orgs_as_id_array = records_as_id_array(validated_casa_orgs)
 
     try_seed_many(count) do
       seed_mileage_rate(casa_org_id: seeded_random_sample(validated_casa_orgs_as_id_array))
@@ -518,38 +518,6 @@ class RecordCreator
     record_counts
   end
 
-  def model_collection_as_id_array(model_collection)
-    if model_collection.is_a?(ActiveRecord::Relation)
-      model_collection.to_a.map do |model|
-        model.id
-      end
-    else
-      model_collection.clone
-    end
-  end
-
-  def model_collection_as_model_array(model_collection, model_class = nil)
-    if model_collection.is_a?(ActiveRecord::Relation)
-      [model_collection.to_a, []]
-    else
-      valid_models = []
-      model_conversion_errors = []
-
-      if model_class.nil?
-        raise ArgumentError.new("param model_class is required when passing an array of ids")
-      end
-
-      model_collection.each do |model_id|
-        model = model_class.find(model_id)
-        valid_models.push(model)
-      rescue => exception
-        model_conversion_errors.push(exception)
-      end
-
-      [valid_models, model_conversion_errors]
-    end
-  end
-
   def order_users_for_address_seeding(users)
     users_with_addresses = []
     users_without_addresses = []
@@ -563,6 +531,38 @@ class RecordCreator
     end
 
     seeded_random_shuffle!(users_without_addresses) + seeded_random_shuffle!(users_with_addresses)
+  end
+
+  def records_as_id_array(records)
+    if records.is_a?(ActiveRecord::Relation)
+      records.to_a.map do |model|
+        model.id
+      end
+    else
+      records.clone
+    end
+  end
+
+  def records_to_array(records, model_class = nil)
+    if records.is_a?(ActiveRecord::Relation)
+      [records.to_a, []]
+    else
+      valid_records = []
+      id_conversion_errors = []
+ 
+      if valid_records.nil?
+        raise ArgumentError.new("param model_class is required when passing an array of ids")
+      end
+ 
+      records.each do |record_id|
+        record = model_class.find(record_id)
+        valid_records.push(record)
+      rescue => exception
+        id_conversion_errors.push(exception)
+      end
+ 
+      [valid_records, id_conversion_errors]
+    end
   end
 
   def seeded_random_array_index(arr)

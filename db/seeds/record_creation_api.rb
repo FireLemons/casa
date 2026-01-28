@@ -271,7 +271,7 @@ class RecordCreator
           casa_case_id, emancipation_category_id = consume_id_pair_from_casa_case_contact_type_ordering_random(generated_association_id_random_ordering)
 
           if casa_case_id.nil?
-            raise StandardError.new("There are no more casa case and contact type id combinations available to make more casa_case_contact_types")
+            raise StandardError.new("There are no more casa case and emancipation category id combinations available to make more casa_case_emancipation_categories")
           end
 
           seed_result = seed_casa_case_emancipation_category(casa_case_id:, emancipation_category_id:)

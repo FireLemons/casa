@@ -1,6 +1,4 @@
-model language as opposed to new record language in provate methods
-  records_to_array function body
-When making a model array, if a record cannot be found by id, try with the remainder anyways and return a tuple
+seeded_random_youth_birth_month creates ages starting with age 18
 
 seed_casa_case_emancipation_categories
   tests

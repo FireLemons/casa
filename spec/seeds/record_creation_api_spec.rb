@@ -701,9 +701,9 @@ RSpec.describe RecordCreator do
       include_examples("returns an Exception for each record that failed to generate", record_param_name: "casa case emancipation category")
 
       it "adds a special exception to the results when no more casa case contact type combinations are available" do
-        #     seed_results = subject.seed_casa_case_contact_types(casa_case_ids: [casa_cases[0].id], contact_type_ids: [emancipation_categories[0].id], count: 2)
+        seed_results = subject.seed_casa_case_emancipation_categories(casa_case_ids: [casa_cases[0].id], emancipation_category_ids: [emancipation_categories[0].id], count: 2)
 
-        #     expect(seed_results).to include(have_attributes(message: "There are no more casa case and contact type id combinations available to make more casa_case_contact_types"))
+        expect(seed_results).to include(have_attributes(message: "There are no more casa case and emancipation category id combinations available to make more casa_case_emancipation_categories"))
       end
 
       it "adds an error to the results for each non transitioning casa case" do

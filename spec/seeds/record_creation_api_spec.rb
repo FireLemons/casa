@@ -265,9 +265,7 @@ RSpec.describe RecordCreator do
 
     let(:case_contact) { create(:case_contact) }
     let(:minimal_valid_params) {
-      case_contact # triggers lazy load
-
-      {case_contacts: CaseContact.all, count: 2}
+      {case_contact_ids: [case_contact.id], count: 2}
     }
 
     describe "with valid parameters" do
@@ -275,14 +273,7 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "other_expense_amount", "other_expenses_describe", model_class: AdditionalExpense)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: AdditionalExpense, model_plural_name: "additional expenses")
-
-      it "returns an array containing an error for each additional expense that could not be created" do
-        error_array = subject.seed_additional_expenses(case_contact_ids: [-1], count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(StandardError)
-        end
-      end
+      include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "additional expense")
     end
 
     describe "with invalid parameters" do
@@ -454,9 +445,7 @@ RSpec.describe RecordCreator do
     let(:casa_org) { create(:casa_org) }
     let(:casa_admin) { create(:casa_admin, casa_org:) }
     let(:minimal_valid_params) {
-      casa_admin # triggers lazy load
-
-      {casa_admins: CasaAdmin.all, casa_orgs: CasaOrg.all, count: 2}
+      {casa_admin_ids: [casa_admin.id], casa_org_ids: [casa_org.id], count: 2}
     }
 
     describe "with valid parameters" do
@@ -464,14 +453,7 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "content", "expires_at", "name", model_class: Banner)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: Banner, model_plural_name: "banners")
-
-      it "returns an array containing an error for each banner that could not be created" do
-        error_array = subject.seed_banners(casa_admin_ids: [-1], casa_org_ids: [-1], count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(StandardError)
-        end
-      end
+      include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "banner")
     end
 
     describe "with invalid parameters" do
@@ -524,9 +506,7 @@ RSpec.describe RecordCreator do
 
     let(:casa_org) { create(:casa_org) }
     let(:minimal_valid_params) {
-      casa_org # triggers lazy load
-
-      {casa_orgs: CasaOrg.all, count: 2}
+      {casa_org_ids: [casa_org.id], count: 2}
     }
 
     describe "with valid parameters" do
@@ -534,14 +514,7 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "birth_month_year_youth", "case_number", "date_in_care", model_class: CasaCase)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: CasaCase, model_plural_name: "banners")
-
-      it "returns an array containing an error for each casa case that could not be created" do
-        error_array = subject.seed_casa_cases(casa_org_ids: [-1], count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
-        end
-      end
+      include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "casa case")
     end
 
     describe "with invalid parameters" do
@@ -594,14 +567,7 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "casa_case_id", "contact_type_id", model_class: CasaCaseContactType)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: CasaCaseContactType, model_plural_name: "casa case contact types")
-
-      it "returns an array containing an error for each casa case contact type that could not be created" do
-        error_array = subject.seed_casa_case_contact_types(casa_case_ids: [-1], contact_type_ids: [-1], count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
-        end
-      end
+      include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "casa case contact type")
 
       it "does not count attempting to create an existing association as a failure" do
         record_id_array = subject.seed_casa_case_contact_types(casa_case_ids: casa_cases.map(&:id), contact_type_ids: contact_types.map(&:id), count: 2)
@@ -750,27 +716,13 @@ RSpec.describe RecordCreator do
 
   describe "seed_casa_orgs" do
     let(:method_name) { :seed_casa_orgs }
-    let(:minimal_valid_params) { {} }
+    let(:minimal_valid_params) { {count: 2} }
 
     include_examples("creates the specified number of records", model_class: CasaOrg, model_plural_name: "casa orgs")
     include_examples("has randomness derived from the seed when generating several of the same type of record", "address", "name", model_class: CasaOrg)
     include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
     include_examples("returns the ids of the generated records", model_class: CasaOrg, model_plural_name: "casa orgs")
-
-    it "returns an array containing an error for each casa org that could not be created" do
-      subject.seed_casa_orgs(count: 2)
-      subject = RecordCreator.new(seed: RSpec.configuration.seed)
-
-      # Resetting the RecordCreator with the same seed
-      # should result in casa orgs with duplicate names
-      # but casa orgs require unique names
-      # thus causing the errors
-      error_array = subject.seed_casa_orgs(count: 2)
-
-      error_array.each do |error|
-        expect(error).to be_a(Exception)
-      end
-    end
+    include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "casa org")
   end
 
   describe "seed_case_group" do
@@ -813,9 +765,7 @@ RSpec.describe RecordCreator do
     let(:casa_org) { create(:casa_org) }
     let(:casa_case) { create(:casa_case, casa_org:) }
     let(:minimal_valid_params) {
-      casa_case # triggers lazy load
-
-      {casa_cases: CasaCase.all, casa_orgs: CasaOrg.all, count: 2}
+      {casa_case_ids: [casa_case.id], casa_org_ids: [casa_org.id], count: 2}
     }
 
     describe "with valid parameters" do
@@ -823,6 +773,7 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "name", model_class: CaseGroup)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: CaseGroup, model_plural_name: "case groups")
+      include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "case group")
 
       it "does not add the same case to multiple groups when there are there are enough cases for each group" do
         create(:casa_case)
@@ -853,14 +804,6 @@ RSpec.describe RecordCreator do
         expect(case_group_1_casa_cases.size).to be >= 2
         expect(case_group_2_casa_cases.size).to be >= 2
         expect(case_group_3_casa_cases.size).to be >= 2
-      end
-
-      it "returns an array containing an error for each case group that could not be created" do
-        error_array = subject.seed_case_groups(casa_case_ids: [-1], casa_org_ids: [-1], count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
-        end
       end
     end
 
@@ -907,9 +850,7 @@ RSpec.describe RecordCreator do
 
     let(:casa_org) { create(:casa_org) }
     let(:minimal_valid_params) {
-      casa_org # triggers lazy load
-
-      {casa_orgs: CasaOrg.all, count: 2}
+      {casa_org_ids: [casa_org.id], count: 2}
     }
 
     describe "with valid parameters" do
@@ -917,14 +858,7 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "name", model_class: Language)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: Language, model_plural_name: "languages")
-
-      it "returns an array containing an error for each language that could not be created" do
-        error_array = subject.seed_languages(casa_org_ids: [-1], count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
-        end
-      end
+      include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "language")
     end
 
     describe "with invalid parameters" do
@@ -969,9 +903,7 @@ RSpec.describe RecordCreator do
 
     let(:casa_org) { create(:casa_org) }
     let(:minimal_valid_params) {
-      casa_org # triggers lazy load
-
-      {casa_orgs: CasaOrg.all, count: 2}
+      {casa_org_ids: [casa_org.id], count: 2}
     }
 
     describe "with valid parameters" do
@@ -979,14 +911,7 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "amount", "effective_date", model_class: MileageRate)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: MileageRate, model_plural_name: "mileage rates")
-
-      it "returns an array containing an error for each mileage rate that could not be created" do
-        error_array = subject.seed_mileage_rates(casa_org_ids: [-1], count: 2)
-
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
-        end
-      end
+      include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "mileage rate")
     end
 
     describe "with invalid parameters" do

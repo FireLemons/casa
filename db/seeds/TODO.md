@@ -1,3 +1,5 @@
+apply reusable error in seed results array check
+
 seeded_random_youth_birth_month creates ages starting with age 18
 
 seed_casa_case_emancipation_categories
@@ -18,3 +20,23 @@ Display logins
   Org header
     logins
   Password info
+
+This flake still happens with some regularity
+  seed_languages
+    with valid parameters
+      has randomness derived from the seed (FAILED - 1)
+
+  Failures:
+
+    1) RecordCreator seed_languages with valid parameters has randomness derived from the seed
+      Failure/Error: model_class.find(id)
+      
+      ActiveRecord::RecordNotFound:
+        Couldn't find Language with 'id'=#<ActiveRecord::RecordInvalid: Validation failed: Name has already been taken>
+      Shared Example Group: "has randomness derived from the seed when generating several of the same type of record" called from ./spec/seeds/record_creation_api_spec.rb:938
+      # ./spec/seeds/record_creation_api_spec.rb:45:in `block (4 levels) in <top (required)>'
+      # ./spec/seeds/record_creation_api_spec.rb:44:in `map'
+      # ./spec/seeds/record_creation_api_spec.rb:44:in `block (3 levels) in <top (required)>'
+      # ./spec/rails_helper.rb:133:in `block (2 levels) in <top (required)>'
+      # ./spec/rails_helper.rb:118:in `block (3 levels) in <top (required)>'
+      # ./spec/rails_helper.rb:117:in `block (2 levels) in <top (required)>'

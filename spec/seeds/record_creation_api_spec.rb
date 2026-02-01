@@ -87,31 +87,26 @@ RSpec.describe RecordCreator do
     end
   end
 
-  shared_examples "returns an Exception for each record that failed to generate" do |record_param_name:|
+  shared_examples "includes an Exception in returned the seed results for each record that failed to generate" do |record_param_name:|
     it "returns an array containing an error for each #{record_param_name} that could not be created" do
-      nonexistant_id_params = minimal_valid_params
-
-      if nonexistant_id_params.key?(:count) && nonexistant_id_params.size == 1
+      if minimal_valid_params.key?(:count) && minimal_valid_params.size == 1
         subject.public_send(method_name, **minimal_valid_params)
 
-        subject = RecordCreator.new(seed: RSpec.configuration.seed)
+        reset_subject = RecordCreator.new(seed: RSpec.configuration.seed)
 
         # Resetting the RecordCreator with the same seed
         # usually results in invalid duplicate records
         # thus causing the errors
-        error_array = subject.public_send(method_name, **minimal_valid_params)
-
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
-        end
+        error_array = reset_subject.public_send(method_name, **minimal_valid_params)
       else
-        nonexistant_id_params.transform_values! { [-1] }
-        nonexistant_id_params[:count] = 2
-        error_array = subject.public_send(method_name, **nonexistant_id_params)
+        nonexistant_record_id_params = minimal_valid_params
+        nonexistant_record_id_params.transform_values! { [-1] }
+        nonexistant_record_id_params[:count] = 2
+        error_array = subject.public_send(method_name, **nonexistant_record_id_params)
+      end
 
-        error_array.each do |error|
-          expect(error).to be_a(Exception)
-        end
+      error_array.each do |error|
+        expect(error).to be_a(Exception)
       end
     end
   end
@@ -387,28 +382,13 @@ RSpec.describe RecordCreator do
   describe "seed_all_casa_admins" do
     let(:method_name) { :seed_all_casa_admins }
 
-    let(:minimal_valid_params) { {} }
+    let(:minimal_valid_params) { {count: 2} }
 
     include_examples("creates the specified number of records", model_class: AllCasaAdmin, model_plural_name: "all casa admins")
     include_examples("has randomness derived from the seed when generating several of the same type of record", "email", model_class: AllCasaAdmin)
     include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
     include_examples("returns the ids of the generated records", model_class: AllCasaAdmin, model_plural_name: "all casa admins")
-
-    it "returns an array containing an error for each all casa admin that could not be created" do
-      subject.seed_all_casa_admins(count: 2)
-
-      subject = RecordCreator.new(seed: RSpec.configuration.seed)
-
-      # Resetting the RecordCreator with the same seed
-      # should result in all casa admins with duplicate emails
-      # but all casa admins require unique emails
-      # thus causing the errors
-      error_array = subject.seed_all_casa_admins(count: 2)
-
-      error_array.each do |error|
-        expect(error).to be_a(Exception)
-      end
-    end
+    include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "all casa admin")
   end
 
   describe "seed_banner" do
@@ -710,7 +690,7 @@ RSpec.describe RecordCreator do
       include_examples("has randomness derived from the seed when generating several of the same type of record", "casa_case_id", "emancipation_category_id", model_class: CasaCaseEmancipationCategory)
       include_examples("multi-record generation returns empty list when requesting to generate a negative number of records")
       include_examples("returns the ids of the generated records", model_class: CasaCaseEmancipationCategory, model_plural_name: "casa case emancipation categories")
-      include_examples("returns an Exception for each record that failed to generate", record_param_name: "casa case emancipation category")
+      include_examples("includes an Exception in returned the seed results for each record that failed to generate", record_param_name: "casa case emancipation category")
 
       it "adds a special exception to the results when no more casa case contact type combinations are available" do
         seed_results = subject.seed_casa_case_emancipation_categories(casa_case_ids: [casa_cases[0].id], emancipation_category_ids: [emancipation_categories[0].id], count: 2)

@@ -549,18 +549,18 @@ class RecordCreator
     else
       valid_records = []
       id_conversion_errors = []
- 
+
       if valid_records.nil?
         raise ArgumentError.new("param model_class is required when passing an array of ids")
       end
- 
+
       records.each do |record_id|
         record = model_class.find(record_id)
         valid_records.push(record)
       rescue => exception
         id_conversion_errors.push(exception)
       end
- 
+
       [valid_records, id_conversion_errors]
     end
   end
